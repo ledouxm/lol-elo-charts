@@ -4,6 +4,7 @@ import { useSocketConnection, useSocketEvent } from "@/hooks/useSocketConnection
 import { getStateValuePath, useSharedMachine } from "@/lib";
 import { getDemoMachine } from "@/machines/demoMachine";
 import { getRpsMachine } from "@/machines/rpsMachine";
+import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
 import { Game, Player, Room } from "@/types";
 import {
     Box,
@@ -26,47 +27,25 @@ import { useYArray, useYMap } from "jotai-yjs";
 import { useState } from "react";
 import { useSnapshot } from "valtio";
 
-const makeRoom = () => ({ id: getRandomString(), clients: [] });
-
 export const Demo = () => {
     // Connect to websocket / try to reconnect on focus while not connected / debug in dev
-    useSocketConnection();
-
-    const [presence, setPresence] = usePresence();
-    const updateRandomColor = () => setPresence((player) => ({ ...player, color: getRandomColor() }));
-
-    const rooms = useYArray<Room>(yDoc, "rooms");
-    const roomsList = useSnapshot(rooms);
-
-    const createRoom = () => rooms.push(makeRoom());
-
-    if (!presence) {
-        return (
-            <Center>
-                <Spinner />
-            </Center>
-        );
-    }
+    // useSocketConnection();
 
     return (
-        <Stack w="100%">
-            <Center flexDir="column" m="8">
-                <Stack h="100%">
-                    <Stack direction="row" alignItems="center">
-                        <chakra.span>(Editable) Username: </chakra.span>
-                        <PresenceName />
+        <Stack w="100%" overflow="hidden">
+            <PlatformerCanvas h="50vh" />
+            <Box h="50vh" overflowY="scroll">
+                <Center flexDir="column" m="8">
+                    <Stack h="100%">
+                        <Stack direction="row" alignItems="center">
+                            <chakra.span>(Editable) Username: </chakra.span>
+                            {/* <PresenceName /> */}
+                        </Stack>
                     </Stack>
-                    <Button onClick={updateRandomColor}>Random color</Button>
-                    <Button onClick={createRoom}>New room</Button>
-                </Stack>
-            </Center>
-            <SimpleGrid columns={[1, 1, 2, 3, 3, 4]} w="100%" spacing="8">
-                {roomsList.map((room, index) => (
-                    <GameRoom key={room.id} room={rooms[index]} rooms={rooms} />
-                ))}
-            </SimpleGrid>
-            <PlayerList />
-            <RpsGames />
+                </Center>
+                {/* <PlayerList /> */}
+                {/* <RpsGames /> */}
+            </Box>
         </Stack>
     );
 };

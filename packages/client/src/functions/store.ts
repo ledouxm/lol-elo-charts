@@ -7,10 +7,11 @@ import { Player } from "../types";
 import { makePlayer } from "./utils";
 
 const yDocId = "app";
-const wsUrl = "ws://localhost:1339";
+// const wsUrl = "ws://localhost:1339";
+const wsUrl = "wss://y.svelt-yjs.dev";
 
 export const yDoc = new Y.Doc({ guid: yDocId });
-const provider = new WebsocketProvider(wsUrl, yDoc.guid, yDoc, { connect: false });
+export const provider = new WebsocketProvider(wsUrl, yDoc.guid, yDoc, { connect: false });
 
 const getPlayer = (): Player => {
     const player = sessionStorage.getItem(yDocId + "/player");
@@ -19,12 +20,21 @@ const getPlayer = (): Player => {
 const player = getPlayer();
 const persistPlayer = (player: Player) => sessionStorage.setItem(yDocId + "/player", stringify(player));
 
+let cpt = 0;
+
 const addProviderToDoc = () => {
     console.log("connect to a ws provider with room", yDoc.guid);
 
     provider.url = wsUrl + "?" + new URLSearchParams({ auth: "chainbreak" }).toString();
     provider.connect();
-    provider.awareness.setLocalState(player);
+
+    const currentPlayers = provider.awareness.getStates();
+
+    const newPlayer = { ...player, isAdmin: currentPlayers.size === 1, index: cpt };
+    provider.awareness.setLocalState(newPlayer);
+    cpt++;
+    console.log(newPlayer, currentPlayers);
+
     persistPlayer(player);
 
     return () => {
@@ -47,3 +57,5 @@ export const { useYAwarenessInit, useYAwareness, presenceProxy, usePresence, use
     initialPresence: player,
     onUpdate: persistPlayer,
 });
+
+export const hexagonsYMap = yDoc.getMap("hexagons");
