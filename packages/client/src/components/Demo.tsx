@@ -1,7 +1,8 @@
 import { usePresence, useYAwareness, yDoc } from "@/functions/store";
 import { getRandomColor, getSaturedColor } from "@/functions/utils";
-import { EventPayload, useSocketConnection, useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
-import { DemoContext, DemoEvents, getDemoMachine } from "@/machines/demoMachine";
+import { useSocketConnection, useSocketEvent } from "@/hooks/useSocketConnection";
+import { getStateValuePath, useSyncedMachine } from "@/lib";
+import { getDemoMachine } from "@/machines/demoMachine";
 import { Player, Room } from "@/types";
 import {
     Box,
@@ -16,12 +17,10 @@ import {
     Spinner,
     Stack,
 } from "@chakra-ui/react";
-import { findBy, getRandomString, removeItemMutate, safeJSONParse, stringify } from "@pastable/core";
-import { useMachine } from "@xstate/react";
+import { findBy, getRandomString, removeItemMutate } from "@pastable/core";
 import { useYArray, useYMap } from "jotai-yjs";
-import { useEffect, useState } from "react";
-import { snapshot, subscribe, useSnapshot } from "valtio";
-import { EventObject, State } from "xstate";
+import { useState } from "react";
+import { useSnapshot } from "valtio";
 
 const makeRoom = () => ({ id: getRandomString(), clients: [] });
 
@@ -36,11 +35,6 @@ export const Demo = () => {
     const roomsList = useSnapshot(rooms);
 
     const createRoom = () => rooms.push(makeRoom());
-
-    const send = useSocketEmit();
-    const sendMsg = () => send("yes", getRandomString());
-
-    // const inputRef = useRef<HTMLInputElement>();
 
     if (!presence) {
         return (
@@ -60,7 +54,6 @@ export const Demo = () => {
                     </Stack>
                     <Button onClick={updateRandomColor}>Random color</Button>
                     <Button onClick={createRoom}>New game</Button>
-                    <Button onClick={sendMsg}>Send msg</Button>
                 </Stack>
             </Center>
             <SimpleGrid columns={[1, 1, 2, 3, 3, 4]} w="100%" spacing="8">
@@ -73,10 +66,6 @@ export const Demo = () => {
     );
 };
 
-type AnyState = State<any, any, any, any>;
-const getStateValuePath = (state: AnyState) => state.toStrings().slice(-1)[0];
-const areEqualStateValuePath = (a: AnyState, b: AnyState) => getStateValuePath(a) === getStateValuePath(b);
-
 const GameRoom = ({ room, rooms }: { room: Room; rooms: Array<Room> }) => {
     const snap = useSnapshot(room);
     const [presence] = usePresence();
@@ -86,43 +75,21 @@ const GameRoom = ({ room, rooms }: { room: Room; rooms: Array<Room> }) => {
     const removeRoom = () => removeItemMutate(rooms, "id", room.id);
 
     const game = useYMap(yDoc, "game." + room.id);
-    const store = useYMap(yDoc, "game-machine." + room.id);
-    const [initialCtx] = useState(() => ({
-        game,
-        room,
-        getRoomSnap: () => snapshot(room),
-        getGameSnap: () => snapshot(game),
-    }));
-    const initialState = useInitialMachineState<DemoContext, DemoEvents>(store as any, initialCtx);
+    const [storeId] = useState(() => "statemachine." + room.id);
 
-    const [state, send] = useMachine(() => getDemoMachine(initialCtx), { state: initialState });
-    const emit = useSocketEmit();
-    const sendAndEmit = (event: EventPayload, emitOnlyOnStateDiff?: boolean) => {
-        const nextState = send(event as any);
-        if (emitOnlyOnStateDiff && areEqualStateValuePath(state, nextState)) return;
-
-        emit(event);
-        store.state = stringify(nextState, 0);
-    };
-
-    useEffect(() => {
-        console.log("SUBSCRIBE APPLY");
-        const unsubRoom = subscribe(room, () => send("APPLY_CTX"));
-        const unsubGame = subscribe(game, () => send("APPLY_CTX"));
-        send("APPLY_CTX");
-
-        return () => {
-            unsubRoom();
-            unsubGame();
-        };
-    }, []);
+    const [initialCtx] = useState(() => ({ game, room }));
+    const [state, send, , sendAndEmit] = useSyncedMachine(() => getDemoMachine(initialCtx), {
+        context: initialCtx,
+        yDoc,
+        storeId,
+        proxyKeys: ["game", "room"],
+    });
 
     const play = () => sendAndEmit("PLAY", true);
     const markAsDone = () => sendAndEmit("MARK_DONE");
     useSocketEvent("PLAY", () => send("PLAY"));
 
     const applyCtx = () => send("APPLY_CTX");
-    console.log(state.context, snapshot(game));
 
     return (
         <Stack border="1px solid teal">
@@ -145,75 +112,6 @@ const GameRoom = ({ room, rooms }: { room: Room; rooms: Array<Room> }) => {
         </Stack>
     );
 };
-
-const useInitialMachineState = <TC, TE extends EventObject = EventObject>(store: { state: string }, ctx?: TC) => {
-    // const [initialState] = useState(() => (store.state ? State.create<TC, TE>(safeJSONParse(store.state)) : undefined));
-    const [initialState] = useState(() =>
-        store.state
-            ? State.create<TC, TE>({
-                  ...safeJSONParse(store.state),
-                  context: { ...ctx, ...safeJSONParse(store.state).context },
-              })
-            : undefined
-    );
-
-    return initialState;
-};
-
-// import * as Y from "yjs";
-// function useSyncMachine<
-//     TContext,
-//     TEvent extends EventObject,
-//     TTypestate extends Typestate<TContext> = { value: any; context: TContext }
-// >(
-//     yDoc: Y.Doc,
-//     getMachine: MaybeLazy<StateMachine<TContext, any, TEvent, TTypestate>>,
-//     options: Partial<InterpreterOptions> &
-//         Partial<UseMachineOptions<TContext, TEvent>> &
-//         Partial<MachineOptions<TContext, TEvent>> = {}
-// ): [
-//     State<TContext, TEvent, any, TTypestate>,
-//     Interpreter<TContext, any, TEvent, TTypestate>["send"],
-//     Interpreter<TContext, any, TEvent, TTypestate>,
-//     SetState<State<TContext, TEvent, any, TTypestate>>,
-//     (nextState: State<TContext, TEvent, any, TTypestate>) => void
-// ]  {
-//     const { game, room} = {} as any
-//     const [initialCtx] = useState(() => ({
-//         game,
-//         room,
-//         getRoomSnap: () => snapshot(room),
-//         getGameSnap: () => snapshot(game),
-//     }));
-//     const [storeId] = useState(() => "statemachine." + getRandomString())
-//     const store = useYMap(yDoc, storeId);
-//     const initialState = useInitialMachineState<DemoContext, DemoEvents>(store as any, initialCtx);
-
-//     const [state, send, service] = useMachine(() => getDemoMachine(initialCtx), { state: initialState });
-//     const emit = useSocketEmit();
-//     const sendAndEmit = (event: EventPayload, emitOnlyOnStateDiff?: boolean) => {
-//         const nextState = send(event as any);
-//         if (emitOnlyOnStateDiff && areEqualStateValuePath(state, nextState)) return nextState;
-
-//         emit(event);
-//         store.state = stringify(nextState, 0);
-//         return nextState
-//     };
-
-//     useEffect(() => {
-//         console.log("SUBSCRIBE APPLY");
-//         const unsubRoom = subscribe(room, () => send("APPLY_CTX"));
-//         const unsubGame = subscribe(game, () => send("APPLY_CTX"));
-//         send("APPLY_CTX");
-
-//         return () => {
-//             unsubRoom();
-//             unsubGame();
-//         };
-//     }, []);
-
-//     return [state, sendAndEmit, service]
-// }
 
 const PlayerList = () => {
     const awareness = useYAwareness();

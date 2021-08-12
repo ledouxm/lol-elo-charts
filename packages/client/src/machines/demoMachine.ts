@@ -3,11 +3,11 @@ import { snapshot } from "valtio";
 
 import { assign, createMachine } from "xstate";
 
-export function getDemoMachine({ game, room, getRoomSnap, getGameSnap }: DemoContext) {
+export function getDemoMachine({ game, room }: DemoContext) {
     return createMachine<DemoContext, DemoEvents>(
         {
             initial: "waiting",
-            context: { room: snapshot(room), game: snapshot(game), getRoomSnap, getGameSnap },
+            context: { room: undefined, game: undefined },
             states: {
                 waiting: { on: { PLAY: { target: "playing", cond: "canStart" } } },
                 playing: {
@@ -22,12 +22,7 @@ export function getDemoMachine({ game, room, getRoomSnap, getGameSnap }: DemoCon
         },
         {
             actions: {
-                applyContext: assign({
-                    // room: (ctx) => ctx.getRoomSnap(),
-                    // game: (ctx) => ctx.getGameSnap(),
-                    room: (ctx) => snapshot(room),
-                    game: (ctx) => snapshot(game),
-                }),
+                applyContext: assign({ room: (ctx) => snapshot(room), game: (ctx) => snapshot(game) }),
                 markAsDone: (ctx) => (game.mark = true),
                 resetMark: (ctx) => (game.mark = false),
             },
@@ -42,8 +37,6 @@ export function getDemoMachine({ game, room, getRoomSnap, getGameSnap }: DemoCon
 export interface DemoContext {
     game: Game;
     room: Room;
-    getRoomSnap: () => Room;
-    getGameSnap: () => Game;
 }
 interface Game {
     mark?: boolean;
