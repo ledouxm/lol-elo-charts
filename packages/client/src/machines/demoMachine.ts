@@ -13,9 +13,11 @@ export function getDemoMachine({ game, room }: DemoContext) {
                 playing: {
                     on: {
                         PLAY: { target: "done", cond: "canEnd" },
+                        // TODO rm applyContext ?
                         MARK_DONE: { actions: ["markAsDone", "applyContext"] },
                     },
                 },
+                // TODO rm applyContext ?
                 done: { on: { PLAY: { target: "waiting", actions: ["resetMark", "applyContext"] } } },
             },
             on: { APPLY_CTX: { actions: "applyContext" } },

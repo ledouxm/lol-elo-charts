@@ -1,18 +1,22 @@
 import { usePresence, useYAwareness, yDoc } from "@/functions/store";
-import { getRandomColor, getSaturedColor } from "@/functions/utils";
+import { getRandomColor, getSaturedColor, makeEmptyGame, makeGame } from "@/functions/utils";
 import { useSocketConnection, useSocketEvent } from "@/hooks/useSocketConnection";
-import { getStateValuePath, useSyncedMachine } from "@/lib";
+import { getStateValuePath, useSharedMachine } from "@/lib";
 import { getDemoMachine } from "@/machines/demoMachine";
-import { Player, Room } from "@/types";
+import { getRpsMachine } from "@/machines/rpsMachine";
+import { Game, Player, Room } from "@/types";
 import {
     Box,
     Button,
     Center,
     chakra,
+    Circle,
+    CloseButton,
     Editable,
     EditableInput,
     EditablePreview,
     EditableProps,
+    Flex,
     SimpleGrid,
     Spinner,
     Stack,
@@ -53,7 +57,7 @@ export const Demo = () => {
                         <PresenceName />
                     </Stack>
                     <Button onClick={updateRandomColor}>Random color</Button>
-                    <Button onClick={createRoom}>New game</Button>
+                    <Button onClick={createRoom}>New room</Button>
                 </Stack>
             </Center>
             <SimpleGrid columns={[1, 1, 2, 3, 3, 4]} w="100%" spacing="8">
@@ -62,6 +66,7 @@ export const Demo = () => {
                 ))}
             </SimpleGrid>
             <PlayerList />
+            <RpsGames />
         </Stack>
     );
 };
@@ -78,7 +83,7 @@ const GameRoom = ({ room, rooms }: { room: Room; rooms: Array<Room> }) => {
     const [storeId] = useState(() => "statemachine." + room.id);
 
     const [initialCtx] = useState(() => ({ game, room }));
-    const [state, send, , sendAndEmit] = useSyncedMachine(() => getDemoMachine(initialCtx), {
+    const [state, send, , sendAndEmit] = useSharedMachine(() => getDemoMachine(initialCtx), {
         context: initialCtx,
         yDoc,
         storeId,
@@ -137,6 +142,145 @@ const PlayerList = () => {
         </Box>
     );
 };
+
+const RpsGames = () => {
+    const games = useYArray<Game>(yDoc, "games");
+    const snap = useSnapshot(games);
+
+    const makeNewGame = () => games.push(makeEmptyGame());
+
+    return (
+        <Stack>
+            <Center mb="8">
+                <Button onClick={makeNewGame}>New RPS game</Button>
+            </Center>
+            <SimpleGrid columns={[1, 1, 2, 3, 3, 4]} w="100%" spacing="8">
+                {snap.map((item, index) => (
+                    <DuelGameWidget key={item.id} game={games[index]} />
+                ))}
+            </SimpleGrid>
+        </Stack>
+    );
+};
+
+const DuelGameWidget = ({ game }: { game: Game }) => {
+    const gameSnap = useSnapshot(game);
+    const [hostPlayer, opponentPlayer] = gameSnap.players || [];
+
+    const gamesSource = useYArray<Game>(yDoc, "games");
+    const deleteGame = () => removeItemMutate(gamesSource, "id", game.id);
+    const [presence] = usePresence();
+    const joinGame = () => game.players.push(presence);
+    const isHost = presence.id === hostPlayer?.id;
+
+    // const rps = useYMap(yDoc, "rps." + game.id);
+    const [storeId] = useState(() => "statemachine." + game.id);
+
+    const [initialCtx] = useState(() => ({ game }));
+    const [state, send, , sendAndEmit] = useSharedMachine(() => getRpsMachine(initialCtx), {
+        context: initialCtx,
+        yDoc,
+        storeId,
+        proxyKeys: ["game"],
+    });
+    console.log(state.context);
+
+    const start = () => {};
+    const play = (move) => sendAndEmit({ type: "PLAY", data: { move, playerId: presence.id } });
+    // const markAsDone = () => sendAndEmit("MARK_DONE");
+    // useSocketEvent("PLAY", () => send("PLAY"));
+
+    return (
+        <Flex bgColor="gray.400" w="100%" h="200px" p="15px" rounded={8} pos="relative">
+            {<CloseButton pos="absolute" bottom="100%" left="100%" bgColor="gray.100" onClick={deleteGame} />}
+            <PlayerSlot>
+                {hostPlayer ? <PlayerSlotContent player={hostPlayer} /> : <PlayerSlotJoinGame onJoin={joinGame} />}
+            </PlayerSlot>
+            <Center w="80px" flexShrink={0}>
+                <Stack alignItems="center">
+                    <chakra.span>{getStateValuePath(state)}</chakra.span>
+                    <VsCircle />
+                    {state.matches("waiting") && state.context.game.players.length === 2 && (
+                        <Button colorScheme="twitter" onClick={start}>
+                            Start
+                        </Button>
+                    )}
+                    {state.matches("playing") && (
+                        <>
+                            <Button colorScheme="orange" onClick={() => play("rock")}>
+                                Rock
+                            </Button>
+                            <Button colorScheme="pink" onClick={() => play("paper")}>
+                                Paper
+                            </Button>
+                            <Button colorScheme="teal" onClick={() => play("scissors")}>
+                                Scissors
+                            </Button>
+                        </>
+                    )}
+                </Stack>
+            </Center>
+            <PlayerSlot>
+                {opponentPlayer ? (
+                    <PlayerSlotContent player={opponentPlayer} />
+                ) : isHost ? (
+                    <PlayerSlotWaitingForOpponent />
+                ) : (
+                    <PlayerSlotJoinGame onJoin={joinGame} />
+                )}
+            </PlayerSlot>
+        </Flex>
+    );
+};
+
+const PlayerSlot = ({ children }) => (
+    <Box w="100%" bgColor="gray.600" rounded={8}>
+        {children}
+    </Box>
+);
+
+const PlayerSlotContent = ({ player }: { player: Player }) => {
+    return (
+        <Stack justifyContent="center" alignItems="center" h="100%" spacing="1">
+            <Circle size={"65px"} bgColor="gray.300" />
+            <chakra.span textTransform="uppercase" color="gray.300">
+                {player.username}
+            </chakra.span>
+            <chakra.span textTransform="uppercase" color="gray.300" fontSize="small">
+                {1000} ELO
+            </chakra.span>
+        </Stack>
+    );
+};
+
+const PlayerSlotJoinGame = ({ onJoin }) => {
+    return (
+        <Center h="100%">
+            <Button colorScheme="yellow" onClick={onJoin}>
+                Join game
+            </Button>
+        </Center>
+    );
+};
+
+const PlayerSlotWaitingForOpponent = () => {
+    return (
+        <Center h="100%" maxW="135px">
+            <Button colorScheme="yellow" disabled h="50px" mx="4" fontSize="sm">
+                Waiting for
+                <br /> an opponent...
+            </Button>
+        </Center>
+    );
+};
+
+const VsCircle = () => (
+    <Circle size={"40px"} bgColor="gray.300">
+        <chakra.span textTransform="uppercase" color="gray.900" fontSize="small">
+            VS
+        </chakra.span>
+    </Circle>
+);
 
 const PresenceName = () => {
     const [presence, setPresence] = usePresence();

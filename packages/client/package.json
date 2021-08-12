@@ -22,7 +22,7 @@
         "react-query": "^3.19.4",
         "react-router-dom": "^5.2.0",
         "valtio": "^1.2.0",
-        "valtio-yjs": "^0.1.0",
+        "valtio-yjs": "https://pkg.csb.dev/dai-shi/valtio-yjs/commit/34f9a845/valtio-yjs",
         "xstate": "^4.23.0",
         "yjs": "^13.5.12"
     },

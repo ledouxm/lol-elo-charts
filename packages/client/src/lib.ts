@@ -1,5 +1,5 @@
 import { EventPayload, useSocketEmit } from "@/hooks/useSocketConnection";
-import { getRandomString, safeJSONParse, stringify } from "@pastable/core";
+import { safeJSONParse, stringify } from "@pastable/core";
 import { useMachine } from "@xstate/react";
 import { MaybeLazy, UseMachineOptions } from "@xstate/react/lib/types";
 import { useYMap } from "jotai-yjs";
@@ -12,7 +12,7 @@ export type AnyState = State<any, any, any, any>;
 export const getStateValuePath = (state: AnyState) => state.toStrings().slice(-1)[0];
 export const areEqualStateValuePath = (a: AnyState, b: AnyState) => getStateValuePath(a) === getStateValuePath(b);
 
-export function useSyncedMachine<
+export function useSharedMachine<
     TContext,
     TEvent extends EventObject,
     TTypestate extends Typestate<TContext> = { value: any; context: TContext }
@@ -21,7 +21,7 @@ export function useSyncedMachine<
     options: Partial<InterpreterOptions> &
         Partial<UseMachineOptions<TContext, TEvent>> &
         Partial<MachineOptions<TContext, TEvent>> &
-        UseSyncedMachineOptions
+        UseSharedMachineOptions
 ): [
     State<TContext, TEvent, any, TTypestate>,
     Interpreter<TContext, any, TEvent, TTypestate>["send"],
@@ -34,7 +34,7 @@ export function useSyncedMachine<
     const [state, send, service] = useMachine(getMachine, { state: initialState, context: options?.context });
     const emit = useSocketEmit();
     const sendAndEmit = (event: EventPayload, emitOnlyOnStateDiff?: boolean) => {
-        const nextState = send(event as any);
+        const nextState = send(typeof event === "string" ? event : { ...event.data, type: event.type });
         if (emitOnlyOnStateDiff && areEqualStateValuePath(state, nextState)) return nextState;
 
         emit(event);
@@ -52,7 +52,7 @@ export function useSyncedMachine<
     return [state, send, service, sendAndEmit];
 }
 
-export interface UseSyncedMachineOptions {
+export interface UseSharedMachineOptions {
     yDoc: Y.Doc;
     storeId: string;
     proxyKeys: string[];

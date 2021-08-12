@@ -9,6 +9,7 @@ export const makePlayer = (): Player => ({
     color: getRandomColor(),
 });
 export const makeGame = (initialPlayer: Player): Game => ({ id: makeId(), players: [initialPlayer], mode: "duel" });
+export const makeEmptyGame = (): Game => ({ id: makeId(), players: [], mode: "duel" });
 
 const hexLetters = "0123456789ABCDEF".toLowerCase();
 const hexLettersArray = hexLetters.split("");
