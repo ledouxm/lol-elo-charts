@@ -10,7 +10,7 @@
         "start": "NODE_ENV=production node dist/main.js"
     },
     "dependencies": {
-        "@pastable/core": "^0.1.9",
+        "@pastable/core": "^0.1.12",
         "fastify": "^3.19.2",
         "lib0": "^0.2.42",
         "lodash.debounce": "^4.0.8",
