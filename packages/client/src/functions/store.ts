@@ -12,12 +12,12 @@ const wsUrl = "ws://localhost:1339";
 export const yDoc = new Y.Doc({ guid: yDocId });
 const provider = new WebsocketProvider(wsUrl, yDoc.guid, yDoc, { connect: false });
 
-const getOkayer = (): Player => {
-    const player = localStorage.getItem(yDocId + "/player");
+const getPlayer = (): Player => {
+    const player = sessionStorage.getItem(yDocId + "/player");
     return player ? JSON.parse(player) : makePlayer();
 };
-const player = getOkayer();
-const persistPlayer = (player: Player) => localStorage.setItem(yDocId + "/player", stringify(player));
+const player = getPlayer();
+const persistPlayer = (player: Player) => sessionStorage.setItem(yDocId + "/player", stringify(player));
 
 const addProviderToDoc = () => {
     console.log("connect to a ws provider with room", yDoc.guid);

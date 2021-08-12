@@ -11,10 +11,18 @@ import { useAtomValue } from "jotai/utils";
 
 const wsEmitterAtom = atom((get) => get(wsMachineAtom).context.emitter);
 export const useSocketEvent = makeEventEmitterHook(wsEmitterAtom);
-export const useSocketSend = () => {
+export const useSocketEmit = () => {
     const wsMachine = useAtomValue(wsMachineAtom);
-    return (event: string, data?: any) => emit({ ctx: wsMachine.context, event, data });
+    return (eventOrObj: string | { type: string; data?: any }, data?: any) => {
+        const ctx = wsMachine.context;
+        const payload =
+            typeof eventOrObj === "string"
+                ? { ctx, event: eventOrObj, data }
+                : { ctx, event: eventOrObj.type, data: eventOrObj.data };
+        emit<any, any>(payload);
+    };
 };
+export type EventPayload = string | { type: string; data?: any };
 
 export const useSocketConnection = () => {
     const [current, send] = useAtom(wsMachineAtom);
@@ -30,10 +38,7 @@ export const useSocketConnection = () => {
     useOnFocus(() => current.matches("closed") && connectToWebsocket());
 
     // Debug
-    useSocketEvent(
-        WsEvent.Any,
-        (payload: { event: string; data: unknown }) => isDev() && console.log(payload.event, payload.data)
-    );
+    useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => isDev() && console.log(payload));
 };
 
 const useOnFocus = (callback: AnyFunction) => {

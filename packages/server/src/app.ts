@@ -61,7 +61,7 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
         // on page refresh (f5) -> get current room machine state ?
         ws.on("message", (data: any, isBinary: boolean) => {
             wss.clients.forEach((client) => {
-                if (client.readyState !== WebSocket.OPEN) return;
+                if (client === ws || client.readyState !== WebSocket.OPEN) return;
 
                 client.send(data, { binary: isBinary });
                 // client.send(encode(data), { binary: true });
