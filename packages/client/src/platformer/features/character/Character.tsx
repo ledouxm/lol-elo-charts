@@ -1,4 +1,4 @@
-import { provider, usePresence } from "@/functions/store";
+import { provider } from "@/functions/store";
 import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
@@ -6,11 +6,12 @@ import * as THREE from "three";
 import { MeshStandardMaterial } from "three";
 import { keyDownRef, keyPressedRef } from "../../hooks/useInputsRef";
 import { useMouseMovements } from "../../hooks/useMouseMovement";
+import { startNewGame } from "../Hexagon";
 import { calculateForce } from "./utils";
 
 const speed = 5;
 const jumpForce = 25;
-const cameraSensitivity = 20;
+const cameraSensitivity = 10;
 
 export const Character = ({ position }: { position: Triplet }) => {
     const updatePositionAndRotation = (position: Triplet, rotation: Triplet) => {
@@ -28,7 +29,7 @@ export const Character = ({ position }: { position: Triplet }) => {
     }, []);
 
     const [meshRef, api] = useBox(() => ({
-        mass: 10,
+        mass: provider.synced ? 10 : 10,
         angularFactor: [0, 0, 0],
         linearDamping: 0.99,
         linearFactor: [0.1, 1, 0.1],
@@ -59,6 +60,7 @@ export const Character = ({ position }: { position: Triplet }) => {
     const matRef = useRef<MeshStandardMaterial>(null);
     // Game data
     const isPausedRef = useRef(false);
+    const isSyncedRef = useRef(false);
 
     useEffect(() => {
         // Store CannonJS data into refs so we can use them in useFrame
@@ -119,11 +121,20 @@ export const Character = ({ position }: { position: Triplet }) => {
             }
         }
 
+        if (keyPressedRef.currents.has("KeyM")) {
+            startNewGame();
+        }
+
         keyPressedRef.currents.clear();
+
+        if (provider.synced && !isSyncedRef.current) {
+            api.mass.set(10);
+            isSyncedRef.current = true;
+        }
 
         // Apply rotation
         if (mouseMovementRef.current)
-            currentRotation[1] -= mouseMovementRef.current[0] * 0.1 * deltaTime * cameraSensitivity;
+            currentRotation[1] -= mouseMovementRef.current[0] * 0.01 * deltaTime * cameraSensitivity;
 
         mouseMovementRef.current = [0, 0];
 

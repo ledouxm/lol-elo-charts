@@ -1,6 +1,6 @@
 import { usePresence, useYAwareness, yDoc } from "@/functions/store";
-import { getRandomColor, getSaturedColor, makeEmptyGame, makeGame } from "@/functions/utils";
-import { useSocketConnection, useSocketEvent } from "@/hooks/useSocketConnection";
+import { getSaturedColor, makeEmptyGame } from "@/functions/utils";
+import { useSocketEvent } from "@/hooks/useSocketConnection";
 import { getStateValuePath, useSharedMachine } from "@/lib";
 import { getDemoMachine } from "@/machines/demoMachine";
 import { getRpsMachine } from "@/machines/rpsMachine";
@@ -19,33 +19,17 @@ import {
     EditableProps,
     Flex,
     SimpleGrid,
-    Spinner,
     Stack,
 } from "@chakra-ui/react";
-import { findBy, getRandomString, removeItemMutate } from "@pastable/core";
+import { findBy, removeItemMutate } from "@pastable/core";
 import { useYArray, useYMap } from "jotai-yjs";
 import { useState } from "react";
 import { useSnapshot } from "valtio";
 
 export const Demo = () => {
-    // Connect to websocket / try to reconnect on focus while not connected / debug in dev
-    // useSocketConnection();
-
     return (
         <Stack w="100%" overflow="hidden">
-            <PlatformerCanvas h="50vh" />
-            <Box h="50vh" overflowY="scroll">
-                <Center flexDir="column" m="8">
-                    <Stack h="100%">
-                        <Stack direction="row" alignItems="center">
-                            <chakra.span>(Editable) Username: </chakra.span>
-                            {/* <PresenceName /> */}
-                        </Stack>
-                    </Stack>
-                </Center>
-                {/* <PlayerList /> */}
-                {/* <RpsGames /> */}
-            </Box>
+            <PlatformerCanvas h="100vh" />
         </Stack>
     );
 };

@@ -50,9 +50,9 @@ export const Cube = ({ id }: { id: number }) => {
 
         const me = playersArr.find((player) => player.id === id);
 
-        if (!me) return console.log("cant find me");
+        if (!me) return;
 
-        if (!me.position || !me.rotation) return console.log("empty player");
+        if (!me.position || !me.rotation) return;
 
         positionRef.current = me.position;
         rotationRef.current = me.rotation;

@@ -13,6 +13,7 @@ import { SkyDome } from "../components/SkyDome";
 import { Stars } from "@react-three/drei";
 import { Players } from "./Player";
 import { hexagonsYMap, provider } from "@/functions/store";
+import { Stage } from "./Stage";
 
 const requestPointerLock = () => {
     const canvas = document.body;
@@ -22,7 +23,8 @@ const requestPointerLock = () => {
     canvas.requestPointerLock();
 };
 
-export const nbFloors = 1;
+const characterPosition = [25, 30, 0];
+export const nbFloors = 5;
 const colors = ["#003049", "#d62828", "#f77f00", "#fcbf49", "#eae2b7"];
 
 export const PlatformerCanvas = (props: BoxProps) => {
@@ -52,7 +54,10 @@ export const PlatformerCanvas = (props: BoxProps) => {
                     height: "100%",
                     width: "100%",
                 }}
-                camera={{ far: 2000 }}
+                camera={{
+                    far: 2000,
+                    position: [characterPosition[0] + 10, characterPosition[1], characterPosition[2]],
+                }}
                 ref={canvasRef}
             >
                 <ambientLight intensity={0.2} />
@@ -71,6 +76,7 @@ export const PlatformerCanvas = (props: BoxProps) => {
                     step={1 / 144}
                     broadphase="Naive"
                 >
+                    <Stage position={[0, 0, 0]} />
                     <Pit y={nbFloors * -10 - 10} />
                     <Stars count={1000} radius={70} />
                     {makeArrayOf(nbFloors).map((_, index) => (
@@ -79,7 +85,7 @@ export const PlatformerCanvas = (props: BoxProps) => {
                             <HexagonGrid y={index * -10} color={colors[index]} floorIndex={index} />
                         </Fragment>
                     ))}
-                    <Character position={[0, 3, 0]} />
+                    <Character position={characterPosition as Triplet} />
                 </Physics>
             </Canvas>
         </Box>

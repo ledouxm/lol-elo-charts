@@ -152,7 +152,7 @@ export const Hexagon = ({
         const me = provider.awareness.getLocalState();
         if (!me.isAdmin) return;
         const arr = Array.from(hexagonsYMap.entries());
-        const isEnded = arr.every(([_, hexStatus]) => hexStatus === "destroyed");
+        const isEnded = arr.every(([_, hexStatus]) => hexStatus !== "idle");
         if (!isEnded) return;
 
         startNewGame();
