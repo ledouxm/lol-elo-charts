@@ -1622,6 +1622,11 @@
   resolved "https://registry.yarnpkg.com/@pastable/utils/-/utils-0.1.7.tgz#d3b3634e21efd2c2bd164f9472ec80ec276589fc"
   integrity sha512-MEyo2z9vhWPIO9isUNIUQ/4UA/WeURaAOgbX1ELD81ccxpALBYsNRg5JiVEIaQ30Fp9aOL+4wEOg4KjYOORjGw==
 
+"@pastable/utils@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@pastable/utils/-/utils-0.1.8.tgz#146b2cbf64f970562baada599cb61b88004be71c"
+  integrity sha512-LONYsw3Xvw/SGP/7pXjSzaJr/i6Mxm2Z6RnXPodx7UAb5620LYxZ6XWaQhWKQYfSjV/sEFM9iP2BVpJWYDs+ZQ==
+
 "@popperjs/core@2.4.4":
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.4.4.tgz#11d5db19bd178936ec89cd84519c4de439574398"

@@ -1,6 +1,6 @@
 import { usePresence, useYAwareness, yDoc } from "@/functions/store";
-import { getSaturedColor, makeEmptyGame } from "@/functions/utils";
-import { useSocketEvent } from "@/hooks/useSocketConnection";
+import { getRandomColor, getSaturedColor, makeEmptyGame } from "@/functions/utils";
+import { useSocketConnection, useSocketEvent } from "@/hooks/useSocketConnection";
 import { getStateValuePath, useSharedMachine } from "@/lib";
 import { getDemoMachine } from "@/machines/demoMachine";
 import { getRpsMachine } from "@/machines/rpsMachine";
@@ -127,11 +127,11 @@ const RpsGames = () => {
 };
 
 const DuelGameWidget = ({ game }: { game: Game }) => {
-    const gameSnap = useSnapshot(game);
-    const [hostPlayer, opponentPlayer] = gameSnap.players || [];
+    const snap = useSnapshot(game);
+    const [hostPlayer, opponentPlayer] = snap.players || [];
 
-    const gamesSource = useYArray<Game>(yDoc, "games");
-    const deleteGame = () => removeItemMutate(gamesSource, "id", game.id);
+    const games = useYArray<Game>(yDoc, "games");
+    const deleteGame = () => removeItemMutate(games, "id", game.id);
     const [presence] = usePresence();
     const joinGame = () => game.players.push(presence);
     const isHost = presence.id === hostPlayer?.id;
@@ -149,7 +149,11 @@ const DuelGameWidget = ({ game }: { game: Game }) => {
     console.log(state.context);
 
     const start = () => {};
-    const play = (move) => sendAndEmit({ type: "PLAY", data: { move, playerId: presence.id } });
+    const play = (move) => sendAndEmit({ type: "PLAY", data: { move, id: presence.id } });
+
+    const players = state.context.game.players;
+    const player = findBy(players, "id", presence.id);
+    const status = player?.status;
     // const markAsDone = () => sendAndEmit("MARK_DONE");
     // useSocketEvent("PLAY", () => send("PLAY"));
 
@@ -170,13 +174,13 @@ const DuelGameWidget = ({ game }: { game: Game }) => {
                     )}
                     {state.matches("playing") && (
                         <>
-                            <Button colorScheme="orange" onClick={() => play("rock")}>
+                            <Button colorScheme="orange" onClick={() => play("rock")} disabled={status === "moved"}>
                                 Rock
                             </Button>
-                            <Button colorScheme="pink" onClick={() => play("paper")}>
+                            <Button colorScheme="pink" onClick={() => play("paper")} disabled={status === "moved"}>
                                 Paper
                             </Button>
-                            <Button colorScheme="teal" onClick={() => play("scissors")}>
+                            <Button colorScheme="teal" onClick={() => play("scissors")} disabled={status === "moved"}>
                                 Scissors
                             </Button>
                         </>

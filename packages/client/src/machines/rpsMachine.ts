@@ -1,99 +1,121 @@
 import { Game, Player } from "@/types";
-import { findBy, updateItem } from "@pastable/core";
+import { findBy } from "@pastable/core";
 import { snapshot, subscribe } from "valtio";
 
 import { assign, createMachine } from "xstate";
 
 export function getRpsMachine({ game }: Partial<RpsContext>) {
-    return createMachine<RpsContext, RpsEvents>(
+    return createMachine<any, RpsContext, RpsEvents>(
         {
             initial: "waiting",
             entry: () => console.log("entry"),
-            context: { game: undefined, players: [], winner: undefined },
+            context: { game: undefined },
             states: {
                 waiting: {
                     entry: "reset",
-                    on: {
-                        JOIN: [
-                            { internal: true, actions: "setPlayer" },
-                            { target: "playing", cond: "canStart" },
-                        ],
+                    on: { JOIN: { target: "playing", cond: "canStart" } },
+                    invoke: {
+                        id: "starter",
+                        src: (ctx, event) => (send, onReceived) => {
+                            console.log("starter");
+                            send("JOIN");
+                            subscribe(game.players, () => send("JOIN"));
+                        },
                     },
                 },
                 playing: {
+                    // always: [{ target: "done", cond: "hasWinner", actions: ["reset", "setWinner"] }],
                     on: {
-                        PLAY: [
-                            { internal: true, actions: "setMove" },
-                            { target: "done", cond: "hasWinner" },
-                            { target: "waiting" },
-                        ],
+                        PLAY: { actions: "setMove" },
+                        BOTH_PLAYED: { target: "done", cond: "hasWinner", actions: ["reset", "setWinner"] },
                     },
+                    // invoke: {
+                    //     id: "hasWinner",
+                    //     src: (ctx, event) => (send, onReceived) => {
+                    //         console.log("hasWinner");
+                    //         return subscribe(game.players, () => {
+                    //             send("BOTH_PLAYED");
+                    //             // if (!didBothMove(ctx.game.players)) return;
+                    //             // console.log(ctx.game.players, didBothMove(ctx.game.players), comparePlayerMoves(ctx.game.players));
+                    //             // const result  = comparePlayerMoves(ctx.game.players);
+                    //             // if (result === "draw") {
+
+                    //             // }
+                    //         });
+                    //     },
+                    // },
                 },
-                done: { entry: "setWinner", on: { RESTART: { target: "waiting", actions: "reset" } } },
+                done: {
+                    on: { RESTART: { target: "waiting", actions: "reset" } },
+                },
             },
             on: { APPLY_CTX: { actions: "applyContext" } },
-            invoke: {
-                id: "starter",
-                src: (ctx, event) => (send, onReceived) => {
-                    send("JOIN");
-                    subscribe(game.players, () => send("JOIN"));
-                },
-            },
         },
         {
             actions: {
                 applyContext: assign({ game: (ctx) => snapshot(game) }),
-                setMove: assign({
-                    players: (ctx, event) => {
-                        // event.type === "PLAY"
-                        // ? updateItem(ctx.players, "id", {
-                        //       ...(findBy(ctx.players, "id", event.id) as RpsPlayer),
-                        //       move: event.move,
-                        //   })
-                        // : ctx.players
-                        if (event.type !== "PLAY") return;
-                        const clone = [...ctx.players];
-                        const move = event.move;
-                        const player = findBy(ctx.players, "id", event.id) as RpsPlayer;
-                        updateItem(clone, "id", { ...player, move });
-                        console.log(ctx.players, event, player);
-                        return clone;
-                    },
-                }),
-                setWinner: assign({
-                    winner: (ctx) => ctx.game.players[comparePlayerMoves(ctx.players) === "win" ? 0 : 1],
-                }),
-                reset: (ctx) =>
-                    (ctx.players = ctx.game.players.map((player) => ({ move: undefined, status: "waiting" }))),
+                setMove: (ctx, event) => {
+                    if (event.type !== "PLAY") return;
+                    const index = findBy(ctx.game.players, "id", event.id, true) as number;
+                    console.log(ctx.game.players, event, index, ctx.game.players[index]);
+                    game.players[index].move = event.move;
+                    game.players[index].status = "moved";
+                },
+                setWinner: (ctx) => {
+                    console.log(
+                        "setWinner",
+                        comparePlayerMoves(ctx.game.players),
+                        ctx.game.players[comparePlayerMoves(ctx.game.players) === "win" ? 0 : 1]
+                    );
+                    game.winner = ctx.game.players[comparePlayerMoves(ctx.game.players) === "win" ? 0 : 1];
+                },
+                reset: (ctx, event) => {
+                    console.log("reset");
+                    ctx.game.players.forEach((player, index) => {
+                        game.players[index].move = "none";
+                        game.players[index].status = "ready";
+                    });
+                },
             },
             guards: {
                 canStart: (ctx) => ctx.game.players.length === 2,
-                hasWinner: (ctx) => console.log(ctx.players) || comparePlayerMoves(ctx.players) !== "draw",
+                hasWinner: (ctx) => {
+                    if (!didBothMove(ctx.game.players)) return;
+                    console.log(ctx.game.players, didBothMove(ctx.game.players), comparePlayerMoves(ctx.game.players));
+                    return didBothMove(ctx.game.players) && comparePlayerMoves(ctx.game.players) !== "draw";
+                },
             },
         }
     );
 }
 
 interface RpsContext {
-    game: Game;
+    game: RpsGame;
+}
+
+interface RpsGame extends Game {
     players: Array<RpsPlayer>;
-    winner: Player;
+    winner: RpsPlayer;
 }
-interface RpsPlayer {
-    move: "rock" | "paper" | "scissors";
-    status: "ready" | "waiting" | "playing";
+interface RpsPlayer extends Player {
+    move: RpsMove | "none";
+    status: "ready" | "moved" | "playing";
 }
-type RpsMove = RpsPlayer["move"];
+type RpsMove = "rock" | "paper" | "scissors";
 type RpsEvents =
     | { type: "APPLY_CTX" }
     | { type: "JOIN" }
     | { type: "PLAY"; move: RpsMove; id: Player["id"] }
+    | { type: "BOTH_PLAYED" }
     | { type: "RESTART" };
 
 type RpsMoveResult = "win" | "draw" | "lose";
 
-const compareMoves = (left: RpsMove, right: RpsMove) => resultByMoves[left][right];
-const comparePlayerMoves = ([left, right]: Array<RpsPlayer>) => compareMoves(left.move, right.move);
+const compareMoves = (left: RpsMove, right: RpsMove) => left && right && resultByMoves[left][right];
+const comparePlayerMoves = ([left, right]: Array<RpsPlayer>) =>
+    compareMoves(left.move as RpsMove, right.move as RpsMove);
+const didBothMove = ([left, right]: Array<RpsPlayer>) =>
+    Boolean([left?.move && right?.move].filter(Boolean).every((move) => move !== "none"));
 
 const resultByMoves: Record<RpsMove, Record<RpsMove, RpsMoveResult>> = {
     rock: {
