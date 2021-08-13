@@ -112,7 +112,6 @@ export const Hexagon = ({
             if (status === "idle") {
                 // statusRef.current = "disappearing";
                 hexagonsYMap.set(id, "disappearing");
-
                 setTimeout(() => {
                     // statusRef.current = "destroyed";
                     hexagonsYMap.set(id, "destroyed");
@@ -129,6 +128,8 @@ export const Hexagon = ({
 
         if (status !== prevStatusRef.current && status === "idle") {
             api.isTrigger.set(false);
+            api.position.set(...position);
+
             materialRef.current.visible = true;
             materialRef.current.color.set(color);
         }

@@ -33,7 +33,6 @@ const addProviderToDoc = () => {
     const newPlayer = { ...player, isAdmin: currentPlayers.size === 1, index: cpt };
     provider.awareness.setLocalState(newPlayer);
     cpt++;
-    console.log(newPlayer, currentPlayers);
 
     persistPlayer(player);
 

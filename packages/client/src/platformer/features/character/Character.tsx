@@ -3,10 +3,11 @@ import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { MeshStandardMaterial } from "three";
+import { MeshStandardMaterial, Vector3 } from "three";
 import { keyDownRef, keyPressedRef } from "../../hooks/useInputsRef";
 import { useMouseMovements } from "../../hooks/useMouseMovement";
 import { startNewGame } from "../Hexagon";
+import { getRandomStagePosition } from "../Stage";
 import { calculateForce } from "./utils";
 
 const speed = 5;
@@ -18,6 +19,7 @@ export const Character = ({ position }: { position: Triplet }) => {
         if (!provider.synced) return;
         return provider.awareness.setLocalState({ ...provider.awareness.getLocalState(), position, rotation });
     };
+    const { camera } = useThree();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -29,14 +31,14 @@ export const Character = ({ position }: { position: Triplet }) => {
     }, []);
 
     const [meshRef, api] = useBox(() => ({
-        mass: provider.synced ? 10 : 10,
+        mass: 10,
         angularFactor: [0, 0, 0],
         linearDamping: 0.99,
         linearFactor: [0.1, 1, 0.1],
         onCollideBegin: (e) => {
             switch (e.body.name) {
                 case "pit":
-                    api.position.set(0, 5, 0);
+                    api.position.set(...(getRandomStagePosition() as Triplet));
             }
             groundedRef.current = true;
         },
@@ -45,8 +47,6 @@ export const Character = ({ position }: { position: Triplet }) => {
         },
         position,
     }));
-
-    const { camera } = useThree();
 
     // Track mouse movements
     const mouseMovementRef = useMouseMovements();
@@ -150,14 +150,17 @@ export const Character = ({ position }: { position: Triplet }) => {
 
         // Update camera position and rotation
         camera.position.lerp(cameraOffset, 0.1);
-        camera.lookAt(currentPos);
-
+        camera.lookAt(isSyncedRef.current ? currentPos : new Vector3(0, 0, 0));
         const myAwareness = provider.awareness.getLocalState();
         if (myAwareness) matRef.current.color.set(myAwareness.color.slice(0, -2));
     });
 
     return (
         <>
+            <mesh position={[0, 0, 0]}>
+                <sphereBufferGeometry />
+                <meshBasicMaterial color="pink" />
+            </mesh>
             <mesh ref={meshRef} name="character" castShadow>
                 <boxGeometry />
                 <meshStandardMaterial ref={matRef} />

@@ -7,7 +7,7 @@ export const AppLight = (props: PointLightProps) => {
     return (
         <pointLight
             castShadow
-            intensity={0.5}
+            intensity={0.3}
             position={[-20, 20, 0]}
             rotation={[Math.PI / 2, 0, 0]}
             shadow-mapSize-height={2048}

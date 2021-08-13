@@ -1,22 +1,30 @@
-import { makeArrayOf } from "@pastable/core";
+import { makeArrayOf, pickOne } from "@pastable/core";
 import { Triplet, useBox } from "@react-three/cannon";
 import { Vector3 } from "three";
 
-const getPosition = (angle: number, distance: number) => [Math.cos(angle) * distance, Math.sin(angle) * distance];
+const nb = 6;
+const distance = 25;
+const y = 10;
 
-const nb = 16;
+const getPosition = (angle: number, distance: number) => [Math.cos(angle) * distance, y, Math.sin(angle) * distance];
 const getStagesPositions = () => {
-    return makeArrayOf(nb * 2).map((_, index) => [...getPosition((Math.PI / nb) * index, 25), (Math.PI / nb) * index]);
+    return makeArrayOf(nb * 2).map((_, index) => [
+        ...getPosition((Math.PI / nb) * index, distance),
+        (Math.PI / nb) * index,
+    ]);
+};
+const stagePositions = getStagesPositions();
+
+export const getRandomStagePosition = () => {
+    const pos = pickOne(stagePositions);
+    return [pos[0], y + 10, pos[2]];
 };
 
 export const Stage = ({ position }: { position: Triplet }) => {
-    const y = 10;
-    const positions = getStagesPositions();
-
     return (
         <group position={position}>
-            {positions.map((pos, index) => (
-                <StageBox key={index} position={[pos[0], y, pos[1]]} angle={pos[2]} />
+            {stagePositions.map((pos, index) => (
+                <StageBox key={index} position={[pos[0], pos[1], pos[2]]} angle={pos[3]} />
             ))}
         </group>
     );
@@ -25,7 +33,7 @@ export const Stage = ({ position }: { position: Triplet }) => {
 const StageBox = ({ position, angle }: { position: Triplet; angle: number }) => {
     const rotation = new Vector3(0, -angle + Math.PI / 2, 0);
 
-    const scale = new Vector3(5.89, 1, 10);
+    const scale = new Vector3(6.5, 1, 10);
     const [ref] = useBox(() => ({
         type: "Static",
         position,
