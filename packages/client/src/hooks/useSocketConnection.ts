@@ -38,7 +38,7 @@ export const useSocketConnection = () => {
     useOnFocus(() => current.matches("closed") && connectToWebsocket());
 
     // Debug
-    useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => isDev() && console.log(payload));
+    // useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => isDev() && console.log(payload));
 };
 
 const useOnFocus = (callback: AnyFunction) => {

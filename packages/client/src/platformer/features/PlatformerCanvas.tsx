@@ -23,9 +23,6 @@ const requestPointerLock = () => {
     canvas.requestPointerLock();
 };
 
-export const nbFloors = 5;
-const colors = ["#003049", "#d62828", "#f77f00", "#fcbf49", "#eae2b7"];
-
 export const PlatformerCanvas = (props: BoxProps) => {
     const canvasRef = useRef(null);
     const characterPosition = getRandomStagePosition();
@@ -49,7 +46,6 @@ export const PlatformerCanvas = (props: BoxProps) => {
     return (
         <Box {...props}>
             <Canvas
-                shadows
                 style={{
                     height: "100%",
                     width: "100%",
@@ -77,14 +73,9 @@ export const PlatformerCanvas = (props: BoxProps) => {
                     broadphase="Naive"
                 >
                     <Stage position={[0, 0, 0]} />
-                    <Pit y={nbFloors * -10 - 10} />
                     <Stars count={1000} radius={70} />
-                    {makeArrayOf(nbFloors).map((_, index) => (
-                        <Fragment key={index}>
-                            <AppLight position={[-40, index * -10 + 7, 0]} />
-                            <HexagonGrid y={index * -10} color={colors[index]} floorIndex={index} />
-                        </Fragment>
-                    ))}
+                    <AppLight position={[-40, 0 + 7, 0]} />
+                    <HexagonGrid />
                     <Character position={characterPosition.slice(0, -1) as Triplet} baseAngle={characterPosition[3]} />
                 </Physics>
             </Canvas>

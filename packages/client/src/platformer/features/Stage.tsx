@@ -49,8 +49,8 @@ export const createMonocromaticTexture = (color: Color) => {
 };
 
 const StageBox = ({ position, angle }: { position: Triplet; angle: number }) => {
-    const texture1 = createMonocromaticTexture(new Color(255, 0, 0));
-    const texture2 = createMonocromaticTexture(new Color(25, 134, 23));
+    const texture1 = createMonocromaticTexture(new Color("#161a1d"));
+    const texture2 = createMonocromaticTexture(new Color("#b1a7a6"));
 
     const mat1 = new MeshStandardMaterial({ map: texture1 });
     const mat2 = new MeshStandardMaterial({ map: texture2 });

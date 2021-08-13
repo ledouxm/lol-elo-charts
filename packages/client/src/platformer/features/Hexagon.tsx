@@ -1,13 +1,18 @@
-import { hexagonsYMap, provider, yDoc } from "@/functions/store";
+import { hexagonsAtom } from "@/components/AppSocket";
+import { getRandomColor } from "@/functions/utils";
+import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
 import { makeArrayOf } from "@pastable/react/node_modules/@pastable/utils";
-import { useCylinder } from "@react-three/cannon";
+import { Triplet, useCylinder } from "@react-three/cannon";
+import { useHelper } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { MeshProps } from "@react-three/fiber";
+import { useAtomValue } from "jotai/utils";
 import { nanoid } from "nanoid";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useState } from "react";
 import { useRef } from "react";
-import { Color, MeshStandardMaterial, Vector3 } from "three";
-import { nbFloors } from "./PlatformerCanvas";
+import { ArrowHelper, AxesHelper, Color, MeshStandardMaterial, Vector3 } from "three";
+import { Pit } from "../components/Background";
 
 const min = -0.05;
 const max = 0.1;
@@ -22,100 +27,111 @@ const getSaturedColor = (hexColor: string) => {
 
 const factor = 0.8660254;
 
-const parentSize = 2.15;
+const parentSize = 2.1;
 const parentHeight = parentSize * 2 * factor;
 
 const size = 2;
-const characterSize = 1;
-
 const disappearDelay = 1000;
 
-// const hexagonsPerRow = [3, 6, 3];
 const hexagonsPerRow = [3, 6, 9, 10, 11, 10, 11, 10, 9, 6, 3];
 export const nbHexagons = hexagonsPerRow.reduce((acc) => acc + 1);
 
 const zOffset = ((hexagonsPerRow.length - 1) * Math.sqrt(3) * (parentHeight / 2)) / 2;
 
-const makeRow = (nb: number, index: number) => {
-    const hexagons = makeArrayOf(nb).map((_, subIndex) => ({
-        x: subIndex * parentHeight,
-        id: nanoid(12),
-        z: index * Math.sqrt(3) * (parentHeight / 2) - zOffset,
-    }));
-    const avgX =
-        hexagons.reduce((acc, current) => acc + current.x, 0) / hexagons.length + parentSize / 2 + characterSize / 2;
-
-    return hexagons.map((hexa) => ({ ...hexa, x: hexa.x - avgX }));
+const coordsFromId = (id: string): Triplet => {
+    const [floor, row, column] = id.split(",").map(Number);
+    return [
+        column * parentHeight - (hexagonsPerRow[row] * parentHeight) / 2,
+        -10 * floor,
+        (row * Math.sqrt(3) * parentHeight) / 2 - zOffset,
+    ];
+    // return [row * parentHeight, -10, (column * Math.sqrt(3) * parentHeight) / 2 - zOffset];
 };
 
-export const HexagonGrid = ({ y, color = "blue", floorIndex }: { y: number; color: string; floorIndex: number }) => {
+export const HexagonGrid = () => {
+    const hexagons = useAtomValue(hexagonsAtom);
+    const ref = useRef(null);
+
+    const nbFloors = useMemo(
+        () => Math.max(...hexagons.map((hex) => hex.id.split(",")[0]).map(Number)) + 1,
+        [hexagons]
+    );
+
     return (
         <>
-            {hexagonsPerRow.flatMap((nb, index) =>
-                makeRow(nb, index).map(({ x, z, id }, subIndex) => {
-                    const newColor = Math.random() > 0.5 ? new Color(color) : getSaturedColor(color);
-                    return (
-                        <Hexagon
-                            key={id}
-                            color={newColor}
-                            position={[x, y, z]}
-                            id={makeHexagonId(floorIndex, index, subIndex)}
-                            isCenter={
-                                index === Math.floor(hexagonsPerRow.length / 2) && subIndex === Math.floor(nb / 2)
-                            }
-                        />
-                    );
-                })
-            )}
+            <axesHelper args={[5]} />
+            {/* <mesh ref={ref} position={[0, 0, 0]}></mesh> */}
+            {hexagons.map((hex) => {
+                const color = colors[hex.id.split(",")[0]] || getRandomColor();
+                const newColor = Math.random() > 0.5 ? new Color(color) : getSaturedColor(color);
+
+                return (
+                    <Hexagon
+                        key={hex.id}
+                        color={newColor}
+                        position={coordsFromId(hex.id)}
+                        id={hex.id}
+                        status={hex.status}
+                    />
+                );
+            })}
+            <Pit y={nbFloors * -10 - 10} />
         </>
     );
 };
-
-const makeHexagonId = (floorIndex: number, index: number, subIndex: number) => [floorIndex, index, subIndex].join(",");
-
-const getHexagonStatus = (id: string) => yDoc.getMap("hexagons").get(id);
+const colors = ["#003049", "#6B2C39", "#A12A31", "#D62828", "#E75414"];
 
 export const startNewGame = () => {
-    hexagonsYMap.clear();
-    for (let floorIndex = 0; floorIndex < nbFloors; floorIndex++) {
-        hexagonsPerRow.forEach((nb, index) => {
-            for (let subIndex = 0; subIndex < nb; subIndex++) {
-                hexagonsYMap.set(makeHexagonId(floorIndex, index, subIndex), "idle");
-            }
-        });
-    }
+    // hexagonsYMap.clear();
+    // for (let floorIndex = 0; floorIndex < nbFloors; floorIndex++) {
+    //     hexagonsPerRow.forEach((nb, index) => {
+    //         for (let subIndex = 0; subIndex < nb; subIndex++) {
+    //             hexagonsYMap.set(makeHexagonId(floorIndex, index, subIndex), "idle");
+    //         }
+    //     });
+    // }
 };
 
 export const Hexagon = ({
     position,
     color,
-    isCenter,
     id,
+    status,
     ...props
-}: { isCenter: boolean; color: Color | string; id: string } & Omit<MeshProps, "id">) => {
+}: { color: Color | string; status: string; id: string } & Omit<MeshProps, "id">) => {
     const args = [size, size, 0.5, 6] as any;
 
+    const statusRef = useRef("idle");
     const prevStatusRef = useRef("");
     const materialRef = useRef<MeshStandardMaterial>(null);
 
+    useSocketEvent("H", (data: any[]) => {
+        const [hexId, newStatus] = data;
+
+        if (hexId !== id) return;
+
+        statusRef.current = newStatus;
+    });
+
     useEffect(() => {
-        if (!hexagonsYMap.has(id)) hexagonsYMap.set(id, "idle");
-    }, []);
+        if (statusRef.current === status) return;
+        statusRef.current = status;
+    }, [status]);
+
+    const emit = useSocketEmit();
 
     const [ref, api] = useCylinder(() => ({
         type: "Static",
         //@ts-ignore
         position: position,
         onCollide: () => {
-            const status = getHexagonStatus(id);
-
-            if (status === "idle") {
-                // statusRef.current = "disappearing";
-                hexagonsYMap.set(id, "disappearing");
+            if (statusRef.current === "idle") {
+                emit("H", [id, "disappearing"]);
+                statusRef.current = "disappearing";
+                // hexagonsYMap.set(id, "disappearing");
                 setTimeout(() => {
-                    // statusRef.current = "destroyed";
-                    hexagonsYMap.set(id, "destroyed");
-
+                    statusRef.current = "destroyed";
+                    // hexagonsYMap.set(id, "destroyed");
                     // api.collisionResponse.set(0);
                 }, disappearDelay);
             }
@@ -124,17 +140,16 @@ export const Hexagon = ({
     }));
 
     useFrame(() => {
-        const status = getHexagonStatus(id);
-
-        if (status !== prevStatusRef.current && status === "idle") {
+        if (statusRef.current !== prevStatusRef.current && statusRef.current === "idle") {
             api.isTrigger.set(false);
+            // @ts-ignore
             api.position.set(...position);
 
             materialRef.current.visible = true;
             materialRef.current.color.set(color);
         }
 
-        if (status === "disappearing") {
+        if (statusRef.current === "disappearing") {
             const dest = new Vector3(position[0], position[1] - 0.2, position[2]);
             const lerped = ref.current.position.lerp(dest, 0.05);
 
@@ -142,21 +157,15 @@ export const Hexagon = ({
             api.position.set(...lerped.toArray());
         }
 
-        if (status !== prevStatusRef.current && status === "destroyed") {
+        if (statusRef.current !== prevStatusRef.current && statusRef.current === "destroyed") {
             api.isTrigger.set(true);
             // if (!materialRef.current) return;
             materialRef.current.visible = false;
         }
 
-        prevStatusRef.current = status;
+        prevStatusRef.current = statusRef.current;
 
-        const me = provider.awareness.getLocalState();
-        if (!me.isAdmin) return;
-        const arr = Array.from(hexagonsYMap.entries());
-        const isEnded = arr.every(([_, hexStatus]) => hexStatus !== "idle");
-        if (!isEnded) return;
-
-        startNewGame();
+        // startNewGame();
     });
 
     return (

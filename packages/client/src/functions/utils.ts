@@ -14,8 +14,7 @@ export const makeEmptyGame = (): Game => ({ id: makeId(), players: [], mode: "du
 const hexLetters = "0123456789ABCDEF".toLowerCase();
 const hexLettersArray = hexLetters.split("");
 
-export const getRandomColor = () =>
-    rainbow(getRandomIntIn(1000) % 999) + pickOne(hexLettersArray.slice(2, 6)) + pickOne(hexLettersArray.slice());
+export const getRandomColor = () => rainbow(getRandomIntIn(1000) % 999);
 
 const getNextHexChar = (char: string, step = 3) =>
     hexLettersArray[getNextIndex(hexLetters.indexOf(char), hexLettersArray.length, false, step)];

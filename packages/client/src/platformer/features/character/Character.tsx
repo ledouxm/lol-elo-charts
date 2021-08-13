@@ -1,6 +1,8 @@
-import { provider } from "@/functions/store";
+import { meAtom } from "@/components/AppSocket";
+import { useSocketEmit } from "@/hooks/useSocketConnection";
 import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";
+import { useAtomValue } from "jotai/utils";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { Camera, MeshStandardMaterial, Vector3 } from "three";
@@ -15,9 +17,11 @@ const jumpForce = 25;
 const cameraSensitivity = 5;
 
 export const Character = ({ position, baseAngle }: { position: Triplet; baseAngle: number }) => {
+    const me = useAtomValue(meAtom);
+    const emit = useSocketEmit();
+
     const updatePositionAndRotation = (position: Triplet, rotation: Triplet) => {
-        if (!provider.synced) return;
-        return provider.awareness.setLocalState({ ...provider.awareness.getLocalState(), position, rotation });
+        emit("STATE", [position, rotation]);
     };
     const { camera } = useThree();
 
@@ -61,10 +65,9 @@ export const Character = ({ position, baseAngle }: { position: Triplet; baseAngl
     const velocityRef = useRef<Triplet>([0, 0, 0]);
     const groundedRef = useRef(false);
 
-    const matRef = useRef<MeshStandardMaterial>(null);
     // Game data
     const isPausedRef = useRef(false);
-    const isSyncedRef = useRef(false);
+    // const isSyncedRef = useRef(false);
 
     useEffect(() => {
         // Store CannonJS data into refs so we can use them in useFrame
@@ -131,11 +134,6 @@ export const Character = ({ position, baseAngle }: { position: Triplet; baseAngl
 
         keyPressedRef.currents.clear();
 
-        if (provider.synced && !isSyncedRef.current) {
-            api.mass.set(10);
-            isSyncedRef.current = true;
-        }
-
         // Apply rotation
         if (mouseMovementRef.current)
             currentRotation[1] -= mouseMovementRef.current[0] * 0.01 * deltaTime * cameraSensitivity;
@@ -154,19 +152,14 @@ export const Character = ({ position, baseAngle }: { position: Triplet; baseAngl
         // Update camera position and rotation
         camera.position.lerp(cameraOffset, 0.1);
         camera.lookAt(currentPos);
-        const myAwareness = provider.awareness.getLocalState();
-
-        if (myAwareness) matRef.current.color.set(myAwareness.color.slice(0, -2));
     });
 
     return (
         <>
             <mesh ref={meshRef} name="character" castShadow>
                 <boxGeometry />
-                <meshStandardMaterial ref={matRef} />
+                <meshStandardMaterial color={me?.color || "white"} />
             </mesh>
         </>
     );
 };
-
-const getCameraPositionAndRotation = (camera: Camera) => {};

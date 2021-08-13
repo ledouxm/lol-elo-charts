@@ -4,28 +4,24 @@ import { Demo } from "@/components/Demo";
 import { provider, useProviderInit, useYAwarenessInit } from "@/functions/store";
 import "./App.css";
 import { useEffect } from "react";
-import { getOtherPlayers, getPlayers } from "./platformer/features/Player";
 
 const queryClient = new QueryClient();
 
 const theme = extendTheme({ config: { initialColorMode: "light" } });
 
 function App() {
-    useProviderInit();
-    useYAwarenessInit();
+    // useProviderInit();
+    // useYAwarenessInit();
 
     useEffect(() => {
-        provider.on("update", ({ removed }) => {
-            if (removed.length > 0) return;
-
-            const { me, otherPlayers } = getOtherPlayers();
-            if (otherPlayers.some((player) => player.isAdmin)) return;
-
-            const futureUserIndex = Math.min(...otherPlayers.map((player) => player.index));
-            if (me.index !== futureUserIndex) return;
-
-            provider.awareness.setLocalState({ ...me, isAdmin: true });
-        });
+        // provider.on("update", ({ removed }) => {
+        //     if (removed.length > 0) return;
+        //     const { me, otherPlayers } = getOtherPlayers();
+        //     if (otherPlayers.some((player) => player.isAdmin)) return;
+        //     const futureUserIndex = Math.min(...otherPlayers.map((player) => player.index));
+        //     if (me.index !== futureUserIndex) return;
+        //     provider.awareness.setLocalState({ ...me, isAdmin: true });
+        // });
     }, []);
 
     return (
