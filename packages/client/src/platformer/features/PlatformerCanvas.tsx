@@ -85,7 +85,7 @@ export const PlatformerCanvas = (props: BoxProps) => {
                             <HexagonGrid y={index * -10} color={colors[index]} floorIndex={index} />
                         </Fragment>
                     ))}
-                    <Character position={characterPosition as Triplet} />
+                    <Character position={characterPosition.slice(0, -1) as Triplet} baseAngle={characterPosition[3]} />
                 </Physics>
             </Canvas>
         </Box>

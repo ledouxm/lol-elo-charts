@@ -3,7 +3,7 @@ import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { MeshStandardMaterial, Vector3 } from "three";
+import { Camera, MeshStandardMaterial, Vector3 } from "three";
 import { keyDownRef, keyPressedRef } from "../../hooks/useInputsRef";
 import { useMouseMovements } from "../../hooks/useMouseMovement";
 import { startNewGame } from "../Hexagon";
@@ -12,9 +12,9 @@ import { calculateForce } from "./utils";
 
 const speed = 5;
 const jumpForce = 25;
-const cameraSensitivity = 10;
+const cameraSensitivity = 5;
 
-export const Character = ({ position }: { position: Triplet }) => {
+export const Character = ({ position, baseAngle }: { position: Triplet; baseAngle: number }) => {
     const updatePositionAndRotation = (position: Triplet, rotation: Triplet) => {
         if (!provider.synced) return;
         return provider.awareness.setLocalState({ ...provider.awareness.getLocalState(), position, rotation });
@@ -35,10 +35,14 @@ export const Character = ({ position }: { position: Triplet }) => {
         angularFactor: [0, 0, 0],
         linearDamping: 0.99,
         linearFactor: [0.1, 1, 0.1],
+        rotation: [0, -baseAngle, 0],
         onCollideBegin: (e) => {
             switch (e.body.name) {
                 case "pit":
-                    api.position.set(...(getRandomStagePosition() as Triplet));
+                    const randomStage = getRandomStagePosition();
+
+                    api.position.set(...(randomStage.slice(0, -1) as Triplet));
+                    rotationRef.current = [0, -randomStage[3], 0];
             }
             groundedRef.current = true;
         },
@@ -53,7 +57,7 @@ export const Character = ({ position }: { position: Triplet }) => {
 
     // Mesh data
     const positionRef = useRef<Triplet>(position);
-    const rotationRef = useRef<Triplet>([0, 0, 0]);
+    const rotationRef = useRef<Triplet>([0, -baseAngle, 0]);
     const velocityRef = useRef<Triplet>([0, 0, 0]);
     const groundedRef = useRef(false);
 
@@ -138,29 +142,25 @@ export const Character = ({ position }: { position: Triplet }) => {
 
         mouseMovementRef.current = [0, 0];
 
+        // Update mesh velocity and rotation
+        api.velocity.set(...velocityRef.current);
+        api.rotation.set(...currentRotation);
+
         // Calculate ideal camera position
         const currentPos = new THREE.Vector3(...positionRef.current);
 
         const relativeCameraOffset = new THREE.Vector3(10, 3, 0);
         const cameraOffset = relativeCameraOffset.applyMatrix4(meshRef.current.matrixWorld);
-
-        // Update mesh velocity and rotation
-        api.velocity.set(...velocityRef.current);
-        api.rotation.set(...currentRotation);
-
         // Update camera position and rotation
         camera.position.lerp(cameraOffset, 0.1);
-        camera.lookAt(isSyncedRef.current ? currentPos : new Vector3(0, 0, 0));
+        camera.lookAt(currentPos);
         const myAwareness = provider.awareness.getLocalState();
+
         if (myAwareness) matRef.current.color.set(myAwareness.color.slice(0, -2));
     });
 
     return (
         <>
-            <mesh position={[0, 0, 0]}>
-                <sphereBufferGeometry />
-                <meshBasicMaterial color="pink" />
-            </mesh>
             <mesh ref={meshRef} name="character" castShadow>
                 <boxGeometry />
                 <meshStandardMaterial ref={matRef} />
@@ -168,3 +168,5 @@ export const Character = ({ position }: { position: Triplet }) => {
         </>
     );
 };
+
+const getCameraPositionAndRotation = (camera: Camera) => {};
