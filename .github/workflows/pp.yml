@@ -1,8 +1,8 @@
-name: Publish Docker image and deploy prod
+name: Publish Docker image and deploy pp
 
 on:
     push:
-        branches: [main]
+        branches: [preprod]
 
 env:
     REGISTRY: ghcr.io
@@ -35,7 +35,7 @@ jobs:
                   context: .
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
-            - name: deploy to portainer
-              uses: fjogeleit/http-request-action@master
-              with:
-                  url: ${{ secrets.PORTAINER_WEBHOOK }}
+            # - name: deploy to portainer
+            #   uses: fjogeleit/http-request-action@master
+            #   with:
+            #       url: ${{ secrets.PORTAINER_WEBHOOK }}
