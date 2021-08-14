@@ -19,7 +19,7 @@ const start = async () => {
 const startApi = () => {
     const app = express();
     app.use(cors());
-    app.get("/status", (_, res) => res.status(200).send("ok"));
+    app.get("/status", (_, res) => res.status(200).send("pong"));
     app.listen(8080, () => {
         debug("listening on port 8080");
     });
