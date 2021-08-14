@@ -51,15 +51,5 @@ export const AppSocket = () => {
     useSocketConnection();
     useLobbyEvents();
 
-    const emit = useSocketEmit();
-
-    const submit = () => {
-        emit("META", { color: "blueaa" });
-    };
-
-    return (
-        <>
-            <Button onClick={submit}>test</Button>
-        </>
-    );
+    return null;
 };
