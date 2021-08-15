@@ -1,23 +1,21 @@
-import { hexagonsAtom } from "@/components/AppSocket";
-import { getRandomColor } from "@/functions/utils";
+import { gameName } from "@/components/AppSocket";
+import { getRandomColor, getSaturedColor } from "@/functions/utils";
+import { useGameRoomRef, useGameRoomState } from "@/hooks/useGameRoomState";
 import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
-import { makeArrayOf } from "@pastable/react/node_modules/@pastable/utils";
+import { safeJSONParse } from "@pastable/core";
 import { Triplet, useCylinder } from "@react-three/cannon";
-import { useHelper } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { MeshProps } from "@react-three/fiber";
-import { useAtomValue } from "jotai/utils";
-import { nanoid } from "nanoid";
-import { useEffect, useMemo } from "react";
-import { useState } from "react";
-import { useRef } from "react";
-import { ArrowHelper, AxesHelper, Color, MeshStandardMaterial, Vector3 } from "three";
+import { MeshProps, useFrame } from "@react-three/fiber";
+import { atom, useAtom } from "jotai";
+import { useAtomValue, useUpdateAtom } from "jotai/utils";
+import { useEffect, useMemo, useRef } from "react";
+import { Color, MeshStandardMaterial, Vector3 } from "three";
 import { Pit } from "../components/Background";
+import { sliceColor } from "./character/Character";
 
 const min = -0.05;
 const max = 0.1;
 
-const getSaturedColor = (hexColor: string) => {
+const getHexagonColorShade = (hexColor: string) => {
     const color = Number("0x" + hexColor.slice(1));
 
     const random = Math.random() * (max - min) + min;
@@ -48,38 +46,49 @@ const coordsFromId = (id: string): Triplet => {
     // return [row * parentHeight, -10, (column * Math.sqrt(3) * parentHeight) / 2 - zOffset];
 };
 
+export type HexagonStatus = "idle" | "disappearing" | "destroyed";
+
+export interface Hexagon extends Record<string, HexagonStatus> {}
+
+export const hexagonsAtom = atom<Hexagon>({});
+
+const nbFloors = 5;
+
 export const HexagonGrid = () => {
     const hexagons = useAtomValue(hexagonsAtom);
     const ref = useRef(null);
 
-    const nbFloors = useMemo(
-        () => Math.max(...hexagons.map((hex) => hex.id.split(",")[0]).map(Number)) + 1,
-        [hexagons]
-    );
+    // const game = useGameRoomState(gameName);
+
+    // const nbFloors = useMemo(
+    //     () =>
+    //         Math.max(
+    //             ...Object.keys(hexagons)
+    //                 .map((id) => id.split(",")[0])
+    //                 .map(Number)
+    //         ) + 1,
+    //     [hexagons]
+    // );
+
+    const hexagonsBlocks = useMemo(() => Object.entries(hexagons), [hexagons]);
+
+    if (!hexagons) return null;
 
     return (
         <>
             <axesHelper args={[5]} />
             {/* <mesh ref={ref} position={[0, 0, 0]}></mesh> */}
-            {hexagons.map((hex) => {
-                const color = colors[hex.id.split(",")[0]] || getRandomColor();
-                const newColor = Math.random() > 0.5 ? new Color(color) : getSaturedColor(color);
+            {hexagonsBlocks.map(([id, status]) => {
+                const color = sliceColor(colors[Number(id.split(",")[0])] || getRandomColor());
+                const newColor = Math.random() > 0.5 ? color : getHexagonColorShade(color);
 
-                return (
-                    <Hexagon
-                        key={hex.id}
-                        color={newColor}
-                        position={coordsFromId(hex.id)}
-                        id={hex.id}
-                        status={hex.status}
-                    />
-                );
+                return <HexagonBlock key={id} color={newColor} position={coordsFromId(id)} id={id} status={status} />;
             })}
-            <Pit y={nbFloors * -10 - 10} />
+            <Pit y={(nbFloors === -Infinity ? 0 : nbFloors) * -10 - 10} />
         </>
     );
 };
-const colors = ["#003049", "#6B2C39", "#A12A31", "#D62828", "#E75414"];
+const colors = ["#00304900", "#6B2C3900", "#A12A3100", "#D6282800", "#E7541400"];
 
 export const startNewGame = () => {
     // hexagonsYMap.clear();
@@ -92,25 +101,26 @@ export const startNewGame = () => {
     // }
 };
 
-export const Hexagon = ({
+export const HexagonBlock = ({
     position,
     color,
     id,
     status,
     ...props
-}: { color: Color | string; status: string; id: string } & Omit<MeshProps, "id">) => {
+}: { color: string | Color; status: string; id: string } & Omit<MeshProps, "id">) => {
     const args = [size, size, 0.5, 6] as any;
 
-    const statusRef = useRef("idle");
+    const statusRef = useRef(status);
     const prevStatusRef = useRef("");
     const materialRef = useRef<MeshStandardMaterial>(null);
+    const gameRoom = useGameRoomRef(gameName);
 
-    useSocketEvent("H", (data: any[]) => {
-        const [hexId, newStatus] = data;
+    useSocketEvent("games/update.meta:hexagons#" + gameName, (data: string) => {
+        const myUpdate = Object.entries(data).find(([hexId]) => hexId === id);
 
-        if (hexId !== id) return;
+        if (!myUpdate) return;
 
-        statusRef.current = newStatus;
+        statusRef.current = myUpdate[1];
     });
 
     useEffect(() => {
@@ -129,6 +139,9 @@ export const Hexagon = ({
                 emit("H", [id, "disappearing"]);
                 statusRef.current = "disappearing";
                 // hexagonsYMap.set(id, "disappearing");
+                // emit("games.update.meta:hexagons#" + gameName, { [id]: "disappearing" });
+                gameRoom.updateMeta({ [id]: "disappearing" }, "hexagons");
+
                 setTimeout(() => {
                     statusRef.current = "destroyed";
                     // hexagonsYMap.set(id, "destroyed");

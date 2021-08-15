@@ -1,7 +1,5 @@
 import { makeArrayOf, pickOne } from "@pastable/core";
 import { Triplet, useBox } from "@react-three/cannon";
-import { useEffect } from "react";
-import { useState } from "react";
 import { Color, DataTexture, MeshStandardMaterial, RGBFormat, Vector3 } from "three";
 
 const nb = 6;
@@ -17,7 +15,6 @@ const getStagesPositions = () => {
     });
 };
 const stagePositions = getStagesPositions();
-console.log(stagePositions);
 
 export const getRandomStagePosition = () => {
     const pos = pickOne(stagePositions);

@@ -1,5 +1,8 @@
-import { meAtom } from "@/components/AppSocket";
+import { gameName } from "@/components/AppSocket";
+import { getRandomColor } from "@/functions/utils";
+import { useLocalPresence, useMyPresence } from "@/hooks/usePresence";
 import { useSocketEmit } from "@/hooks/useSocketConnection";
+import { roundTo } from "@pastable/core";
 import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useAtomValue } from "jotai/utils";
@@ -16,12 +19,19 @@ const speed = 5;
 const jumpForce = 25;
 const cameraSensitivity = 5;
 
+const tripletToFixed = (tri: Triplet) => tri.map((nb) => roundTo(nb, 4));
+
 export const Character = ({ position, baseAngle }: { position: Triplet; baseAngle: number }) => {
-    const me = useAtomValue(meAtom);
+    const [me, updateMe] = useLocalPresence();
     const emit = useSocketEmit();
 
+    const updateColor = () => {
+        const color = getRandomColor();
+        updateMe((me) => ({ ...me, color }));
+    };
+
     const updatePositionAndRotation = (position: Triplet, rotation: Triplet) => {
-        emit("STATE", [position, rotation]);
+        emit(`games.update#${gameName}`, { [me.id]: [tripletToFixed(position), tripletToFixed(rotation)] });
     };
     const { camera } = useThree();
 
@@ -128,6 +138,10 @@ export const Character = ({ position, baseAngle }: { position: Triplet; baseAngl
             }
         }
 
+        if (keyPressedRef.currents.has("KeyR")) {
+            updateColor();
+        }
+
         if (keyPressedRef.currents.has("KeyM")) {
             startNewGame();
         }
@@ -158,8 +172,10 @@ export const Character = ({ position, baseAngle }: { position: Triplet; baseAngl
         <>
             <mesh ref={meshRef} name="character" castShadow>
                 <boxGeometry />
-                <meshStandardMaterial color={me?.color || "white"} />
+                <meshStandardMaterial color={(me && sliceColor(me.color)) || "white"} />
             </mesh>
         </>
     );
 };
+
+export const sliceColor = (color: string) => (color.length > 7 ? color.slice(0, -2) : color);

@@ -1,18 +1,14 @@
 import { Box, BoxProps } from "@chakra-ui/react";
-import { makeArrayOf } from "@pastable/core";
 import { Physics, Triplet } from "@react-three/cannon";
-import { Canvas } from "@react-three/fiber";
-import { Fragment, Suspense, useEffect } from "react";
-import { useRef } from "react";
-import { AppLight } from "../components/AppLight";
-import { Pit } from "../components/Background";
-import { Character } from "./character/Character";
-import { HexagonGrid, nbHexagons, startNewGame } from "./Hexagon";
-import { useInputsRef } from "../hooks/useInputsRef";
-import { SkyDome } from "../components/SkyDome";
 import { Stars } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { Suspense, useEffect, useRef } from "react";
+import { AppLight } from "../components/AppLight";
+import { SkyDome } from "../components/SkyDome";
+import { useInputsRef } from "../hooks/useInputsRef";
+import { Character } from "./character/Character";
+import { HexagonGrid } from "./Hexagon";
 import { Players } from "./Player";
-import { hexagonsYMap, provider } from "@/functions/store";
 import { getRandomStagePosition, Stage } from "./Stage";
 
 const requestPointerLock = () => {
@@ -31,14 +27,6 @@ export const PlatformerCanvas = (props: BoxProps) => {
         requestPointerLock();
 
         document.body.onclick = () => requestPointerLock();
-    }, []);
-
-    useEffect(() => {
-        const me = provider.awareness.getLocalState();
-        if (!me.isAdmin) return;
-
-        if (nbHexagons === hexagonsYMap.size) return;
-        startNewGame();
     }, []);
 
     useInputsRef();
@@ -62,7 +50,6 @@ export const PlatformerCanvas = (props: BoxProps) => {
                 <Suspense fallback={null}>
                     <SkyDome />
                 </Suspense>
-
                 <Physics
                     defaultContactMaterial={{
                         restitution: 0,

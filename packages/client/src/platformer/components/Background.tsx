@@ -29,7 +29,7 @@ export const Pit = ({ y }: { y: number }) => {
     }));
 
     return (
-        <mesh ref={ref} visible={false} name="pit" scale={50}>
+        <mesh ref={ref} visible={false} name="pit" scale={150}>
             <planeBufferGeometry />
             <meshStandardMaterial attach="material" map={texture} />
         </mesh>

@@ -14,7 +14,11 @@
         "allowJs": true,
         "strictNullChecks": false,
         "forceConsistentCasingInFileNames": true,
-        "baseUrl": "./src"
+        "skipLibCheck": true,
+        "baseUrl": "./src",
+        "paths": {
+            "@/*": ["./*"]
+        }
     },
     "include": ["src"]
 }

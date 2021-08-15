@@ -1,6 +1,6 @@
 import { getWebsocketURL, WsEvent } from "@/functions/ws";
-import { emit, wsMachineAtom } from "@/machines/websocketMachine";
-import { AnyFunction, isDev, useEvent } from "@pastable/core";
+import { emit, wsMachineAtom, wsStatusAtom } from "@/machines/websocketMachine";
+import { AnyFunction, isDev, ObjectLiteral, useEvent } from "@pastable/core";
 import { useAtom } from "jotai";
 import { useEffect } from "react";
 
@@ -10,7 +10,9 @@ import { makeEventEmitterHook } from "@/functions/makeEventEmitterHook";
 import { useAtomValue } from "jotai/utils";
 
 const wsEmitterAtom = atom((get) => get(wsMachineAtom).context.emitter);
+export const useSocketEventEmitter = () => useAtomValue(wsEmitterAtom);
 export const useSocketEvent = makeEventEmitterHook(wsEmitterAtom);
+
 export const useSocketEmit = () => {
     const wsMachine = useAtomValue(wsMachineAtom);
     return (eventOrObj: string | { type: string; data?: any }, data?: any) => {
@@ -24,10 +26,13 @@ export const useSocketEmit = () => {
 };
 export type EventPayload = string | { type: string; data?: any };
 
-export const useSocketConnection = () => {
+export const useSocketStatus = () => useAtomValue(wsStatusAtom);
+
+const withLogs = false && isDev();
+export const useSocketConnection = (params?: ObjectLiteral) => {
     const [current, send] = useAtom(wsMachineAtom);
     const connectToWebsocket = () => {
-        const url = getWebsocketURL() + "?" + new URLSearchParams({ auth: "chainbreak" }).toString();
+        const url = getWebsocketURL() + "?" + new URLSearchParams({ auth: "chainbreak", ...params }).toString();
         send({ type: "OPEN", url });
     };
 
@@ -38,7 +43,7 @@ export const useSocketConnection = () => {
     useOnFocus(() => current.matches("closed") && connectToWebsocket());
 
     // Debug
-    // useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => isDev() && console.log(payload));
+    useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => withLogs && console.log(payload));
 };
 
 const useOnFocus = (callback: AnyFunction) => {
