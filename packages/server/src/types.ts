@@ -37,11 +37,15 @@ export interface RoomConfig {
 export type RoomEvents =
     | "rooms.list"
     | "rooms.create"
+    | "rooms.before.join"
     | "rooms.join"
+    | "rooms.before.update"
     | "rooms.update"
     | "rooms.get"
     | "rooms.leave"
+    | "rooms.before.kick"
     | "rooms.kick"
+    | "rooms.before.delete"
     | "rooms.delete"
     | "rooms.relay"
     | "rooms.broadcast";
@@ -52,7 +56,7 @@ export interface RoomContext<T = any> {
 }
 
 export interface RoomHooks<Room = SimpleRoom>
-    extends Partial<Record<RoomEvents, (ctx: RoomContext<Room>, payload?: any) => void | Partial<Room>>> {}
+    extends Partial<Record<RoomEvents, (ctx: RoomContext<Room>, payload?: any) => void | boolean>> {}
 /**
  * GameRoom are used to handle fast updates
  * Events are broadcasted to everyone at the given tick rate
@@ -83,7 +87,7 @@ export interface GameContext<T = any> {
 }
 
 export interface GameHooks<Room = GameRoom>
-    extends Partial<Record<GameEvent, (ctx: GameContext<Room>, payload?: any) => void | Partial<Room>>> {}
+    extends Partial<Record<GameEvent, (ctx: GameContext<Room>, payload?: any) => void | boolean>> {}
 export interface GameRoomConfig {
     tickRate: number;
     clientsRefreshRate: number;
@@ -96,6 +100,7 @@ export type AppWebsocket = WebSocket & {
     state: Map<any, any>;
     meta: Map<any, any>;
     internal: Map<any, any>;
+    roles: Set<string>;
     isAlive?: boolean;
     user: User;
 };

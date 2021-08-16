@@ -10,6 +10,9 @@ export interface LobbyGameRoom extends SimpleRoom<LobbyState> {}
 export interface LobbyHooks extends RoomHooks<LobbyGameRoom> {}
 
 export const lobbyHooks: LobbyHooks = {
+    "rooms.before.update": ({ ws, room }) => {
+        return ws.roles.has("admin") || ws.roles.has(`room:${room.name}:admin`);
+    },
     "rooms.leave": ({ ws, room }) => {
         // on user leave remove his vote if he has one
 

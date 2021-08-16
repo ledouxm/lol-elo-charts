@@ -88,9 +88,7 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
             ] as WsEventPayload;
         const sendRoomsList = () => sendMsg(ws, getRoomListEvent());
         const onJoinRoom = (room: Room) => {
-            console.log("on join room");
             sendMsg(ws, ["rooms/state#" + room.name, getRoomFullState(room)]);
-            console.log("sent");
             broadcastEvent(room, "rooms/join#" + room.name, getClientState(ws));
             broadcastSub("rooms", getRoomListEvent());
         };
@@ -124,12 +122,12 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
         );
         ws.meta = new Map(Object.entries({ cursor: null }));
         ws.internal = new Map(Object.entries({ timers: new Map() }));
+        ws.roles = new Set(); // TODO get initial global roles from db, ex: [modo, admin, superadmin]
 
         // Send his presence
         sendMsg(ws, ["presence/update", getClientState(ws)]);
 
         // re-join rooms where the user is active on other clients
-        console.log(user.rooms);
         user.rooms.forEach((room) => {
             room.clients.add(ws);
             onJoinRoom(room);

@@ -6,6 +6,8 @@ import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, SimpleRoom, Room, Us
 export const makeUrl = (req: http.IncomingMessage) =>
     new URL((req.url.startsWith("/") ? "http://localhost" : "") + req.url);
 export const getEventParam = (event: string, separator = "#") => event.split(separator)[1];
+export const getEventSpecificParam = (event: string, separator = ":") =>
+    (getEventParam(event, separator) || "").replace("#" + name, "");
 
 export const makeUser = (): User => ({ clients: new Set(), rooms: new Set() });
 export const makeRoom = ({
