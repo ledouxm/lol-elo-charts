@@ -13,11 +13,11 @@ import { decode, sendMsg } from "./ws-helpers";
 export const makeApp = () => {
     const app = fastify({ logger: true });
 
-    app.get("/", async (request, reply) => {
+    app.get("/", async () => {
         return { hello: "world" };
     });
 
-    app.get("/status", async () => "ok");
+    app.get("/status", async () => "ko");
 
     return app;
 };
