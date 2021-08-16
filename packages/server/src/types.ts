@@ -10,29 +10,49 @@ export interface User {
 export type WsEventPayload<Data = any> = [event: string, data?: Data];
 
 // TODO statemachine events
-export interface BaseRoom {
+export interface BaseRoom<State = Map<any, any>> {
     name: string;
     clients: Set<AppWebsocket>;
-    state: Map<any, any>;
+    state: State;
     internal: Map<any, any>;
-    type: "lobby" | "game";
+    type: "simple" | "game";
     // TODO admin ?
 }
-export type Room = LobbyRoom | GameRoom;
+export type Room = SimpleRoom | GameRoom;
 
 /**
  * LobbyRoom are used to sync only when events happen and every X seconds
  * Events are broadcasted to everyone else in the room but the sender
  */
-export interface LobbyRoom extends BaseRoom {
-    type: "lobby";
+export interface SimpleRoom<State = Map<any, any>> extends BaseRoom<State> {
+    type: "simple";
     config: RoomConfig;
+    hooks: RoomHooks;
 }
 export interface RoomConfig {
     updateRate: number;
     [key: string]: any;
 }
 
+export type RoomEvents =
+    | "rooms.list"
+    | "rooms.create"
+    | "rooms.join"
+    | "rooms.update"
+    | "rooms.get"
+    | "rooms.leave"
+    | "rooms.kick"
+    | "rooms.delete"
+    | "rooms.relay"
+    | "rooms.broadcast";
+
+export interface RoomContext<T = any> {
+    ws: AppWebsocket;
+    room: T;
+}
+
+export interface RoomHooks<Room = SimpleRoom>
+    extends Partial<Record<RoomEvents, (ctx: RoomContext<Room>, payload?: any) => void | Partial<Room>>> {}
 /**
  * GameRoom are used to handle fast updates
  * Events are broadcasted to everyone at the given tick rate
@@ -91,7 +111,7 @@ export interface EventHandlerRef extends WsEventObject {
     };
     user: User;
     globalSubscriptions: Map<GlobalSubscription, Set<AppWebsocket>>;
-    rooms: Map<string, LobbyRoom>;
+    rooms: Map<string, SimpleRoom>;
     games: Map<string, GameRoom>;
 
     // Misc

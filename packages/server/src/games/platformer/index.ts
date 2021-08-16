@@ -9,36 +9,47 @@ export interface PlatformerState extends Map<string, number[][]> {}
 export interface PlatformerGameRoom extends GameRoom<PlatformerMeta, PlatformerState> {}
 
 export interface PlatformerHooks extends GameHooks<PlatformerGameRoom> {}
+
+const nbFloors = 1;
+
 export const platformerHooks: PlatformerHooks = {
     "games.create": ({ ws, game }) => {
-        const hexagonsMap = makeInitialHexagonsMap(5);
+        const hexagonsMap = makeInitialHexagonsMap(nbFloors);
         game.meta.set("hexagons", hexagonsMap);
 
         const hexagons = Object.fromEntries(hexagonsMap);
 
         sendMsg(ws, ["games/get.meta#" + game.name, { hexagons }]);
-
-        // return { meta: game.meta };
     },
     "games.join": ({ ws, game }) => {
         const meta = formatPlatformerMeta(game.meta);
         sendMsg(ws, ["games/get.meta#" + game.name, meta]);
     },
-    "games.update.meta": ({ game }, payload: Partial<PlatformerMeta>) => {
+    "games.update.meta": ({ game, ws }, payload: Partial<PlatformerMeta>) => {
         console.log("update", typeof payload);
 
         game.clients.forEach((client) => sendMsg(client, ["games/update.meta:hexagons#" + game.name, payload]));
+
         setTimeout(() => {
+            // set hex status to destroyed after a delay
             const id = Object.keys(payload)[0];
-            game.meta.get("hexagons").set(id, "destroyed");
+            const hexagons = game.meta.get("hexagons");
+            hexagons.set(id, "destroyed");
+
             game.clients.forEach((client) =>
                 sendMsg(client, ["games/update.meta:hexagons#" + game.name, { [id]: "destroyed" }])
             );
-        }, 1000);
 
-        // TODO: check end game
-        // const hexagons = ctx.game.meta.get("hexagons") as Map<string, Hexagon>;
-        // const isEnded = (Object.values(hexagons) as Hexagon[]).every((hex) => hex.status === "destroyed");
+            // if every hex has destroyed status -> start a new game
+            const isEnded = [...hexagons.values()].every((hex) => hex === "destroyed");
+
+            if (!isEnded) return;
+            const hexagonsMap = makeInitialHexagonsMap(nbFloors);
+            game.meta.set("hexagons", hexagonsMap);
+
+            const newHexagons = Object.fromEntries(hexagonsMap);
+            sendMsg(ws, ["games/get.meta#" + game.name, { hexagons: newHexagons }]);
+        }, 1000);
     },
 };
 

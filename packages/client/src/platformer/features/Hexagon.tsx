@@ -52,26 +52,26 @@ export interface Hexagon extends Record<string, HexagonStatus> {}
 
 export const hexagonsAtom = atom<Hexagon>({});
 
-const nbFloors = 5;
-
 export const HexagonGrid = () => {
     const hexagons = useAtomValue(hexagonsAtom);
-    const ref = useRef(null);
 
-    // const game = useGameRoomState(gameName);
+    const cptRef = useRef(0);
 
-    // const nbFloors = useMemo(
-    //     () =>
-    //         Math.max(
-    //             ...Object.keys(hexagons)
-    //                 .map((id) => id.split(",")[0])
-    //                 .map(Number)
-    //         ) + 1,
-    //     [hexagons]
-    // );
+    const nbFloors = useMemo(
+        () =>
+            Math.max(
+                ...Object.keys(hexagons)
+                    .map((id) => id.split(",")[0])
+                    .map(Number)
+            ) + 1,
+        [hexagons]
+    );
 
     const hexagonsBlocks = useMemo(() => Object.entries(hexagons), [hexagons]);
 
+    useEffect(() => {
+        cptRef.current++;
+    }, [hexagons]);
     if (!hexagons) return null;
 
     return (
@@ -82,7 +82,15 @@ export const HexagonGrid = () => {
                 const color = sliceColor(colors[Number(id.split(",")[0])] || getRandomColor());
                 const newColor = Math.random() > 0.5 ? color : getHexagonColorShade(color);
 
-                return <HexagonBlock key={id} color={newColor} position={coordsFromId(id)} id={id} status={status} />;
+                return (
+                    <HexagonBlock
+                        key={id + "-" + cptRef.current}
+                        color={newColor}
+                        position={coordsFromId(id)}
+                        id={id}
+                        status={status}
+                    />
+                );
             })}
             <Pit y={(nbFloors === -Infinity ? 0 : nbFloors) * -10 - 10} />
         </>
@@ -105,12 +113,11 @@ export const HexagonBlock = ({
     position,
     color,
     id,
-    status,
     ...props
 }: { color: string | Color; status: string; id: string } & Omit<MeshProps, "id">) => {
     const args = [size, size, 0.5, 6] as any;
 
-    const statusRef = useRef(status);
+    const statusRef = useRef("idle");
     const prevStatusRef = useRef("");
     const materialRef = useRef<MeshStandardMaterial>(null);
     const gameRoom = useGameRoomRef(gameName);
@@ -123,10 +130,11 @@ export const HexagonBlock = ({
         statusRef.current = myUpdate[1];
     });
 
-    useEffect(() => {
-        if (statusRef.current === status) return;
-        statusRef.current = status;
-    }, [status]);
+    // useEffect(() => {
+    //     console.log("new", status);
+    //     if (statusRef.current === status) return;
+    //     statusRef.current = status;
+    // }, [status]);
 
     const emit = useSocketEmit();
 

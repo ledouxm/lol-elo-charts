@@ -1,7 +1,7 @@
 import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
 import { AvailableRoom, Player, Room } from "@/types";
 import { useConst } from "@chakra-ui/react";
-import { AnyFunction, hash, ObjectLiteral, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";
+import { AnyFunction, hash, ObjectLiteral, set, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";
 import { atom, useAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import { useEffect, useRef } from "react";
@@ -82,7 +82,21 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     // Granular state updates whenever someone triggers a state change
     useSocketEvent<Partial<State>>("rooms/update#" + name, (update) => {
         setRoom((current) => {
-            const updated = { ...current, state: { ...current.state, ...(update || {}) } };
+            Object.entries(update).map(([key, value]) => {
+                const paths = key.split(".");
+                const first = paths[0];
+
+                const prop = room.state[first];
+                if (paths.length > 1) {
+                    const clone = { ...(prop || {}) };
+                    set(clone, paths.slice(1).join("."), value);
+
+                    current.state[first] = clone;
+                } else {
+                    current.state[key] = value;
+                }
+            });
+            const updated = { ...current, state: { ...current.state } };
             const updateHash = hash(updated);
 
             if (prevStateHashRef.current !== updateHash) {
@@ -145,7 +159,8 @@ export const makeSpecificRoomClient = (client: RoomClient, name: Room["name"]) =
     ...client,
     get: () => client.get.apply(null, [name]) as void,
     join: () => client.join.apply(null, [name]) as void,
-    create: () => client.create.apply(null, [name]) as void,
+    create: (initialData: { initialState?: ObjectLiteral; type?: string }) =>
+        client.create.apply(null, [name, initialData]) as void,
     update: (update: ObjectLiteral) => client.update.apply(null, [name, update]),
     leave: () => client.leave.apply(null, [name]) as void,
     kick: (id: Player["id"]) => client.leave.apply(null, [name, id]) as void,

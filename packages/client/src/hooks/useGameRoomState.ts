@@ -115,7 +115,8 @@ export const useGameRoomState = <State extends ObjectLiteral = Room>(name: strin
 
 const makeSpecificGameRoomClient = (client: GameRoomClient, name: Room["name"]) => ({
     ...makeSpecificRoomClient(client as any, name),
-    create: (gameId: string) => client.create.apply(null, [name, gameId]) as void,
+    create: (gameId: string, initialData: { initialState?: ObjectLiteral; type?: string }) =>
+        client.create.apply(null, [gameId, initialData]) as void,
     getMeta: (update: ObjectLiteral, fields?: Array<string>) =>
         client.getMeta.apply(null, [name, update, fields]) as void,
     updateMeta: (update: ObjectLiteral, field?: string) => client.updateMeta.apply(null, [name, update, field]) as void,

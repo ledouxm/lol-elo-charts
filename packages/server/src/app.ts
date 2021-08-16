@@ -5,7 +5,7 @@ import { handlePresenceEvents } from "./events/presence";
 import { handleRoomsEvent } from "./events/rooms";
 import fastify from "fastify";
 import { getClientMeta, getClients, getClientState, getRoomFullState, makeUrl, makeUser } from "./helpers";
-import { AppWebsocket, GameRoom, GlobalSubscription, LobbyRoom, Room, User, WsEventPayload } from "./types";
+import { AppWebsocket, GameRoom, GlobalSubscription, SimpleRoom, Room, User, WsEventPayload } from "./types";
 import { getRandomColor } from "./utils";
 import WebSocket from "ws";
 import { decode, sendMsg } from "./ws-helpers";
@@ -30,7 +30,7 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
     const opts = { binary: false };
 
     // States
-    const rooms = new Map<Room["name"], LobbyRoom>();
+    const rooms = new Map<Room["name"], SimpleRoom>();
     const games = new Map<Room["name"], GameRoom>();
     const users = new Map<AppWebsocket["id"], User>();
 
@@ -67,9 +67,7 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
         // Misc
         const broadcastPresenceList = (excludeSelf?: boolean) =>
             globalSubscriptions.get("presence").forEach((client) => {
-                console.log(excludeSelf && client.id !== ws.id);
                 if (excludeSelf ? client.id === ws.id : false) return;
-                console.log("sending", getPresenceList());
                 sendMsg(client, ["presence/list", getPresenceList()]);
             });
 
@@ -90,8 +88,9 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
             ] as WsEventPayload;
         const sendRoomsList = () => sendMsg(ws, getRoomListEvent());
         const onJoinRoom = (room: Room) => {
+            console.log("on join room");
             sendMsg(ws, ["rooms/state#" + room.name, getRoomFullState(room)]);
-
+            console.log("sent");
             broadcastEvent(room, "rooms/join#" + room.name, getClientState(ws));
             broadcastSub("rooms", getRoomListEvent());
         };
@@ -130,6 +129,7 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
         sendMsg(ws, ["presence/update", getClientState(ws)]);
 
         // re-join rooms where the user is active on other clients
+        console.log(user.rooms);
         user.rooms.forEach((room) => {
             room.clients.add(ws);
             onJoinRoom(room);

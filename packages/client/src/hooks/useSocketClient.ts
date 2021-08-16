@@ -25,7 +25,8 @@ export const useSocketClient = () => {
         unsub: () => emit("unsub#rooms"),
         get: (name: Room["name"]) => emit("rooms.get#" + name),
         join: (name: Room["name"]) => emit("rooms.join#" + name),
-        create: (name: Room["name"]) => emit("rooms.create#" + name),
+        create: (name: Room["name"], { initialState, type }: { initialState?: ObjectLiteral; type?: string }) =>
+            emit(`rooms.create${type ? "." + type : ""}#` + name, initialState),
         update: (name: Room["name"], update: ObjectLiteral) => emit("rooms.update#" + name, stringify(update, 0)),
         kick: (name: Room["name"], id: Player["id"]) => emit("rooms.kick#" + name, id),
         leave: (name: Room["name"]) => emit("rooms.leave#" + name),
@@ -40,7 +41,8 @@ export const useSocketClient = () => {
         unsub: () => emit("unsub#games"),
         get: (name: Room["name"]) => emit("games.get#" + name),
         join: (name: Room["name"]) => emit("games.join#" + name),
-        create: (name: Room["name"], gameId: string) => emit(`games.create.${gameId}#` + name),
+        create: (name: Room["name"], gameId: string, initialState?: ObjectLiteral) =>
+            emit(`games.create.${gameId}#` + name, initialState),
         update: (name: Room["name"], update: ObjectLiteral) => emit("games.update#" + name, update),
         getMeta: (name: Room["name"], fields?: Array<string>) => emit(`games.update.meta:${fields.join(",")}#` + name),
         updateMeta: (name: Room["name"], update: ObjectLiteral, field?: string) =>
@@ -69,7 +71,7 @@ export interface RoomClient {
     unsub: () => void;
     get: (name: Room["name"]) => void;
     join: (name: Room["name"]) => void;
-    create: (name: Room["name"]) => void;
+    create: (name: Room["name"], initialData: { initialState?: ObjectLiteral; type?: string }) => void;
     update: (name: Room["name"], update: ObjectLiteral) => void;
     leave: (name: Room["name"]) => void;
     kick: (name: Room["name"], id: Player["id"]) => void;

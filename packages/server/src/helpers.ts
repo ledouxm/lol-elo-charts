@@ -1,16 +1,21 @@
 import http from "http";
 import { URL } from "url";
 import WebSocket from "ws";
-import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, LobbyRoom, Room, User } from "./types";
+import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, SimpleRoom, Room, User, RoomHooks } from "./types";
 
 export const makeUrl = (req: http.IncomingMessage) =>
     new URL((req.url.startsWith("/") ? "http://localhost" : "") + req.url);
 export const getEventParam = (event: string, separator = "#") => event.split(separator)[1];
 
 export const makeUser = (): User => ({ clients: new Set(), rooms: new Set() });
-export const makeRoom = ({ name, state }: Pick<Room, "name"> & Partial<Pick<Room, "state">>): LobbyRoom => ({
+export const makeRoom = ({
     name,
-    type: "lobby",
+    state,
+    hooks,
+}: Pick<Room, "name"> & Partial<Pick<Room, "state">> & { hooks?: RoomHooks }): SimpleRoom => ({
+    name,
+    hooks,
+    type: "simple",
     clients: new Set(),
     state: new Map(Object.entries(state || {})),
     config: { updateRate: 10 * 1000 },

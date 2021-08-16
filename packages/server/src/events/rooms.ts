@@ -1,6 +1,7 @@
-import { safeJSONParse } from "@pastable/core";
+import { lobbyHooks } from "@/rooms/lobby";
+import { safeJSONParse, set } from "@pastable/core";
 import { makeRoom, getRoomFullState, getEventParam, isUserInSet, getRoomState } from "../helpers";
-import { AppWebsocket, EventHandlerRef } from "../types";
+import { AppWebsocket, EventHandlerRef, RoomHooks } from "../types";
 import { sendMsg } from "../ws-helpers";
 
 export function handleRoomsEvent({
@@ -21,14 +22,17 @@ export function handleRoomsEvent({
     }
 
     if (event.startsWith("rooms.create")) {
-        const name = getEventParam(event);
+        const [eventName, name] = event.split("#");
+        const roomId = eventName.split(".")[2];
         if (!name) return;
         if (rooms.get(name)) return sendMsg(ws, ["rooms/exists", name], opts);
 
-        const room = makeRoom({ name, state: payload });
+        const room = makeRoom({ name, state: payload, hooks: roomId ? hooksByRoomId[roomId] : null });
         room.clients.add(ws);
         rooms.set(name, room);
         user.rooms.add(room);
+
+        room.hooks?.["rooms.create"]?.({ room, ws });
 
         const sendFullState = (client: AppWebsocket) =>
             sendMsg(client, ["rooms/state#" + name, getRoomFullState(room)]);
@@ -57,6 +61,8 @@ export function handleRoomsEvent({
         room.clients.add(ws);
         user.rooms.add(room);
         onJoinRoom(room);
+        room.hooks?.["rooms.join"]?.({ room, ws });
+
         return;
     }
 
@@ -71,7 +77,22 @@ export function handleRoomsEvent({
         const update = safeJSONParse(payload) || {};
         if (!Object.keys(update).length) return;
 
-        Object.entries(update).map(([key, value]) => room.state.set(key, value));
+        Object.entries(update).map(([key, value]) => {
+            const paths = key.split(".");
+            const first = paths[0];
+
+            const prop = room.state.get(first);
+            if (paths.length > 1) {
+                const clone = { ...prop };
+                set(clone, paths.slice(1).join("."), value);
+
+                room.state.set(first, clone);
+            } else {
+                room.state.set(key, value);
+            }
+        });
+
+        room.hooks?.["rooms.update"]?.({ room, ws });
 
         broadcastEvent(room, event, update);
         return;
@@ -98,6 +119,8 @@ export function handleRoomsEvent({
         room.clients.delete(ws);
         user.rooms.delete(room);
 
+        room.hooks?.["rooms.leave"]?.({ room, ws });
+
         sendMsg(ws, ["rooms/leave#" + name], opts);
         broadcastSub("rooms", getRoomListEvent());
         return;
@@ -117,6 +140,8 @@ export function handleRoomsEvent({
         room.clients.delete(client);
         client.user.rooms.delete(room);
 
+        room.hooks?.["rooms.kick"]?.({ room, ws });
+
         sendMsg(client, ["rooms/leave#" + name], opts);
         // TODO prévenir les autres joueurs de la room
         broadcastSub("rooms", getRoomListEvent());
@@ -134,8 +159,9 @@ export function handleRoomsEvent({
         timers.forEach((interval) => clearInterval(interval));
         timers.clear();
 
+        room.hooks?.["rooms.delete"]?.({ room, ws });
+
         room.clients.forEach((client) => sendMsg(client, ["rooms/delete#" + name]));
-        console.log(room.clients);
         broadcastSub("rooms", getRoomListEvent());
         return;
     }
@@ -167,3 +193,7 @@ export function handleRoomsEvent({
         return;
     }
 }
+
+export const hooksByRoomId: Record<string, RoomHooks> = {
+    lobby: lobbyHooks,
+};

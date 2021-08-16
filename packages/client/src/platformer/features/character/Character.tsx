@@ -178,4 +178,4 @@ export const Character = ({ position, baseAngle }: { position: Triplet; baseAngl
     );
 };
 
-export const sliceColor = (color: string) => (color.length > 7 ? color.slice(0, -2) : color);
+export const sliceColor = (color: string) => (!color ? "black" : color.length > 7 ? color.slice(0, -2) : color);

@@ -2,18 +2,18 @@ import { Demo } from "@/components/Demo";
 import { WebDemo } from "@/components/WebDemo";
 import { Center, ChakraProvider, extendTheme, Flex, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import "./App.css";
-import { AppSocket } from "./components/AppSocket";
 import { WsEvent } from "./functions/ws";
 import { initialPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/usePresence";
 import { useSocketConnection, useSocketEmit, useSocketEvent } from "./hooks/useSocketConnection";
-import { Route, BrowserRouter, Switch } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
 const theme = extendTheme({ config: { initialColorMode: "light" } });
 
 function App() {
+    useSocketConnection(initialPresence);
     return (
         <QueryClientProvider client={queryClient}>
             <ChakraProvider theme={theme}>
@@ -33,7 +33,6 @@ const SyncWrapper = () => {
         emit("sub#games");
     });
 
-    useSocketConnection(initialPresence);
     usePresenceInit();
 
     const isSynced = usePresenceIsSynced();
@@ -47,7 +46,7 @@ const SyncWrapper = () => {
 
     return (
         <>
-            <AppSocket />
+            {/* <AppSocket /> */}
             <BrowserRouter>
                 <Switch>
                     <Route path="/web" children={<WebDemo />} />
