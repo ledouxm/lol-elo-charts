@@ -100,3 +100,18 @@ export function throttle(callback, wait, immediate = false) {
         }
     };
 }
+
+export const getMostOcurrence = (arr: Array<string>) => {
+    const b = {};
+    let max = "";
+    let maxi = 0;
+    for (let k of arr) {
+        if (b[k]) b[k]++;
+        else b[k] = 1;
+        if (maxi < b[k]) {
+            max = k;
+            maxi = b[k];
+        }
+    }
+    return max;
+};

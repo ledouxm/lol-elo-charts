@@ -26,8 +26,6 @@ export const platformerHooks: PlatformerHooks = {
         sendMsg(ws, ["games/get.meta#" + game.name, meta]);
     },
     "games.update.meta": ({ game, ws }, payload: Partial<PlatformerMeta>) => {
-        console.log("update", typeof payload);
-
         game.clients.forEach((client) => sendMsg(client, ["games/update.meta:hexagons#" + game.name, payload]));
 
         setTimeout(() => {

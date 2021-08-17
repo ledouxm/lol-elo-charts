@@ -5,6 +5,7 @@ export type GlobalSubscription = "presence" | "rooms" | "games";
 export interface User {
     clients: Set<AppWebsocket>;
     rooms: Set<Room | GameRoom>;
+    roles: Set<string>;
 }
 
 export type WsEventPayload<Data = any> = [event: string, data?: Data];
@@ -37,11 +38,15 @@ export interface RoomConfig {
 export type RoomEvents =
     | "rooms.list"
     | "rooms.create"
+    | "rooms.before.join"
     | "rooms.join"
+    | "rooms.before.update"
     | "rooms.update"
     | "rooms.get"
     | "rooms.leave"
+    | "rooms.before.kick"
     | "rooms.kick"
+    | "rooms.before.delete"
     | "rooms.delete"
     | "rooms.relay"
     | "rooms.broadcast";
@@ -49,10 +54,12 @@ export type RoomEvents =
 export interface RoomContext<T = any> {
     ws: AppWebsocket;
     room: T;
+    /** Dot-delimited state path to update, ex: state = new Map({ aaa: { bbb: 111 }}), field = "aaa.bbb" */
+    field?: string;
 }
 
 export interface RoomHooks<Room = SimpleRoom>
-    extends Partial<Record<RoomEvents, (ctx: RoomContext<Room>, payload?: any) => void | Partial<Room>>> {}
+    extends Partial<Record<RoomEvents, (ctx: RoomContext<Room>, payload?: any) => void | boolean>> {}
 /**
  * GameRoom are used to handle fast updates
  * Events are broadcasted to everyone at the given tick rate
@@ -83,7 +90,7 @@ export interface GameContext<T = any> {
 }
 
 export interface GameHooks<Room = GameRoom>
-    extends Partial<Record<GameEvent, (ctx: GameContext<Room>, payload?: any) => void | Partial<Room>>> {}
+    extends Partial<Record<GameEvent, (ctx: GameContext<Room>, payload?: any) => void | boolean>> {}
 export interface GameRoomConfig {
     tickRate: number;
     clientsRefreshRate: number;
@@ -96,6 +103,7 @@ export type AppWebsocket = WebSocket & {
     state: Map<any, any>;
     meta: Map<any, any>;
     internal: Map<any, any>;
+    roles: Set<string>;
     isAlive?: boolean;
     user: User;
 };
@@ -132,4 +140,8 @@ export interface EventHandlerRef extends WsEventObject {
     // Games
     getGameRoomListEvent: () => WsEventPayload<any>;
     sendGamesList: () => void;
+}
+
+export interface MapObject<Props extends { [key: string]: unknown }> extends Map<keyof Props, Props[keyof Props]> {
+    get<K extends keyof Props>(key: K): Props[K];
 }

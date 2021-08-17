@@ -3,11 +3,11 @@ import { Atom } from "jotai";
 import { useAtomValue } from "jotai/utils";
 import { useEffect, useRef } from "react";
 
-import { EventEmitter } from "@/functions/EventEmitter";
+import { EventCallback, EventEmitter } from "@/functions/EventEmitter";
 
 /** Returns a hook that will de-duplicate event listeners using the instance of EventEmitter retrieved from the passed atom */
 export function makeEventEmitterHook(emitterAtom: Atom<EventEmitter>) {
-    return function <Data = unknown, Event = unknown>(event: Event, callback: (data: Data) => void, isOnce?: boolean) {
+    return function <Data = unknown, Event = unknown>(event: Event, callback: EventCallback<Data>, isOnce?: boolean) {
         const emitter = useAtomValue(emitterAtom);
         const callbackRef = useRef<typeof callback>();
 

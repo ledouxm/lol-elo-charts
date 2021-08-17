@@ -8,7 +8,7 @@ import { AvailableRoom, Player } from "@/types";
 import { Button, Center, chakra, Input, SimpleGrid, Stack, useColorMode } from "@chakra-ui/react";
 import { getRandomString } from "@pastable/core";
 import { useRef } from "react";
-import { LobbyRoom } from "./LobbyRoom";
+import { LobbyRoomDemo } from "./LobbyRoomDemo";
 import { PlayerList } from "./PlayerList";
 import { PresenceName } from "./PresenceName";
 
@@ -21,7 +21,7 @@ export const WebDemo = () => {
     const client = useSocketClient();
     const emitter = useSocketEventEmitter();
 
-    const createRoom = () => client.rooms.create(inputRef.current.value);
+    const createRoom = () => client.rooms.create(inputRef.current.value, { initialState: initialRoomState });
     const joinRoom = () => client.rooms.join(inputRef.current.value);
 
     const roomList = useRoomList();
@@ -93,7 +93,7 @@ export const WebDemo = () => {
             </Center>
             <SimpleGrid columns={[1, 1, 2, 3, 3, 4]} w="100%" spacing="8">
                 {roomList.map((room) => (
-                    <LobbyRoom key={room.name} availableRoom={room} />
+                    <LobbyRoomDemo key={room.name} availableRoom={room} />
                 ))}
             </SimpleGrid>
             <PlayerList />

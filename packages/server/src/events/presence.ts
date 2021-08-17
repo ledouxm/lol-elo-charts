@@ -1,4 +1,4 @@
-import { getEventParam } from "../helpers";
+import { getEventParam, getEventSpecificParam } from "../helpers";
 import { EventHandlerRef, GlobalSubscription, WsEventPayload } from "../types";
 import { sendMsg } from "../ws-helpers";
 
@@ -7,6 +7,8 @@ export function handlePresenceEvents({
     payload,
     ws,
     user,
+    rooms,
+    games,
     globalSubscriptions,
     sendPresenceList,
     getPresenceMetaList,
@@ -16,6 +18,7 @@ export function handlePresenceEvents({
     broadcastEvent,
     sendRoomsList,
 }: EventHandlerRef) {
+    // ex: [sub.rooms]
     if (event.startsWith("sub")) {
         const type = getEventParam(event) as GlobalSubscription;
         if (!type) return;
@@ -42,7 +45,8 @@ export function handlePresenceEvents({
         }
     }
 
-    if (event.startsWith("sub")) {
+    // ex: [unsub.rooms]
+    if (event.startsWith("unsub")) {
         const type = getEventParam(event) as GlobalSubscription;
         if (!type) return;
 
@@ -56,6 +60,7 @@ export function handlePresenceEvents({
         timers.delete(type);
     }
 
+    // ex: [presence.update, { color: "#000000" }]
     if (event.startsWith("presence.update")) {
         if (!payload) return;
         const type = getEventParam(event);
@@ -86,5 +91,24 @@ export function handlePresenceEvents({
 
     if (event.startsWith("presence.list")) {
         return sendPresenceList();
+    }
+
+    // ex: [roles.add:games#abc123, admin]
+    if (event.startsWith("roles.")) {
+        const name = getEventParam(event);
+        if (!name) return;
+
+        const type = getEventSpecificParam(event, name);
+        if (!type) return;
+
+        const room = type === "rooms" ? rooms.get(name) : games.get(name);
+        if (!room) return sendMsg(ws, [type + "/notFound", name]);
+
+        const canSet = ws.roles.has("admin") || ws.roles.has(`${type}.${room.name}.admin`);
+        if (!canSet) return sendMsg(ws, [type + "/forbidden", name]);
+
+        const isAdd = event.startsWith("roles.add");
+        if (isAdd) ws.roles.add(`${type}.${room.name}.${payload}`);
+        else ws.roles.delete(`${type}.${room.name}.${payload}`);
     }
 }
