@@ -1,15 +1,23 @@
 import { getRoomState } from "@/helpers";
 import { MapObject, RoomHooks, SimpleRoom } from "@/types";
+import { getMostOcurrence } from "@/utils";
 import { sendMsg } from "@/ws-helpers";
-import { ObjectLiteral, omit, pickOne } from "@pastable/core";
+import { omit, pickOne } from "@pastable/core";
 
-export interface LobbyState extends MapObject<{ votes: ObjectLiteral }> {}
+export interface LobbyState
+    extends MapObject<{
+        admin: string;
+        votes: Record<string, string>;
+        mode: "democracy" | "anarchy" | "monarchy";
+        selectedGame: string;
+    }> {}
 export interface LobbyGameRoom extends SimpleRoom<LobbyState> {}
 export interface LobbyHooks extends RoomHooks<LobbyGameRoom> {}
 
 export const lobbyHooks: LobbyHooks = {
     "rooms.create": ({ ws, room }) => {
         ws.roles.add(`rooms.${room.name}.admin`);
+        room.state.set("mode", "democracy");
     },
     "rooms.join": ({ ws, room }) => {
         if (ws.roles.has(`rooms.${room.name}.admin`)) return;
@@ -26,20 +34,35 @@ export const lobbyHooks: LobbyHooks = {
             return ws.roles.has(`rooms.${room.name}.set#${field}`);
         }
 
-        // TODO filtrer/modifier l'objet update sur que les champ où on a la permission ?
         return false;
     },
-    "rooms.update": ({ ws, room }, update) => {
-        // TODO
-        // démocratie/anarchie/monarchie
-        // démocratie = votes
-        // anarchies = vote + ça prend un jeu au pif parmi
-        // monarchie un mec choisi = selectedGame
+    "rooms.update": ({ room, field, broadcastEvent }, _update) => {
+        if (field.includes("votes.")) {
+            const mode = room.state.get("mode");
+            const possibleGames = Object.values(room.state.get("votes"));
+
+            if (mode === "democracy") {
+                room.state.set("selectedGame", getMostOcurrence(possibleGames));
+            } else if (mode === "anarchy") {
+                room.state.set("selectedGame", pickOne(possibleGames));
+            } else {
+                room.state.set(
+                    "selectedGame",
+                    room.state.get("votes")[room.state.get("admin")] || pickOne(possibleGames)
+                );
+            }
+
+            broadcastEvent(room, "rooms.update#" + room.name, { selectedGame: room.state.get("selectedGame") });
+        }
     },
     "rooms.leave": ({ ws, room }) => {
         // Pass admin role to a random room.client
         if (ws.roles.has(`rooms.${room.name}.admin`)) {
-            pickOne(Array.from(room.clients))?.roles.add(`rooms.${room.name}.admin`);
+            const client = pickOne(Array.from(room.clients));
+            if (client) {
+                client.roles.add(`rooms.${room.name}.admin`);
+                room.state.set("admin", client.id);
+            }
         }
         if (!room.clients.size) return;
 

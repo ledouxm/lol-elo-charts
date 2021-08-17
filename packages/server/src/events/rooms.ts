@@ -126,7 +126,7 @@ export function handleRoomsEvent({
             });
         }
 
-        room.hooks?.["rooms.update"]?.({ room, ws });
+        room.hooks?.["rooms.update"]?.({ room, ws, event, field, broadcastEvent });
 
         broadcastEvent(room, event, payload);
         return;

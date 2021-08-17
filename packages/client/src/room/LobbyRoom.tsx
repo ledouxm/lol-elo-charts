@@ -2,7 +2,7 @@ import { useMyPresence } from "@/hooks/usePresence";
 import { useRoomState } from "@/hooks/useRoomState";
 import { useSocketEvent } from "@/hooks/useSocketConnection";
 import { Player } from "@/types";
-import { Box, Button, Stack } from "@chakra-ui/react";
+import { Box, Button, Select, Stack } from "@chakra-ui/react";
 import { findBy, ObjectLiteral } from "@pastable/core";
 import { atomWithStorage } from "jotai/utils";
 import { createContext, useContext, useState } from "react";
@@ -45,18 +45,28 @@ export const LobbyRoom = () => {
         playerId,
         color: findBy(room.clients, "id", playerId)?.color,
     }));
-    const selected = getMostOcurrence(votes.map((vote) => vote.gameId));
+    const selected = room.state.selectedGame;
+
+    const updateMode = (e) => room.update(e.target.value, "mode");
+    const isRoomAdmin = me.id === room.state.admin;
 
     return (
         <Stack>
             <RoomContext.Provider value={{ ...room, history, votes, selected }}>
                 <BackButton />
-                <Box>Room {room.name}</Box>
-                <Box>{room.clients.length} players</Box>
+                <Stack direction="row">
+                    <Box>Room {room.name}</Box>
+                    <Box>{room.clients.length} players</Box>
+                </Stack>
+                <Select placeholder="Mode" maxW="200px" onChange={updateMode} isDisabled={!isRoomAdmin}>
+                    <option value="democracy">Democracy</option>
+                    <option value="anarchy">Anarchy</option>
+                    <option value="monarchy">Monarchy</option>
+                </Select>
                 <Box>
                     <pre>{JSON.stringify(room.state, null, 4)}</pre>
                 </Box>
-                <GameList onClick={voteForGame} selected={room.state?.selectedGame} />
+                <GameList onClick={voteForGame} />
             </RoomContext.Provider>
         </Stack>
     );
