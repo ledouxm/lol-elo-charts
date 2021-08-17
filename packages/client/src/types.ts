@@ -9,6 +9,7 @@ export interface Player {
 
 export interface BaseRoom<Client extends { id: string }, State = ObjectLiteral> {
     name: string;
+    type?: "simple" | "game";
     clients: Array<Client>;
     state: State;
 }

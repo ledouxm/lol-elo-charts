@@ -25,9 +25,10 @@ export const useSocketClient = () => {
         unsub: () => emit("unsub#rooms"),
         get: (name: Room["name"]) => emit("rooms.get#" + name),
         join: (name: Room["name"]) => emit("rooms.join#" + name),
-        create: (name: Room["name"], { initialState, type }: { initialState?: ObjectLiteral; type?: string }) =>
+        create: (name: Room["name"], { initialState, type }: { initialState?: ObjectLiteral; type?: string } = {}) =>
             emit(`rooms.create${type ? "." + type : ""}#` + name, initialState),
-        update: (name: Room["name"], update: ObjectLiteral) => emit("rooms.update#" + name, stringify(update, 0)),
+        update: (name: Room["name"], update: ObjectLiteral, field?: string) =>
+            emit(`rooms.update${field ? ":" + field : ""}#` + name, update),
         kick: (name: Room["name"], id: Player["id"]) => emit("rooms.kick#" + name, id),
         leave: (name: Room["name"]) => emit("rooms.leave#" + name),
         delete: (name: Room["name"]) => emit("rooms.delete#" + name),
@@ -43,7 +44,8 @@ export const useSocketClient = () => {
         join: (name: Room["name"]) => emit("games.join#" + name),
         create: (name: Room["name"], gameId: string, initialState?: ObjectLiteral) =>
             emit(`games.create.${gameId}#` + name, initialState),
-        update: (name: Room["name"], update: ObjectLiteral) => emit("games.update#" + name, update),
+        update: (name: Room["name"], update: ObjectLiteral, field?: string) =>
+            emit(`games.update:${field ? ":" + field : ""}#` + name, update),
         getMeta: (name: Room["name"], fields?: Array<string>) => emit(`games.update.meta:${fields.join(",")}#` + name),
         updateMeta: (name: Room["name"], update: ObjectLiteral, field?: string) =>
             emit(`games.update.meta:${field}#` + name, update),
@@ -71,8 +73,8 @@ export interface RoomClient {
     unsub: () => void;
     get: (name: Room["name"]) => void;
     join: (name: Room["name"]) => void;
-    create: (name: Room["name"], initialData: { initialState?: ObjectLiteral; type?: string }) => void;
-    update: (name: Room["name"], update: ObjectLiteral) => void;
+    create: (name: Room["name"], initialData?: { initialState?: ObjectLiteral; type?: string }) => void;
+    update: (name: Room["name"], update: ObjectLiteral, field?: string) => void;
     leave: (name: Room["name"]) => void;
     kick: (name: Room["name"], id: Player["id"]) => void;
     delete: (name: Room["name"]) => void;

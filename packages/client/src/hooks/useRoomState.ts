@@ -4,7 +4,7 @@ import { useConst } from "@chakra-ui/react";
 import { AnyFunction, hash, ObjectLiteral, set, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";
 import { atom, useAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMyPresence, usePresenceIsSynced } from "./usePresence";
 import { RoomClient, useSocketClient } from "./useSocketClient";
 
@@ -29,10 +29,6 @@ export const roomFamily = atomFamily(
     (props: Room) => atom(props),
     (a, b) => a.name === b.name
 );
-export const roomIsSyncedFamily = atomFamily(
-    (name: string) => atom(false),
-    (a, b) => a === b
-);
 export const useRoomState = <State extends ObjectLiteral = Room>(name: string) => {
     const initialValue = useConst({ name, clients: [], state: {} });
     const [room, setRoom] = useAtom(roomFamily(initialValue));
@@ -47,12 +43,11 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     const once = (event: string, cb: AnyFunction) => emitter.once(`rooms/${event}#${name}`, cb);
 
     const isPresenceSynced = usePresenceIsSynced();
-    const [isSynced, setRoomSynced] = useAtom(roomIsSyncedFamily(name));
+    const [isSynced, setRoomSynced] = useState(false);
 
     // Keep track of room.sync, if true this room will receive updates, else the user has not joined the room yet
     useEffect(() => {
-        if (isPresenceSynced) return roomClient.get();
-        if (isSynced) return;
+        if (isPresenceSynced && isSynced) return;
 
         let cleanup;
         if (isPresenceSynced) {
@@ -60,6 +55,10 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
             cleanup = emitter.once("rooms/join#" + name, cb);
         } else {
             setRoomSynced(false);
+        }
+
+        if (!isSynced) {
+            roomClient.get();
         }
 
         return () => {
@@ -97,6 +96,22 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
                 }
             });
             const updated = { ...current, state: { ...current.state } };
+            const updateHash = hash(updated);
+
+            if (prevStateHashRef.current !== updateHash) {
+                prevStateHashRef.current = updateHash;
+                return updated;
+            }
+
+            return current;
+        });
+    });
+
+    // Granular state updates whenever someone triggers a state change on a specific field
+    useSocketEvent<Partial<State>>("rooms/update:*#" + name, (payload, _event, path) => {
+        setRoom((current) => {
+            const updated = { ...current };
+            set(updated, "state." + path, payload);
             const updateHash = hash(updated);
 
             if (prevStateHashRef.current !== updateHash) {
@@ -161,7 +176,8 @@ export const makeSpecificRoomClient = (client: RoomClient, name: Room["name"]) =
     join: () => client.join.apply(null, [name]) as void,
     create: (initialData: { initialState?: ObjectLiteral; type?: string }) =>
         client.create.apply(null, [name, initialData]) as void,
-    update: (update: ObjectLiteral) => client.update.apply(null, [name, update]),
+    update: <Field extends string = undefined>(update: Field extends undefined ? ObjectLiteral : any, field?: Field) =>
+        client.update.apply(null, [name, update, field]),
     leave: () => client.leave.apply(null, [name]) as void,
     kick: (id: Player["id"]) => client.leave.apply(null, [name, id]) as void,
     delete: () => client.delete.apply(null, [name]) as void,

@@ -81,10 +81,10 @@ export function handleGamesEvent({
 
         const gameRoom = games.get(name);
         if (!gameRoom) return sendMsg(ws, ["games/notFound", name], opts);
-        if (isUserInSet(gameRoom.clients, ws.id)) return;
+        if (isUserInSet(gameRoom.clients, ws.id)) return sendMsg(ws, ["games/alreadyIn", name], opts);
 
         const canJoin = gameRoom.hooks?.["games.before.join"]?.({ ws, game: gameRoom });
-        if (isDefined(canJoin) && !canJoin) return;
+        if (isDefined(canJoin) && !canJoin) return sendMsg(ws, ["games/forbidden", name]);
 
         gameRoom.clients.add(ws);
         user.rooms.add(gameRoom);
@@ -161,7 +161,7 @@ export function handleGamesEvent({
         if (!client) return sendMsg(ws, ["clients/notFound", name], opts);
 
         const canKick = game.hooks?.["games.before.join"]?.({ ws, game });
-        if (isDefined(canKick) && !canKick) return;
+        if (isDefined(canKick) && !canKick) return sendMsg(ws, ["games/forbidden", name]);
 
         game.clients.delete(client);
         client.user.rooms.delete(game);
@@ -177,7 +177,6 @@ export function handleGamesEvent({
     // ex: [games.update#abc123, { aaa: 456, zzz: 111 }]
     // ex: [games.update.meta#abc123, { aaa: 456, zzz: 111 }]
     // ex: [games.update:statemap#abc123, { nestedKey: 222 }]
-    // TODO state[field]
     if (event.startsWith("games.update")) {
         const name = getEventParam(event);
         if (!name) return;
@@ -195,6 +194,7 @@ export function handleGamesEvent({
 
         // Meta[field] updates
         if (field) {
+            // TODO gérer les objets aussi pas juste les maps + les nested path comme rooms.update
             Object.entries(payload).map(([key, value]) => map.get(field).set(key, value));
         } else {
             // Meta updates

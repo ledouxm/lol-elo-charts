@@ -122,12 +122,16 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
         );
         ws.meta = new Map(Object.entries({ cursor: null }));
         ws.internal = new Map(Object.entries({ timers: new Map() }));
-        ws.roles = new Set(); // TODO get initial global roles from db, ex: [modo, admin, superadmin]
+        ws.roles = new Set(user.roles); // TODO get initial global roles from db, ex: [modo, admin, superadmin]
 
         // Send his presence
         sendMsg(ws, ["presence/update", getClientState(ws)]);
 
         // re-join rooms where the user is active on other clients
+        sendMsg(ws, [
+            "presence/reconnect",
+            Array.from(user.rooms).map((room) => ({ name: room.name, type: room.type })),
+        ]);
         user.rooms.forEach((room) => {
             room.clients.add(ws);
             onJoinRoom(room);
@@ -143,6 +147,9 @@ export const makeWsRelay = (options: WebSocket.ServerOptions) => {
             timers.clear();
 
             userIds.delete(ws.id); // Unlock user id
+
+            // Save client roles in user
+            ws.roles.forEach((role) => user.roles.add(role));
 
             // Remove user from each room he was in
             user.rooms.forEach((room) => {

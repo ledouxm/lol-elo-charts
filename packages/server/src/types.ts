@@ -5,6 +5,7 @@ export type GlobalSubscription = "presence" | "rooms" | "games";
 export interface User {
     clients: Set<AppWebsocket>;
     rooms: Set<Room | GameRoom>;
+    roles: Set<string>;
 }
 
 export type WsEventPayload<Data = any> = [event: string, data?: Data];
@@ -53,6 +54,8 @@ export type RoomEvents =
 export interface RoomContext<T = any> {
     ws: AppWebsocket;
     room: T;
+    /** Dot-delimited state path to update, ex: state = new Map({ aaa: { bbb: 111 }}), field = "aaa.bbb" */
+    field?: string;
 }
 
 export interface RoomHooks<Room = SimpleRoom>
@@ -137,4 +140,8 @@ export interface EventHandlerRef extends WsEventObject {
     // Games
     getGameRoomListEvent: () => WsEventPayload<any>;
     sendGamesList: () => void;
+}
+
+export interface MapObject<Props extends { [key: string]: unknown }> extends Map<keyof Props, Props[keyof Props]> {
+    get<K extends keyof Props>(key: K): Props[K];
 }

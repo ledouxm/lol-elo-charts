@@ -104,8 +104,11 @@ export function handlePresenceEvents({
         const room = type === "rooms" ? rooms.get(name) : games.get(name);
         if (!room) return sendMsg(ws, [type + "/notFound", name]);
 
+        const canSet = ws.roles.has("admin") || ws.roles.has(`${type}.${room.name}.admin`);
+        if (!canSet) return sendMsg(ws, [type + "/forbidden", name]);
+
         const isAdd = event.startsWith("roles.add");
-        if (isAdd) ws.roles.add(`${type}:${room.name}:${payload}`);
-        else ws.roles.delete(`${type}:${room.name}:${payload}`);
+        if (isAdd) ws.roles.add(`${type}.${room.name}.${payload}`);
+        else ws.roles.delete(`${type}.${room.name}.${payload}`);
     }
 }

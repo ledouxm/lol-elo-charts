@@ -1,6 +1,6 @@
 import { lobbyHooks } from "@/rooms/lobby";
 import { isDefined, safeJSONParse, set } from "@pastable/core";
-import { getEventParam, getRoomFullState, isUserInSet, makeRoom } from "../helpers";
+import { getEventParam, getEventSpecificParam, getRoomFullState, isUserInSet, makeRoom } from "../helpers";
 import { AppWebsocket, EventHandlerRef, RoomHooks } from "../types";
 import { sendMsg } from "../ws-helpers";
 
@@ -32,8 +32,6 @@ export function handleRoomsEvent({
         if (rooms.get(name)) return sendMsg(ws, ["rooms/exists", name], opts);
 
         const room = makeRoom({ name, state: payload, hooks: roomId ? hooksByRoomId[roomId] : null });
-        const canCreate = room.hooks?.["rooms.before.create"]?.({ room, ws });
-        if (isDefined(canCreate) && !canCreate) return;
 
         room.clients.add(ws);
         rooms.set(name, room);
@@ -64,10 +62,10 @@ export function handleRoomsEvent({
 
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
-        if (isUserInSet(room.clients, ws.id)) return;
+        if (isUserInSet(room.clients, ws.id)) return sendMsg(ws, ["rooms/alreadyIn", name], opts);
 
         const canJoin = room.hooks?.["rooms.before.join"]?.({ room, ws });
-        if (isDefined(canJoin) && !canJoin) return;
+        if (isDefined(canJoin) && !canJoin) return sendMsg(ws, ["rooms/forbidden", name]);
 
         room.clients.add(ws);
         user.rooms.add(room);
@@ -80,37 +78,57 @@ export function handleRoomsEvent({
     // ex: [rooms.update#abc123, { aaa: 111, "nested.key": 222 }]
     if (event.startsWith("rooms.update")) {
         const name = getEventParam(event);
-        if (!name) return;
+        if (!name) return sendMsg(ws, ["rooms/missingName", name], opts);
 
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
+        if (!room.clients.has(ws)) return sendMsg(ws, ["rooms/update.empty", name], opts);
 
-        const update = safeJSONParse(payload) || {};
-        if (!Object.keys(update).length) return;
-        if (!room.clients.has(ws)) return;
+        const field = getEventSpecificParam(event, name);
+        const canUpdate = room.hooks?.["rooms.before.update"]?.({ room, ws, field }, payload);
+        if (isDefined(canUpdate) && !canUpdate) return sendMsg(ws, ["rooms/forbidden", name]);
 
-        const canUpdate = room.hooks?.["rooms.before.update"]?.({ room, ws });
-        if (isDefined(canUpdate) && !canUpdate) return;
-
-        Object.entries(update).map(([key, value]) => {
-            const paths = key.split(".");
+        if (field) {
+            const paths = field.split(".");
+            const first = paths[0];
 
             // Set nested key
+            // [rooms.update:votes.userId#abc123, "Platformer"]
             if (paths.length > 1) {
                 const first = paths[0];
                 const prop = room.state.get(first);
                 const clone = { ...prop };
 
-                set(clone, paths.slice(1).join("."), value);
+                set(clone, paths.slice(1).join("."), payload);
                 room.state.set(first, clone);
             } else {
-                room.state.set(key, value);
+                // [rooms.update:common#abc123, "thing"]
+                room.state.set(first, payload);
             }
-        });
+        } else {
+            if (!Object.keys(payload).length) return sendMsg(ws, ["rooms/update.invalid", name], opts);
+
+            // [rooms.update#abc123, { aaa: 111, "nested.key": 222 }]
+            Object.entries(payload).map(([key, value]) => {
+                const paths = key.split(".");
+
+                // Set nested key
+                if (paths.length > 1) {
+                    const first = paths[0];
+                    const prop = room.state.get(first);
+                    const clone = { ...prop };
+
+                    set(clone, paths.slice(1).join("."), value);
+                    room.state.set(first, clone);
+                } else {
+                    room.state.set(key, value);
+                }
+            });
+        }
 
         room.hooks?.["rooms.update"]?.({ room, ws });
 
-        broadcastEvent(room, event, update);
+        broadcastEvent(room, event, payload);
         return;
     }
 
@@ -157,7 +175,7 @@ export function handleRoomsEvent({
         if (!client) return sendMsg(ws, ["clients/notFound", name], opts);
 
         const canKick = room.hooks?.["rooms.before.kick"]?.({ room, ws });
-        if (isDefined(canKick) && !canKick) return;
+        if (isDefined(canKick) && !canKick) return sendMsg(ws, ["rooms/forbidden", name]);
 
         room.clients.delete(client);
         client.user.rooms.delete(room);
@@ -177,7 +195,7 @@ export function handleRoomsEvent({
 
         const room = rooms.get(name);
         const canDelete = room.hooks?.["rooms.before.delete"]?.({ room, ws });
-        if (isDefined(canDelete) && !canDelete) return;
+        if (isDefined(canDelete) && !canDelete) return sendMsg(ws, ["rooms/forbidden", name]);
 
         rooms.delete(name);
 

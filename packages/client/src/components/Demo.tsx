@@ -1,14 +1,26 @@
+import { useSocketEvent } from "@/hooks/useSocketConnection";
+import { CreateOrJoinGameForm } from "@/room/CreateOrJoinGameForm";
+import { Room } from "@/types";
 import { Stack } from "@chakra-ui/react";
-import { RoomSelection } from "../room/RoomPage";
+import { Route, useHistory } from "react-router-dom";
+import { LobbyRoom } from "../room/LobbyRoom";
 import { AppDevTools } from "./AppDevTools";
 import { PlayerList } from "./PlayerList";
 
 export const Demo = () => {
+    const history = useHistory();
+
+    useSocketEvent<Array<Pick<Room, "name" | "type">>>("presence/reconnect", (list) => {
+        const lobby = list.find((room) => room.type === "simple");
+        if (lobby) history.push("/lobby/" + lobby.name);
+    });
+
     return (
         <Stack w="100%" overflow="hidden">
             {/* <PlatformerCanvas h="100vh" /> */}
             <PlayerList />
-            <RoomSelection />
+            <Route path="/lobby/:name" children={<LobbyRoom />} />
+            <Route path="/" children={<CreateOrJoinGameForm />} />
             <AppDevTools />
         </Stack>
     );

@@ -6,11 +6,12 @@ import { Button, Stack } from "@chakra-ui/react";
 import { getRandomString } from "@pastable/core";
 
 // TODO colyseus-monitor like
-export const LobbyRoom = ({ availableRoom }: { availableRoom: AvailableRoom }) => {
+export const LobbyRoomDemo = ({ availableRoom }: { availableRoom: AvailableRoom }) => {
     const roomName = availableRoom.name;
 
     const room = useRoomState<DemoRoomState>(roomName);
     const toggleDone = () => room.update({ mark: !room.state.mark });
+    console.log(room.state, room.isIn, room.clients);
 
     return (
         <Stack border="1px solid teal">
@@ -22,34 +23,36 @@ export const LobbyRoom = ({ availableRoom }: { availableRoom: AvailableRoom }) =
             <span>names: {room.clients.map((player) => player.username).toString()}</span>
             {room.state.status === "waiting" &&
                 (room.isIn ? (
-                    <Button onClick={() => room.leave()}>Leave</Button>
+                    <>
+                        <Button onClick={() => room.leave()}>Leave</Button>
+                        <Button onClick={toggleDone}>Toggle done</Button>
+                        <Button
+                            onClick={() => {
+                                room.get();
+                                room.once("state", (room: Room) =>
+                                    successToast({
+                                        title: room.name,
+                                        description: room.clients
+                                            .map((player) => player.username + " - " + player.color)
+                                            .toString(),
+                                    })
+                                );
+                            }}
+                        >
+                            Get
+                        </Button>
+                        <Button onClick={() => room.broadcast([getRandomString()])}>Broadcast</Button>
+                        <Button onClick={() => room.relay([getRandomString()])}>Relay</Button>
+                    </>
                 ) : (
                     <Button onClick={() => room.join()}>Join</Button>
                 ))}
-            <Button onClick={toggleDone}>Toggle done</Button>
             <Button onClick={() => room.delete()}>Remove</Button>
             {room.clients.some((player) => player.id !== initialPresence.id) && (
                 <Button onClick={() => room.kick(room.clients.find((player) => player.id !== initialPresence.id).id)}>
                     Kick (not me)
                 </Button>
             )}
-            <Button
-                onClick={() => {
-                    room.get();
-                    room.once("state", (room: Room) =>
-                        successToast({
-                            title: room.name,
-                            description: room.clients
-                                .map((player) => player.username + " - " + player.color)
-                                .toString(),
-                        })
-                    );
-                }}
-            >
-                Get
-            </Button>
-            <Button onClick={() => room.broadcast([getRandomString()])}>Broadcast</Button>
-            <Button onClick={() => room.relay([getRandomString()])}>Relay</Button>
         </Stack>
     );
 };
