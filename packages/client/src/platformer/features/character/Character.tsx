@@ -1,17 +1,15 @@
-import { gameName } from "@/components/AppSocket";
 import { getRandomColor } from "@/functions/utils";
-import { useLocalPresence, useMyPresence } from "@/hooks/usePresence";
+import { useLocalPresence } from "@/hooks/usePresence";
 import { useSocketEmit } from "@/hooks/useSocketConnection";
 import { roundTo } from "@pastable/core";
 import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useAtomValue } from "jotai/utils";
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import * as THREE from "three";
-import { Camera, MeshStandardMaterial, Vector3 } from "three";
 import { keyDownRef, keyPressedRef } from "../../hooks/useInputsRef";
 import { useMouseMovements } from "../../hooks/useMouseMovement";
 import { startNewGame } from "../Hexagon";
+import { PlatformerContext } from "../PlatformerCanvas";
 import { getRandomStagePosition } from "../Stage";
 import { calculateForce } from "./utils";
 
@@ -30,6 +28,7 @@ export const Character = ({ position, baseAngle }: { position: Triplet; baseAngl
         updateMe((me) => ({ ...me, color }));
     };
 
+    const { gameName } = useContext(PlatformerContext);
     const updatePositionAndRotation = (position: Triplet, rotation: Triplet) => {
         emit(`games.update#${gameName}`, { [me.id]: [tripletToFixed(position), tripletToFixed(rotation)] });
     };

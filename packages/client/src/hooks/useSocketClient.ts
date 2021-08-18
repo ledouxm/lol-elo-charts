@@ -26,7 +26,7 @@ export const useSocketClient = () => {
         get: (name: Room["name"]) => emit("rooms.get#" + name),
         join: (name: Room["name"]) => emit("rooms.join#" + name),
         create: (name: Room["name"], { initialState, type }: { initialState?: ObjectLiteral; type?: string } = {}) =>
-            emit(`rooms.create${type ? "." + type : ""}#` + name, initialState),
+            emit(`rooms.create${type ? ":" + type : ""}#` + name, initialState),
         update: (name: Room["name"], update: ObjectLiteral, field?: string) =>
             emit(`rooms.update${field ? ":" + field : ""}#` + name, update),
         kick: (name: Room["name"], id: Player["id"]) => emit("rooms.kick#" + name, id),
@@ -43,7 +43,7 @@ export const useSocketClient = () => {
         get: (name: Room["name"]) => emit("games.get#" + name),
         join: (name: Room["name"]) => emit("games.join#" + name),
         create: (name: Room["name"], gameId: string, initialState?: ObjectLiteral) =>
-            emit(`games.create.${gameId}#` + name, initialState),
+            emit(`games.create:${gameId}#` + name, initialState),
         update: (name: Room["name"], update: ObjectLiteral, field?: string) =>
             emit(`games.update:${field ? ":" + field : ""}#` + name, update),
         getMeta: (name: Room["name"], fields?: Array<string>) => emit(`games.update.meta:${fields.join(",")}#` + name),

@@ -6,10 +6,10 @@ import { useUpdateAtom } from "jotai/utils";
 import { useEffect } from "react";
 
 export const useLobbyEvents = () => {};
-
-export const gameName = "bbbbbb";
+// export const gameName = "bbbbbb";
 
 export const AppSocket = () => {
+    const gameName = "bbbbbb";
     const isSynced = usePresenceIsSynced();
     const game = useGameRoomState(gameName);
 
@@ -23,8 +23,8 @@ export const AppSocket = () => {
     });
     useEffect(() => {
         if (!isSynced) return;
-        game.create("platformer");
-        game.join();
+        // game.create("platformer");
+        // game.join();
     }, [isSynced]);
 
     return null;

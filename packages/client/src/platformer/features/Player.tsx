@@ -1,14 +1,15 @@
-import { gameName } from "@/components/AppSocket";
 import { useGameRoomState } from "@/hooks/useGameRoomState";
 import { useMyPresence } from "@/hooks/usePresence";
 import { Player } from "@/types";
 import { Triplet } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 import { Mesh, Vector3 } from "three";
 import { sliceColor } from "./character/Character";
+import { PlatformerContext } from "./PlatformerCanvas";
 
 export const Players = () => {
+    const { gameName } = useContext(PlatformerContext);
     const { state, clients } = useGameRoomState<{ [id: string]: Triplet[] }>(gameName);
 
     const me = useMyPresence();

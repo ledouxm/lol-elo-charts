@@ -7,7 +7,7 @@ import { LobbyRoom } from "../room/LobbyRoom";
 import { AppDevTools } from "./AppDevTools";
 import { PlayerList } from "./PlayerList";
 
-export const Demo = () => {
+export const Home = () => {
     const history = useHistory();
 
     useSocketEvent<Array<Pick<Room, "name" | "type">>>("presence/reconnect", (list) => {
@@ -17,7 +17,6 @@ export const Demo = () => {
 
     return (
         <Stack w="100%" overflow="hidden">
-            {/* <PlatformerCanvas h="100vh" /> */}
             <PlayerList />
             <Route path="/lobby/:name" children={<LobbyRoom />} />
             <Route path="/" children={<CreateOrJoinGameForm />} />

@@ -32,16 +32,14 @@ export function handleGamesEvent({
 
     // ex: [games.create.platformer#abc123, { initial: 123 }]
     if (event.startsWith("games.create")) {
-        const [eventName, name] = event.split("#");
-        const gameId = eventName.split(".")[2];
+        const name = getEventParam(event);
+        if (!name) return sendMsg(ws, ["games/missingName", name], opts);
 
-        if (!name) return;
-        if (games.get(name)) {
-            sendMsg(ws, ["games/exists", name], opts);
-            return console.error("games already exists");
-        }
-        if (!gameId) return console.error("no name provided");
-        if (!Object.values(GameId).includes(gameId as any)) return console.error("wrong name", gameId);
+        const gameId = getEventSpecificParam(event, name);
+        if (!gameId) return sendMsg(ws, ["games/missingGameId", { name, gameId }], opts);
+
+        if (games.get(name)) return sendMsg(ws, ["games/exists", name], opts);
+        if (!Object.values(GameId).includes(gameId as any)) return sendMsg(ws, ["games/gameId.invalid", name], opts);
 
         const gameRoom = makeGameRoom({ name, state: payload, hooks: hooksByGameName[gameId] });
         gameRoom.clients.add(ws);
@@ -70,6 +68,7 @@ export function handleGamesEvent({
         );
         timers.set("clients", clientsRefreshInterval);
 
+        sendMsg(ws, ["games/create#" + name]);
         broadcastSub("games", getGameRoomListEvent());
         return;
     }
@@ -91,6 +90,7 @@ export function handleGamesEvent({
         gameRoom.hooks?.["games.join"]?.({ ws, game: gameRoom });
 
         gameRoom.clients.forEach((client) => sendMsg(client, ["games/clients#" + name, getRoomClients(gameRoom)]));
+        sendMsg(ws, ["games/join#" + gameRoom.name], opts);
         broadcastSub("games", getGameRoomListEvent());
         return;
     }

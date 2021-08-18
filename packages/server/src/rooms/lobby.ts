@@ -1,5 +1,5 @@
 import { getRoomState } from "@/helpers";
-import { MapObject, RoomHooks, SimpleRoom } from "@/types";
+import { GameRoom, MapObject, RoomHooks, SimpleRoom } from "@/types";
 import { getMostOcurrence } from "@/utils";
 import { sendMsg } from "@/ws-helpers";
 import { omit, pickOne } from "@pastable/core";
@@ -10,6 +10,7 @@ export interface LobbyState
         votes: Record<string, string>;
         mode: "democracy" | "anarchy" | "monarchy";
         selectedGame: string;
+        gameRoom: GameRoom["name"];
     }> {}
 export interface LobbyGameRoom extends SimpleRoom<LobbyState> {}
 export interface LobbyHooks extends RoomHooks<LobbyGameRoom> {}

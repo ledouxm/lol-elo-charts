@@ -1,4 +1,4 @@
-import { Demo } from "@/components/Demo";
+import { Home } from "@/components/Home";
 import { WebDemo } from "@/components/WebDemo";
 import { Center, ChakraProvider, extendTheme, Flex, Spinner } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -46,11 +46,10 @@ const SyncWrapper = () => {
 
     return (
         <>
-            {/* <AppSocket /> */}
             <BrowserRouter>
                 <Switch>
                     <Route path="/web" children={<WebDemo />} />
-                    <Route path="/" children={<Demo />} />
+                    <Route path="/" children={<Home />} />
                 </Switch>
             </BrowserRouter>
         </>

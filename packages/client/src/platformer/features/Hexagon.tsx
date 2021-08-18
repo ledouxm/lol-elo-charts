@@ -1,16 +1,15 @@
-import { gameName } from "@/components/AppSocket";
-import { getRandomColor, getSaturedColor } from "@/functions/utils";
-import { useGameRoomRef, useGameRoomState } from "@/hooks/useGameRoomState";
+import { getRandomColor } from "@/functions/utils";
+import { useGameRoomRef } from "@/hooks/useGameRoomState";
 import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
-import { safeJSONParse } from "@pastable/core";
 import { Triplet, useCylinder } from "@react-three/cannon";
 import { MeshProps, useFrame } from "@react-three/fiber";
-import { atom, useAtom } from "jotai";
-import { useAtomValue, useUpdateAtom } from "jotai/utils";
-import { useEffect, useMemo, useRef } from "react";
+import { atom } from "jotai";
+import { useAtomValue } from "jotai/utils";
+import { useContext, useEffect, useMemo, useRef } from "react";
 import { Color, MeshStandardMaterial, Vector3 } from "three";
 import { Pit } from "../components/Background";
 import { sliceColor } from "./character/Character";
+import { PlatformerContext } from "./PlatformerCanvas";
 
 const min = -0.05;
 const max = 0.1;
@@ -120,6 +119,7 @@ export const HexagonBlock = ({
     const statusRef = useRef("idle");
     const prevStatusRef = useRef("");
     const materialRef = useRef<MeshStandardMaterial>(null);
+    const { gameName } = useContext(PlatformerContext);
     const gameRoom = useGameRoomRef(gameName);
 
     useSocketEvent("games/update.meta:hexagons#" + gameName, (data: string) => {

@@ -1,15 +1,17 @@
+import { errorToast } from "@/functions/toasts";
+import { useGameRoomRef } from "@/hooks/useGameRoomState";
 import { useMyPresence } from "@/hooks/usePresence";
 import { useRoomState } from "@/hooks/useRoomState";
-import { useSocketEvent } from "@/hooks/useSocketConnection";
-import { Player } from "@/types";
+import { useSocketClient } from "@/hooks/useSocketClient";
+import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
+import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
+import { Player, Room } from "@/types";
 import { Box, Button, Select, Stack } from "@chakra-ui/react";
-import { findBy, ObjectLiteral } from "@pastable/core";
+import { findBy, getRandomString } from "@pastable/core";
 import { atomWithStorage } from "jotai/utils";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { Route, Switch, useHistory, useParams, useRouteMatch } from "react-router-dom";
 import { Game, GameList } from "./GameList";
-import { getMostOcurrence } from "@/functions/utils";
-import { useHistory, useParams } from "react-router-dom";
-import { errorToast } from "@/functions/toasts";
 
 export const roomNameAtom = atomWithStorage("platformer/room", "");
 export const RoomContext = createContext(
@@ -50,6 +52,30 @@ export const LobbyRoom = () => {
     const updateMode = (e) => room.update(e.target.value, "mode");
     const isRoomAdmin = me.id === room.state.admin;
 
+    const client = useSocketClient();
+    const emitter = useSocketEventEmitter();
+    const path = useRoutePath();
+
+    // Create game with the one selected & random name + update this room.state.game
+    const makeGame = () => {
+        const gameRoomName = getRandomString();
+        emitter.once("games/create#" + gameRoomName, () => {
+            room.update(gameRoomName, "gameRoom");
+            router.push(router.location.pathname + "/platformer");
+        });
+        client.games.create(gameRoomName, room.state.selectedGame);
+    };
+
+    const game = useGameRoomRef(room.state.gameRoom);
+    // Auto join game whenever the current room.state.gameRoom changes
+    useEffect(() => {
+        if (!room.state.gameRoom) return;
+        if (game.ref.current.clients.find((client) => client.id === me.id)) return;
+
+        client.emit("games.join#" + room.state.gameRoom);
+        router.push(router.location.pathname + "/platformer");
+    }, [room.state.gameRoom]);
+
     return (
         <Stack>
             <RoomContext.Provider value={{ ...room, history, votes, selected }}>
@@ -58,15 +84,34 @@ export const LobbyRoom = () => {
                     <Box>Room {room.name}</Box>
                     <Box>{room.clients.length} players</Box>
                 </Stack>
-                <Select placeholder="Mode" maxW="200px" onChange={updateMode} isDisabled={!isRoomAdmin}>
-                    <option value="democracy">Democracy</option>
-                    <option value="anarchy">Anarchy</option>
-                    <option value="monarchy">Monarchy</option>
-                </Select>
+                <Stack direction="row">
+                    <Select
+                        placeholder="Mode"
+                        maxW="200px"
+                        onChange={updateMode}
+                        isDisabled={!isRoomAdmin}
+                        value={room.state.mode}
+                    >
+                        <option value="democracy">Democracy</option>
+                        <option value="anarchy">Anarchy</option>
+                        <option value="monarchy">Monarchy</option>
+                    </Select>
+                    {isRoomAdmin && (
+                        <Button onClick={makeGame} isDisabled={!room.state.selectedGame}>
+                            make game
+                        </Button>
+                    )}
+                </Stack>
                 <Box>
                     <pre>{JSON.stringify(room.state, null, 4)}</pre>
                 </Box>
-                <GameList onClick={voteForGame} />
+                <Switch>
+                    <Route
+                        path={path + "/platformer"}
+                        children={<PlatformerCanvas h="100vh" gameName={room.state.gameRoom} />}
+                    />
+                    <Route path={path + "/"} children={<GameList onClick={voteForGame} />} />
+                </Switch>
             </RoomContext.Provider>
         </Stack>
     );
@@ -76,9 +121,9 @@ export interface RoomState {
     admin: string;
     selectedGame?: string;
     votes: Record<Player["id"], Game["id"]>;
+    mode: "democracy" | "anarchy" | "monarchy";
+    gameRoom: Room["name"];
 }
-
-const getVoteKey = (payload: ObjectLiteral) => Object.keys(payload).find((key) => key.startsWith("votes."));
 
 export interface Vote {
     gameId: Game["id"];
@@ -97,4 +142,9 @@ const BackButton = () => {
     };
 
     return <Button onClick={leave}>Back</Button>;
+};
+
+export const useRoutePath = () => {
+    const match = useRouteMatch();
+    return match.path.endsWith("/") ? match.path.slice(0, -1) : match.path;
 };
