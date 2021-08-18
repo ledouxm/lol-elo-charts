@@ -43,7 +43,8 @@ export const makeGameRoom = ({
 });
 
 export enum GameId {
-    Platformer = "platformer",
+    Platformer = "Platformer",
+    // TicTacToe = "TicTacToe",
 }
 
 // Presence

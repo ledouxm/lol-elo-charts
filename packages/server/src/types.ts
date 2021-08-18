@@ -51,9 +51,10 @@ export type RoomEvents =
     | "rooms.relay"
     | "rooms.broadcast";
 
-export interface RoomContext<T = any> {
+export interface RoomContext<T = any> extends Partial<Pick<EventHandlerRef, "broadcastEvent">> {
     ws: AppWebsocket;
     room: T;
+    event?: string;
     /** Dot-delimited state path to update, ex: state = new Map({ aaa: { bbb: 111 }}), field = "aaa.bbb" */
     field?: string;
 }
@@ -144,4 +145,5 @@ export interface EventHandlerRef extends WsEventObject {
 
 export interface MapObject<Props extends { [key: string]: unknown }> extends Map<keyof Props, Props[keyof Props]> {
     get<K extends keyof Props>(key: K): Props[K];
+    set<K extends keyof Props>(key: K, value: Props[K]): this;
 }

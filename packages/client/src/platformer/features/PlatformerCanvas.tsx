@@ -1,8 +1,9 @@
+import { Room } from "@/types";
 import { Box, BoxProps } from "@chakra-ui/react";
 import { Physics, Triplet } from "@react-three/cannon";
 import { Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useRef } from "react";
+import { createContext, Suspense, useEffect, useRef } from "react";
 import { AppLight } from "../components/AppLight";
 import { SkyDome } from "../components/SkyDome";
 import { useInputsRef } from "../hooks/useInputsRef";
@@ -19,7 +20,7 @@ const requestPointerLock = () => {
     canvas.requestPointerLock();
 };
 
-export const PlatformerCanvas = (props: BoxProps) => {
+export const PlatformerCanvas = ({ gameName, ...props }: BoxProps & { gameName?: Room["name"] }) => {
     const canvasRef = useRef(null);
     const characterPosition = getRandomStagePosition();
 
@@ -30,6 +31,8 @@ export const PlatformerCanvas = (props: BoxProps) => {
     }, []);
 
     useInputsRef();
+
+    console.log({ gameName });
 
     return (
         <Box {...props}>
@@ -44,32 +47,36 @@ export const PlatformerCanvas = (props: BoxProps) => {
                 }}
                 ref={canvasRef}
             >
-                <ambientLight intensity={0.2} />
-                <AppLight />
-                <Players />
-                <Suspense fallback={null}>
-                    <SkyDome />
-                </Suspense>
-                <Physics
-                    defaultContactMaterial={{
-                        restitution: 0,
-                        friction: 0,
-                    }}
-                    gravity={[0, -4 * 9.8, 0]}
-                    step={1 / 144}
-                    broadphase="Naive"
-                >
-                    <Stage position={[0, 0, 0]} />
-                    <Stars count={1000} radius={70} />
-                    <AppLight position={[-40, 0 + 7, 0]} />
-                    <HexagonGrid />
-                    <Character position={characterPosition.slice(0, -1) as Triplet} baseAngle={characterPosition[3]} />
-                </Physics>
+                <PlatformerContext.Provider value={{ gameName }}>
+                    <ambientLight intensity={0.2} />
+                    <AppLight />
+                    <Players />
+                    <Suspense fallback={null}>
+                        <SkyDome />
+                    </Suspense>
+                    <Physics
+                        defaultContactMaterial={{
+                            restitution: 0,
+                            friction: 0,
+                        }}
+                        gravity={[0, -4 * 9.8, 0]}
+                        step={1 / 144}
+                        broadphase="Naive"
+                    >
+                        <Stage position={[0, 0, 0]} />
+                        <Stars count={1000} radius={70} />
+                        <AppLight position={[-40, 0 + 7, 0]} />
+                        <HexagonGrid />
+                        <Character
+                            position={characterPosition.slice(0, -1) as Triplet}
+                            baseAngle={characterPosition[3]}
+                        />
+                    </Physics>
+                </PlatformerContext.Provider>
             </Canvas>
         </Box>
     );
 };
 
-export const shouldGatherRef = {
-    current: false,
-};
+export const shouldGatherRef = { current: false };
+export const PlatformerContext = createContext({ gameName: null });

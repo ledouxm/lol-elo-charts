@@ -17,9 +17,9 @@ export class EventEmitter {
         this.debug("once", event);
         const evt = event as unknown as string;
         const self = this;
-        return this.on(evt, function wrappedCb(data: Data) {
+        return this.on(evt, function wrappedCb(data: Data, ...args) {
             self.off(evt, wrappedCb);
-            callback(data);
+            callback(data, ...args);
         });
     }
 

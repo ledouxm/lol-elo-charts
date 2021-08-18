@@ -68,3 +68,18 @@ export function rainbow(step: number, numOfSteps = 1000) {
         ("00" + (~~(b * 255)).toString(16)).slice(-2);
     return c;
 }
+
+export const getMostOcurrence = (arr: Array<string>) => {
+    const b = {};
+    let max = "";
+    let maxi = 0;
+    for (let k of arr) {
+        if (b[k]) b[k]++;
+        else b[k] = 1;
+        if (maxi < b[k]) {
+            max = k;
+            maxi = b[k];
+        }
+    }
+    return max;
+};

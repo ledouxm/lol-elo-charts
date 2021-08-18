@@ -25,10 +25,11 @@ export function handleRoomsEvent({
     // ex: [rooms.create#abc123, { initial: 123 }]
     // ex: [rooms.create.lobby#abc123, { initial: 123 }]
     if (event.startsWith("rooms.create")) {
-        const [eventName, name] = event.split("#");
-        const roomId = eventName.split(".")[2];
+        const name = getEventParam(event);
+        if (!name) return sendMsg(ws, ["rooms/missingName", name], opts);
 
-        if (!name) return;
+        const roomId = getEventSpecificParam(event, name);
+        if (!roomId) return sendMsg(ws, ["rooms/missingRoomId", { name, roomId }], opts);
         if (rooms.get(name)) return sendMsg(ws, ["rooms/exists", name], opts);
 
         const room = makeRoom({ name, state: payload, hooks: roomId ? hooksByRoomId[roomId] : null });
@@ -126,7 +127,7 @@ export function handleRoomsEvent({
             });
         }
 
-        room.hooks?.["rooms.update"]?.({ room, ws });
+        room.hooks?.["rooms.update"]?.({ room, ws, event, field, broadcastEvent });
 
         broadcastEvent(room, event, payload);
         return;

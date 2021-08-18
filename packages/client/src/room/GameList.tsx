@@ -17,7 +17,7 @@ const gamesList = [
 
 export type Game = typeof gamesList[0];
 
-export const GameList = ({ onClick, selected }: { onClick?: (gameId: string) => void; selected?: string }) => {
+export const GameList = ({ onClick }: { onClick?: (gameId: string) => void }) => {
     return (
         <Stack>
             <chakra.h2 fontWeight="bold" fontSize="30px">
