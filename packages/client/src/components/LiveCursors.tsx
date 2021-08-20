@@ -19,11 +19,11 @@ export function LiveCursors() {
     // Update the user cursor position on every pointer move
     useEventListener(
         "pointermove",
-        throttle((e) => setPresence({ cursor: getCursorFromEvent(e) }), 150)
+        throttle((e) => setPresence((current) => ({ ...current, cursor: getCursorFromEvent(e) })), 150)
     );
     useEventListener(
         "pointerleave",
-        throttle(() => setPresence({ cursor: null }), 150)
+        throttle(() => setPresence((current) => ({ ...current, cursor: null })), 150)
     );
 
     return (

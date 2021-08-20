@@ -1,7 +1,8 @@
 import http from "http";
 import { URL } from "url";
 import WebSocket from "ws";
-import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, SimpleRoom, Room, User, RoomHooks } from "./types";
+import { User } from "./entities/User";
+import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, Room, RoomHooks, SimpleRoom, WsUser } from "./types";
 
 export const makeUrl = (req: http.IncomingMessage) =>
     new URL((req.url.startsWith("/") ? "http://localhost" : "") + req.url);
@@ -9,7 +10,13 @@ export const getEventParam = (event: string, separator = "#") => event.split(sep
 export const getEventSpecificParam = (event: string, roomName: Room["name"]) =>
     (getEventParam(event, ":") || "").replace("#" + roomName, "");
 
-export const makeUser = (): User => ({ clients: new Set(), rooms: new Set(), roles: new Set() });
+export const makeUser = (id: AppWebsocket["id"], user?: User): WsUser => ({
+    user,
+    id: user?.id || id,
+    clients: new Set(),
+    rooms: new Set(),
+    roles: new Set(user?.roles || []),
+});
 export const makeRoom = ({
     name,
     state,

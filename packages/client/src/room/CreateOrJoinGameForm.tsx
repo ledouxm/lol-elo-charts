@@ -25,7 +25,7 @@ export const CreateOrJoinGameForm = () => {
         });
 
         emitter.once("rooms/state#" + gameId, () => {
-            router.push("/lobby/" + gameId);
+            router.push("/app/lobby/" + gameId);
             successToast({ title: `Room ${gameId} created` });
             off();
         });
@@ -36,7 +36,7 @@ export const CreateOrJoinGameForm = () => {
 
         const off = emitter.on("rooms/notFound", (name) => errorToast({ title: `Room ${name} not found` }));
         emitter.once("rooms/state#" + gameId, () => {
-            router.push("/lobby/" + gameId);
+            router.push("/app/lobby/" + gameId);
             successToast({ title: `Room ${gameId} joined` });
             off();
         });

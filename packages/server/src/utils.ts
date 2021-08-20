@@ -1,4 +1,7 @@
 import { getNextIndex, getRandomIntIn, pickOne } from "@pastable/core";
+import { debug } from "debug";
+
+export const makeDebug = (suffix: string) => debug("platformer").extend(suffix);
 
 const hexLetters = "0123456789ABCDEF".toLowerCase();
 const hexLettersArray = hexLetters.split("");

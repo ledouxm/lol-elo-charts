@@ -1,0 +1,51 @@
+version: "3.4"
+services:
+    # https://hub.docker.com/_/postgres
+
+    postgresql:
+        image: postgres:12.5
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_DB: platformer
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+            POSTGRES_HOST_AUTH_METHOD: trust
+            POSTGRES_MULTIPLE_DATABASES: test
+        volumes:
+            # Persist data between up/down
+            - postgresql:/var/lib/postgresql/data:delegated
+
+            # When data volume is empty, start every scripts in folder in A-Z order
+            - ./packages/server/docker/postgres/:/docker-entrypoint-initdb.d/
+
+    # redis:
+    #     hostname: redis
+    #     image: redis
+    #     ports:
+    #         - "6379:6379"
+
+    # DevTools
+
+    # redis-commander:
+    #     hostname: redis-commander
+    #     image: rediscommander/redis-commander:latest
+    #     depends_on:
+    #         - redis
+    #     environment:
+    #         - REDIS_HOST=redis
+    #         - REDIS_PORT=6379
+    #     ports:
+    #         - "8083:8081"
+
+    adminer:
+        image: adminer
+        ports:
+            - "8081:8080"
+        environment:
+            DATABASE_URL: postgres://postgres@postgresql:5432/platformer
+        depends_on:
+            - postgresql
+
+volumes:
+    postgresql:
