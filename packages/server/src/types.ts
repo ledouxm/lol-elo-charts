@@ -1,8 +1,11 @@
 import WebSocket from "ws";
+import { User } from "./entities/User";
 
 export type GlobalSubscription = "presence" | "rooms" | "games";
 
-export interface User {
+export interface WsUser {
+    id: User["id"];
+    user?: User;
     clients: Set<AppWebsocket>;
     rooms: Set<Room | GameRoom>;
     roles: Set<string>;
@@ -106,7 +109,7 @@ export type AppWebsocket = WebSocket & {
     internal: Map<any, any>;
     roles: Set<string>;
     isAlive?: boolean;
-    user: User;
+    user: WsUser;
 };
 
 interface WsEventObject {
@@ -118,7 +121,7 @@ export interface EventHandlerRef extends WsEventObject {
     opts: {
         binary: boolean;
     };
-    user: User;
+    user: WsUser;
     globalSubscriptions: Map<GlobalSubscription, Set<AppWebsocket>>;
     rooms: Map<string, SimpleRoom>;
     games: Map<string, GameRoom>;

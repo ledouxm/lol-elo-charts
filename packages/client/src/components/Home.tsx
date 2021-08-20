@@ -12,14 +12,14 @@ export const Home = () => {
 
     useSocketEvent<Array<Pick<Room, "name" | "type">>>("presence/reconnect", (list) => {
         const lobby = list.find((room) => room.type === "simple");
-        if (lobby) history.push("/lobby/" + lobby.name);
+        if (lobby) history.push("/app/lobby/" + lobby.name);
     });
 
     return (
         <Stack w="100%" overflow="hidden">
             <PlayerList />
-            <Route path="/lobby/:name" children={<LobbyRoom />} />
-            <Route path="/" children={<CreateOrJoinGameForm />} />
+            <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
+            <Route path={"/app/"} children={<CreateOrJoinGameForm />} />
             <AppDevTools />
         </Stack>
     );

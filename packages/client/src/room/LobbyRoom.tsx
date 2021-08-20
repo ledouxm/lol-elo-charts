@@ -2,6 +2,7 @@ import { errorToast } from "@/functions/toasts";
 import { useGameRoomRef } from "@/hooks/useGameRoomState";
 import { useMyPresence } from "@/hooks/usePresence";
 import { useRoomState } from "@/hooks/useRoomState";
+import { useRoutePath } from "@/hooks/useRoutePath";
 import { useSocketClient } from "@/hooks/useSocketClient";
 import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
 import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
@@ -142,9 +143,4 @@ const BackButton = () => {
     };
 
     return <Button onClick={leave}>Back</Button>;
-};
-
-export const useRoutePath = () => {
-    const match = useRouteMatch();
-    return match.path.endsWith("/") ? match.path.slice(0, -1) : match.path;
 };

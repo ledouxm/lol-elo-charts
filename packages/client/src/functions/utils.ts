@@ -1,13 +1,6 @@
 import { getNextIndex, getRandomIntIn, getRandomString, pickOne } from "@pastable/core";
-import { Player } from "../types";
 
 export const makeId = () => getRandomString(12);
-export const makeUsername = () => getRandomString(getRandomIntIn(4, 10));
-export const makePlayer = (): Player => ({
-    id: makeId(),
-    username: makeUsername(),
-    color: getRandomColor(),
-});
 
 const hexLetters = "0123456789ABCDEF".toLowerCase();
 const hexLettersArray = hexLetters.split("");

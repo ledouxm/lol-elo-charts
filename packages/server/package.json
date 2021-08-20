@@ -1,5 +1,5 @@
 {
-    "name": "@rps/server",
+    "name": "@platformer/server",
     "scripts": {
         "lint": "ts-node -r tsconfig-paths/register ./src/main.ts",
         "dev-start": "yarn esno -r tsconfig-paths/register ./src/main.ts",
@@ -8,19 +8,35 @@
         "env:prod": "yarn yenv print env.prod.yaml production -f -s",
         "prebuild": "rimraf dist && rimraf temp",
         "build": "yarn prebuild && ttsc -b tsconfig.build.json --force",
-        "start": "NODE_ENV=production node dist/main.js"
+        "start": "yarn mikro-orm migration:up && NODE_ENV=production node dist/main.js",
+        "migration:create": "yarn prebuild && yarn mikro-orm migration:create",
+        "migration:up": "yarn mikro-orm migration:up"
     },
     "dependencies": {
+        "@mikro-orm/core": "^4.5.7",
+        "@mikro-orm/migrations": "^4.5.7",
+        "@mikro-orm/postgresql": "^4.5.7",
+        "@mikro-orm/reflection": "^4.5.7",
         "@pastable/core": "^0.1.13",
+        "debug": "^4.3.2",
         "fastify": "^3.19.2",
-        "ws": "^7.5.3"
+        "fastify-cors": "^6.0.2",
+        "jsonwebtoken": "^8.5.1",
+        "middie": "^5.3.0",
+        "reflect-metadata": "^0.1.13",
+        "ws": "^7.5.3",
+        "yenv": "^3.0.0"
     },
     "devDependencies": {
+        "@mikro-orm/cli": "^4.5.7",
+        "@types/debug": "^4.1.7",
+        "@types/jsonwebtoken": "^8.5.4",
         "@types/node": "^16.4.1",
         "@types/ws": "^7.4.7",
         "@zerollup/ts-transform-paths": "^1.7.18",
         "esno": "^0.8.0",
         "nodemon": "^2.0.12",
+        "prettier-plugin-sorted": "^2.0.0",
         "rimraf": "^3.0.2",
         "ts-node": "^10.1.0",
         "tsconfig-paths": "^3.10.1",
@@ -29,5 +45,22 @@
     },
     "engines": {
         "node": "^14.x"
+    },
+    "mikro-orm": {
+        "useTsNode": true,
+        "configPaths": [
+            "./src/mikro-orm.config.js",
+            "./dist/mikro-orm.config.js"
+        ]
+    },
+    "importSort": {
+        ".js, jsx, .ts, .tsx": {
+            "options": {
+                "ignoreTsConfig": true,
+                "extraAliases": [
+                    "@/*"
+                ]
+            }
+        }
     }
 }
