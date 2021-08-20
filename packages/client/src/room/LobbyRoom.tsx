@@ -139,7 +139,7 @@ const BackButton = () => {
 
     const leave = () => {
         room.leave();
-        history.push("/");
+        history.push("/app/");
     };
 
     return <Button onClick={leave}>Back</Button>;

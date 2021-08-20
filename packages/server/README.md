@@ -69,6 +69,6 @@ ws.onConnection -> MikroORM.RequestContext -> getWsAuthState
     -   sinon retourne user trouvé
 -   -> sinon (guest), autorise dans tous les cas + génère un id & renvoie le
 
--   `User["id"]` = est toujours préfixé par "u:"
--   les guests en revanche ont le prefix "g:"
+-   `User["id"]` = est toujours préfixé par "u-"
+-   les guests en revanche ont le prefix "g-"
 -   que ce soit pour user/guest, on renvoie un access token via jwt

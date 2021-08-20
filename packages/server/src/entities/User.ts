@@ -4,7 +4,7 @@ import { getRandomString, pick } from "@pastable/core";
 @Entity()
 export class User {
     @PrimaryKey()
-    id: string = "u:" + getRandomString();
+    id: string = "u-" + getRandomString();
 
     @Property({ unique: true })
     username: string;

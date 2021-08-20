@@ -8,7 +8,7 @@ import { api, getAccessToken } from "./api";
 import "./App.css";
 import { LoginForm } from "./components/LoginForm";
 import { WsEvent } from "./functions/ws";
-import { getLocalPresence, initialPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/usePresence";
+import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/usePresence";
 import { useSocketConnection, useSocketEmit, useSocketEvent } from "./hooks/useSocketConnection";
 
 const queryClient = new QueryClient();
@@ -27,8 +27,8 @@ function App() {
                                 children={
                                     <SyncWrapper>
                                         <Switch>
-                                            <Route path="/web" children={<WebDemo />} />
-                                            <Route path="/" children={<Home />} />
+                                            <Route path="/app/web" exact children={<WebDemo />} />
+                                            <Route path="/app/" children={<Home />} />
                                         </Switch>
                                     </SyncWrapper>
                                 }

@@ -25,7 +25,7 @@ export const getWsAuthState = async (ws: WebSocket, req: http.IncomingMessage) =
         return { isValid: true, user, name };
     }
 
-    return { isValid: true, id: "g:" + getRandomString(), name };
+    return { isValid: true, id: "g-" + getRandomString(), name };
 };
 
 export const getUserByNameAndPassword = async (name: User["username"], password: string) => {
