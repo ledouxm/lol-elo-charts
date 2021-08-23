@@ -169,6 +169,7 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
 
     return { name: room.name, state: room.state as State, clients: room.clients, isIn, isSynced, once, ...roomClient };
 };
+export type UseRoomStateReturn<State extends ObjectLiteral = Room> = ReturnType<typeof useRoomState> & { state: State };
 
 export const makeSpecificRoomClient = (client: RoomClient, name: Room["name"]) => ({
     ...client,

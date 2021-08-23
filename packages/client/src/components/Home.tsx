@@ -16,7 +16,7 @@ export const Home = () => {
     });
 
     return (
-        <Stack w="100%" overflow="hidden">
+        <Stack w="100%" overflow="auto">
             <PlayerList />
             <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
             <Route path={"/app/"} children={<CreateOrJoinGameForm />} />

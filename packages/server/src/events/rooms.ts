@@ -1,5 +1,5 @@
 import { lobbyHooks } from "@/rooms/lobby";
-import { isDefined, safeJSONParse, set } from "@pastable/core";
+import { isDefined, set } from "@pastable/core";
 import { getEventParam, getEventSpecificParam, getRoomFullState, isUserInSet, makeRoom } from "../helpers";
 import { AppWebsocket, EventHandlerRef, RoomHooks } from "../types";
 import { sendMsg } from "../ws-helpers";
@@ -213,22 +213,21 @@ export function handleRoomsEvent({
 
     // ex: [rooms.relay#abc123, any]
     if (event.startsWith("rooms.relay")) {
-        if (!Array.isArray(payload.data)) return;
+        if (!Array.isArray(payload)) return;
 
         const name = getEventParam(event);
         if (!name) return;
 
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
-        if (!Array.isArray(payload.data)) return;
 
-        room.clients.forEach((client) => sendMsg(client, payload.data, opts));
+        room.clients.forEach((client) => sendMsg(client, payload as any, opts));
         return;
     }
 
     // ex: [rooms.broadcast#abc123, any]
     if (event.startsWith("rooms.broadcast")) {
-        if (!Array.isArray(payload.data)) return;
+        if (!Array.isArray(payload)) return;
 
         const name = getEventParam(event);
         if (!name) return;
@@ -236,7 +235,7 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
 
-        room.clients.forEach((client) => ws !== client && sendMsg(client, payload.data, opts));
+        room.clients.forEach((client) => ws !== client && sendMsg(client, payload as any, opts));
         return;
     }
 }

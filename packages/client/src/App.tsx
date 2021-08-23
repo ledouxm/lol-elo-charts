@@ -1,6 +1,7 @@
 import { Home } from "@/components/Home";
 import { WebDemo } from "@/components/WebDemo";
-import { Center, ChakraProvider, extendTheme, Flex, Spinner } from "@chakra-ui/react";
+import { Center, ChakraProvider, extendTheme, Flex, Spinner, useConst } from "@chakra-ui/react";
+import { removeUndefineds } from "@pastable/core";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
@@ -57,7 +58,7 @@ const SyncWrapper = ({ children }) => {
         emit("sub#games");
     });
 
-    useSocketConnection(getLocalPresence());
+    useSocketConnection(removeUndefineds({ ...getLocalPresence(), token: getAccessToken() }));
     usePresenceInit();
 
     useEffect(() => {

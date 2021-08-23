@@ -15,13 +15,13 @@ export const useSocketEvent = makeEventEmitterHook(wsEmitterAtom);
 
 export const useSocketEmit = () => {
     const wsMachine = useAtomValue(wsMachineAtom);
-    return (eventOrObj: string | { type: string; data?: any }, data?: any) => {
+    return <Data = any>(eventOrObj: string | { type: string; data?: Data }, data?: Data) => {
         const ctx = wsMachine.context;
         const payload =
             typeof eventOrObj === "string"
                 ? { ctx, event: eventOrObj, data }
                 : { ctx, event: eventOrObj.type, data: eventOrObj.data };
-        emit<any, any>(payload);
+        emit<Data, any>(payload);
     };
 };
 export type EventPayload = string | { type: string; data?: any };
