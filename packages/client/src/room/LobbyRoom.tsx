@@ -10,32 +10,22 @@ import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
 import { Player, Room } from "@/types";
 import { Box, Button, Flex, Select, SimpleGrid, Stack } from "@chakra-ui/react";
 import { findBy, getRandomString } from "@pastable/core";
-import { atom, useAtom } from "jotai";
-import { atomWithStorage, useUpdateAtom } from "jotai/utils";
+import { atomWithStorage } from "jotai/utils";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Route, Switch, useHistory, useParams } from "react-router-dom";
 import { Game, GameList } from "./GameList";
 
 export const roomNameAtom = atomWithStorage("platformer/room", "");
 export const RoomContext = createContext(
-    {} as ReturnType<typeof useRoomState> & { history: Votes; votes: Votes; selected?: string }
+    {} as LobbyRoomInterface & { history: Array<Vote>; votes: Array<Vote>; selected?: string }
 );
 export const useRoomContext = () => useContext(RoomContext);
 export type LobbyRoomInterface = UseRoomStateReturn<LobbyRoomState>;
-export const lobbyAtom = atom<LobbyRoomInterface | null>(null as LobbyRoomInterface);
 
 export const LobbyRoom = () => {
     const { name } = useParams<{ name?: string }>();
     const router = useHistory();
     const room = useRoomState<LobbyRoomState>(name);
-
-    // Set current lobby atom
-    const [lobby, setLobby] = useAtom(lobbyAtom);
-    useEffect(() => {
-        setLobby(room);
-    }, []);
-
-    console.log(room);
 
     useSocketEvent(`rooms/notFound`, () => {
         errorToast({ title: `Room ${name} not found` });
@@ -45,7 +35,7 @@ export const LobbyRoom = () => {
     useSocketEvent(`rooms/delete#${name}`, () => router.push("/"));
 
     // Keep the history of votes so that the order is consistent
-    const [history, setHistory] = useState<Votes>([]);
+    const [history, setHistory] = useState<Array<Vote>>([]);
     useSocketEvent(`rooms/update:votes.*#${name}`, (gameId: string, _event, playerId) => {
         const formated = { gameId, playerId };
         setHistory((history) => [...history.filter((vote) => vote.playerId !== formated.playerId), formated]);
@@ -91,7 +81,11 @@ export const LobbyRoom = () => {
     return (
         <Stack>
             <RoomContext.Provider value={{ ...room, history, votes, selected }}>
-                <BackButton />
+                <Stack direction="row">
+                    <BackButton />
+                    {!room.isIn && <Button onClick={room.join}>Join {room.name}</Button>}
+                </Stack>
+
                 <SimpleGrid columns={[1, 2]}>
                     <Stack>
                         <Stack direction="row">
@@ -123,7 +117,7 @@ export const LobbyRoom = () => {
                 </SimpleGrid>
                 <Box w="50%">
                     <Flex direction="column" minH="0" flex="1 1 auto" overflow="auto">
-                        {lobby && <Chat />}
+                        <Chat />
                     </Flex>
                 </Box>
                 <Switch>
@@ -151,7 +145,6 @@ export interface Vote {
     playerId: Player["id"];
     color?: string;
 }
-export type Votes = Vote[];
 
 const BackButton = () => {
     const room = useContext(RoomContext);

@@ -1,36 +1,23 @@
-import { myPresenceAtom } from "@/hooks/usePresence";
-import { lobbyAtom } from "@/room/LobbyRoom";
+import { useMyPresence } from "@/hooks/usePresence";
+import { LobbyRoomInterface, useRoomContext } from "@/room/LobbyRoom";
 import { Player } from "@/types";
-import { atom } from "jotai";
-import { useAtomValue } from "jotai/utils";
 import { KeyboardEvent, MouseEvent, useContext } from "react";
-
 import {
     ChatSuggestionListItem,
     ChatSuggestionsList,
+    useChatSuggestions,
     UseChatSuggestionsFilterFnProps,
     UseChatSuggestionsProps,
-    useChatSuggestions,
 } from "./ChatSuggestions";
 import { ChatSuggestionsContext } from "./ChatSuggestionsProvider";
 
 const filterFn = ({ value, item }: UseChatSuggestionsFilterFnProps<Player["username"]>) =>
     item.startsWith(value.replace("/w ", "").toLowerCase());
 
-// Using a Set here allow de-duplicating usernames
-export const usernamesAtom = atom((get) => {
-    const me = get(myPresenceAtom);
-    const lobby = get(lobbyAtom);
-
-    return Array.from(
-        new Set(lobby?.clients.filter((item) => item.id !== me.id).map((item) => item.username.toLowerCase()))
-    );
-});
-
 export const ChatUsernameSuggestions = ({ resultListRef }: Pick<UseChatSuggestionsProps, "resultListRef">) => {
     const { setValue, closeSuggestions, focusInput } = useContext(ChatSuggestionsContext);
-    const usernames = useAtomValue(usernamesAtom);
 
+    const usernames = useLobbyUsernames();
     const selectUsername = (index: number, event: KeyboardEvent | MouseEvent) => {
         if (!suggestions[index]) return;
 
@@ -58,4 +45,15 @@ export const ChatUsernameSuggestions = ({ resultListRef }: Pick<UseChatSuggestio
             emptyLabel="User not found in friends/lobby."
         />
     );
+};
+
+// Using a Set here allow de-duplicating usernames
+export const getLobbyUsernames = (lobby: LobbyRoomInterface, me: Player) =>
+    Array.from(new Set(lobby?.clients.filter((item) => item.id !== me.id).map((item) => item.username.toLowerCase())));
+export const useLobbyUsernames = () => {
+    const me = useMyPresence();
+    const lobby = useRoomContext();
+    const usernames = getLobbyUsernames(lobby, me);
+
+    return usernames;
 };

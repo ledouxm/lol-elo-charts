@@ -1,9 +1,10 @@
-import { api, persistAccessToken } from "@/api";
+import { api, getAccessToken, persistAccessToken } from "@/api";
 import { onAxiosError, successToast } from "@/functions/toasts";
 import { getRandomColor } from "@/functions/utils";
-import { getLocalPresence, persistLocalPresence } from "@/hooks/usePresence";
+import { persistLocalPresence } from "@/hooks/usePresence";
 import { Button, Center, Flex, Stack } from "@chakra-ui/react";
 import { getRandomIntIn } from "@pastable/core";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "react-query";
 import { useHistory } from "react-router-dom";
@@ -44,6 +45,13 @@ export const LoginForm = () => {
         getValues("type") === "login" ? loginMutation.mutate(values) : createMutation.mutate(values);
 
     const isAsGuest = watch("asGuest");
+
+    useEffect(() => {
+        const token = getAccessToken();
+        if (token) {
+            router.replace("/app");
+        }
+    }, []);
 
     return (
         <Stack as="form" onSubmit={handleSubmit(onSubmit)} spacing={4}>

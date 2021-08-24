@@ -3,7 +3,7 @@ import { errorToast } from "@/functions/toasts";
 import { makeId } from "@/functions/utils";
 import { useMyPresence } from "@/hooks/usePresence";
 import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
-import { lobbyAtom } from "@/room/LobbyRoom";
+import { useRoomContext } from "@/room/LobbyRoom";
 import { Flex, Stack } from "@chakra-ui/react";
 import { useSelection } from "@pastable/core";
 import { atom } from "jotai";
@@ -14,7 +14,7 @@ import { ChatFilterList } from "./ChatFilterList";
 import { ChatForm, ChatFormValues } from "./ChatForm";
 import { ChatList } from "./ChatList";
 import { ChatType } from "./ChatMessage";
-import { usernamesAtom } from "./ChatUsernameSuggestions";
+import { useLobbyUsernames } from "./ChatUsernameSuggestions";
 import { interpretChatCommand } from "./interpretCommand";
 import { ChatMessageData, ChatReceivedPayload } from "./types";
 
@@ -24,10 +24,9 @@ export function Chat() {
     const emit = useSocketEmit();
     const me = useMyPresence();
 
-    const lobby = useAtomValue(lobbyAtom);
-    const usernames = useAtomValue(usernamesAtom);
+    const lobby = useRoomContext();
+    const usernames = useLobbyUsernames();
 
-    const hasChat = lobby?.isSynced;
     const msgsRef = useAtomValue(msgsRefAtom);
     const [messages, actions] = useSelection<ChatMessageData>({
         initial: msgsRef.current,
@@ -108,19 +107,8 @@ export function Chat() {
                 <IconAction icon={AiOutlineStop} label="Clear chat messages" onClick={clear} />
                 <ChatFilterList {...tagProps} />
             </Flex>
-            <ChatList messages={filtered} isLoading={hasChat} onUsernameClick={onUsernameClick} />
+            <ChatList messages={filtered} isLoading={!lobby?.isSynced} onUsernameClick={onUsernameClick} />
             <ChatForm {...chatFormProps} />
         </Stack>
     );
-}
-
-export enum ChatEvent {
-    // Client emit
-    Send = "chat:send",
-    Whisper = "chat:whisper",
-    // Server emit
-    SentConfirmation = "chat:sent",
-    Received = "chat:received",
-    WhisperNotFound = "chat:whisper:not-found",
-    WhisperOffline = "chat:whisper:offline",
 }
