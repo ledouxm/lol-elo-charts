@@ -1,10 +1,10 @@
 import { Home } from "@/components/Home";
 import { WebDemo } from "@/components/WebDemo";
-import { Center, ChakraProvider, extendTheme, Flex, Spinner, useConst } from "@chakra-ui/react";
+import { Center, ChakraProvider, extendTheme, Flex, Spinner, Stack, useConst } from "@chakra-ui/react";
 import { removeUndefineds } from "@pastable/core";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
 import { api, getAccessToken } from "./api";
 import "./App.css";
 import { LoginForm } from "./components/LoginForm";
@@ -72,7 +72,10 @@ const SyncWrapper = ({ children }) => {
     if (!isSynced) {
         return (
             <Center h="100%">
-                <Spinner size="xl" />
+                <Stack>
+                    <Link to="/">Go back</Link>
+                    <Spinner size="xl" />
+                </Stack>
             </Center>
         );
     }

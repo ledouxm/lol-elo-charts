@@ -180,6 +180,8 @@ export const onConnection = async (
             if (!user) return sendMsg(ws, ["dm/notFound"], opts);
             if (!user.clients.size) return sendMsg(ws, ["dm/offline"], opts);
 
+            // Echo to the sender so he knows it was received properly
+            sendMsg(ws, payload, opts);
             user.clients.forEach((client) => sendMsg(client, payload, opts));
         }
 

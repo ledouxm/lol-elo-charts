@@ -1,91 +1,47 @@
 import { TextInput } from "@/components/TextInput";
+import { getStateValuePath } from "@/functions/xstate";
 import { useArrayCursor } from "@/hooks/useArrayCursor";
-import { Button, Stack, useColorModeValue, useDisclosure } from "@chakra-ui/react";
-import { callAll, on, WithOnSubmit } from "@pastable/core";
-import { atom, useAtom } from "jotai";
+import { Button, Stack, useColorModeValue } from "@chakra-ui/react";
+import { on, WithOnSubmit } from "@pastable/core";
+import { useMachine } from "@xstate/react";
 import { useAtomValue } from "jotai/utils";
-import { ChangeEvent, FocusEvent, MutableRefObject, useCallback, useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { ChangeEvent, FormEvent, MutableRefObject, useCallback, useEffect, useRef } from "react";
 import { msgsRefAtom } from "./Chat";
-import { commandList } from "./ChatCommand";
+import { extractCommandState, getChatFormMachine } from "./chatFormMachine";
 import { ChatSuggestionsProvider } from "./ChatSuggestionsProvider";
 
 export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormProps) => {
-    const {
-        register,
-        handleSubmit,
-        reset,
-        watch,
-        setValue,
-        formState: { errors },
-    } = useForm<ChatFormValues>({
-        defaultValues: { msg: "" },
-    });
+    const [state, send] = useMachine(() => getChatFormMachine({ inputRef: usernameInputRef }));
+    console.log(getStateValuePath(state), state.context.value);
 
-    const emptyField = () => reset({ msg: "" });
-    const resetState = () => callAll(emptyField, closeSuggestions, historyCursor.reset)();
-
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const openSuggestions = () => setShowSuggestions(true);
-    const closeSuggestions = () => setShowSuggestions(false);
-
-    const showCommandList = useDisclosure();
-
-    const onSubmit = (values: ChatFormValues) => {
-        const isValidMsg = onSubmitProp(values);
+    const onInput = (e: ChangeEvent<HTMLInputElement>) => send("INPUT", { value: e.target.value });
+    const onSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        const isValidMsg = onSubmitProp({ msg: usernameInputRef.current.value });
         if (!isValidMsg) return;
 
-        resetState();
+        send("RESET");
     };
-    const onInput = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-
-        if (!value.startsWith("/")) {
-            if (showSuggestions) {
-                closeSuggestions();
-            }
-            return;
-        }
-
-        if (!value) {
-            resetState();
-            return;
-        }
-
-        // Close suggestions if command was fully typed
-        const state = extractCommandState(value);
-        if (state.hasNoParams || state.hasFilledFirstParam || state.hasFilledSecondParam) {
-            closeSuggestions();
-            return;
-        }
-
-        if (!showSuggestions) {
-            openSuggestions();
-        }
-    };
-    const onFocus = (_event: FocusEvent) =>
-        value.startsWith("/") &&
-        hasFilledCommandSecondParam(value) === undefined &&
-        !showSuggestions &&
-        openSuggestions();
+    const setValue = (value: string) => send("SET_VALUE", { value });
+    const openSuggestions = () => send("OPEN_SUGGESTIONS");
+    const closeSuggestions = () => send("CLOSE_SUGGESTIONS");
 
     // Used to filter the suggestion list
-    const value = watch("msg", "");
+    const value = state.context.value;
     const focusInput = () => usernameInputRef.current?.focus();
 
     // Used to loop through whisper history with up/down keys
-    const historyCursor = useWhisperHistory(usernameInputRef.current, !showSuggestions);
+    // const historyCursor = useWhisperHistory(usernameInputRef.current, !showSuggestions);
 
-    const onCommandListBtnClick =
-        showSuggestions || showCommandList.isOpen
-            ? callAll(showCommandList.onClose, closeSuggestions)
-            : callAll(showCommandList.onOpen, openSuggestions);
+    const onCommandListBtnClick = () =>
+        state.matches("filled.withCommand.withSuggestions.opened") ? closeSuggestions() : openSuggestions();
 
     const commandListBtnRef = useRef<HTMLButtonElement>();
 
     const chatContextProps = {
-        value: showCommandList.isOpen ? "/" : value,
-        setValue: (value: string) => setValue("msg", value),
+        state,
+        value,
+        setValue,
         openSuggestions,
         closeSuggestions,
         focusInput,
@@ -94,25 +50,18 @@ export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormP
     };
 
     const bg = useColorModeValue("gray.500", "gray.600");
-    const msg = register("msg", { maxLength: 200 });
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
+        <form onSubmit={onSubmit} autoComplete="off">
             <Stack mt="auto" position="relative">
-                {showSuggestions && <ChatSuggestionsProvider {...chatContextProps} />}
+                {state.matches("filled.withCommand.withSuggestions") && (
+                    <ChatSuggestionsProvider {...chatContextProps} />
+                )}
                 <TextInput
                     placeholder="Send a message !"
-                    error={errors.msg}
-                    {...msg}
-                    ref={(el) => {
-                        msg.ref(el);
-                        usernameInputRef.current = el;
-                    }}
-                    onChange={(e) => {
-                        msg.onChange(e);
-                        onInput(e);
-                    }}
-                    onFocus={onFocus}
+                    ref={usernameInputRef}
+                    onChange={onInput}
+                    onFocus={openSuggestions}
                 />
                 <Stack direction="row" justifyContent="flex-end">
                     <Button bg={bg} onClick={onCommandListBtnClick} ref={commandListBtnRef}>
@@ -130,30 +79,6 @@ export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormP
 export type ChatFormValues = { msg: string };
 interface ChatFormProps extends WithOnSubmit<ChatFormValues, boolean> {
     usernameInputRef: MutableRefObject<HTMLInputElement>;
-}
-
-function extractCommandState(value: string) {
-    const hasSpace = value.includes(" ");
-    const [command, firstParam, secondParam] = value.split(" ");
-
-    const cmd = commandList.find((item) => value.startsWith(`/${item.command}`));
-
-    const hasNoParams = cmd && !cmd.param;
-    const hasFilledFirstParam = cmd?.param && firstParam;
-    const hasFilledSecondParam = cmd?.secondParam && secondParam;
-
-    const state = {
-        value,
-        cmd,
-        hasSpace,
-        command,
-        firstParam,
-        secondParam,
-        hasNoParams,
-        hasFilledFirstParam,
-        hasFilledSecondParam,
-    };
-    return state;
 }
 
 const hasFilledCommandSecondParam = (value: string) => extractCommandState(value).hasFilledSecondParam;

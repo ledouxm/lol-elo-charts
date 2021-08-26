@@ -29,7 +29,7 @@ export function RelativePortal({ children, referenceElement, options, ...portalP
 
     return (
         <Portal {...portalProps}>
-            <div ref={setPopperElement} style={popper.styles.popper} {...popper.attributes.popper}>
+            <div ref={setPopperElement} style={{ ...popper.styles.popper, zIndex: 10 }} {...popper.attributes.popper}>
                 {children}
             </div>
         </Portal>

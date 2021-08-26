@@ -13,20 +13,16 @@ const filterFn = ({ value, item }: UseChatSuggestionsFilterFnProps<ChatCommandDa
     item.command.startsWith(value.slice(1).toLowerCase());
 
 export const ChatCommandSuggestions = ({ resultListRef }: Pick<UseChatSuggestionsProps, "resultListRef">) => {
-    const { setValue, closeSuggestions, focusInput } = useContext(ChatSuggestionsContext);
-    const items = commandList;
+    const { setValue, focusInput } = useContext(ChatSuggestionsContext);
 
     const selectCommand = (index: number, event: KeyboardEvent | MouseEvent) => {
         if (!suggestions[index]) return;
 
         setValue(`/${suggestions[index].command}${suggestions[index].param ? " " : ""}`);
-        if (!suggestions[index].secondParam) {
-            closeSuggestions();
-        }
         event.type === "click" && focusInput();
     };
     const suggestions = useChatSuggestions({
-        items,
+        items: commandList,
         filterFn,
         resultListRef,
         activableSelector: ".suggestion",

@@ -67,15 +67,16 @@ export const LoginForm = () => {
                     wrapperProps={{ w: "auto" }}
                 />
             </Center>
-            <Flex direction="row" justifyContent={isAsGuest ? "center" : "space-around"}>
+            <Flex direction="row-reverse" justifyContent={isAsGuest ? "center" : "space-around"}>
+                <Button type="submit" onClick={() => setType("login")} colorScheme="twitter">
+                    Login
+                </Button>
+                {/* Reversing the order of btns so that the first one (Login) will get triggered on ENTER key submit */}
                 {!isAsGuest && (
                     <Button type="submit" onClick={() => setType("create")}>
                         Register
                     </Button>
                 )}
-                <Button type="submit" onClick={() => setType("login")} colorScheme="twitter">
-                    Login
-                </Button>
             </Flex>
         </Stack>
     );

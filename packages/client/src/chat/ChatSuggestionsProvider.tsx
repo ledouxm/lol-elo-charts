@@ -1,14 +1,16 @@
 import { Box } from "@chakra-ui/react";
 import { useClickAway } from "@pastable/core";
-import React, { MutableRefObject, createContext, useRef } from "react";
+import { MutableRefObject, createContext, useRef } from "react";
 
 import { RelativePortal, RelativePortalProps } from "@/components/RelativePortal";
 import { ChatCommandSuggestions } from "./ChatCommandSuggestions";
 import { ChatUsernameSuggestions } from "./ChatUsernameSuggestions";
+import { AnyState } from "@/functions/xstate";
 
 export const ChatSuggestionsContext = createContext<ChatSuggestionsContextProps>(null);
 
 interface ChatSuggestionsContextProps {
+    state: AnyState;
     value: string;
     setValue: (value: string) => void;
     openSuggestions: () => void;
@@ -20,7 +22,7 @@ interface ChatSuggestionsContextProps {
 
 // Handle container placement using PopperJS & manager when and which suggestions should be shown
 export const ChatSuggestionsProvider = (props: ChatSuggestionsContextProps) => {
-    const { value, closeSuggestions, inputElement } = props;
+    const { state, value, closeSuggestions, inputElement } = props;
 
     // Allow navigation using Up & Down keys
     const resultListRef = useRef<HTMLDivElement>();
@@ -33,14 +35,10 @@ export const ChatSuggestionsProvider = (props: ChatSuggestionsContextProps) => {
         }
     });
 
-    const popperOptions: RelativePortalProps["options"] = {
-        placement: "top-start",
-        modifiers: [{ name: "offset", options: { offset: [0, 20] } }],
-    };
-
     const canShowCommandList = !value.includes(" ");
     const canShowUsernameList = value.startsWith("/w ");
-    const shouldShowSuggestions = canShowCommandList || canShowUsernameList;
+    const shouldShowSuggestions =
+        state.matches("filled.withCommand.withSuggestions.opened") && (canShowCommandList || canShowUsernameList);
 
     return (
         <RelativePortal {...{ referenceElement: inputElement, options: popperOptions }}>
@@ -54,4 +52,9 @@ export const ChatSuggestionsProvider = (props: ChatSuggestionsContextProps) => {
             )}
         </RelativePortal>
     );
+};
+
+const popperOptions: RelativePortalProps["options"] = {
+    placement: "bottom-start",
+    modifiers: [{ name: "offset", options: { offset: [0, 20] } }],
 };

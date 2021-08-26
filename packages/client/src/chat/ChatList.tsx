@@ -1,12 +1,11 @@
+import { IconAction } from "@/components/IconAction";
 import { Box } from "@chakra-ui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { last } from "@pastable/core";
+import { useEffect, useRef, useState } from "react";
 import { BsArrowDown } from "react-icons/bs";
 import { useVirtual } from "react-virtual";
-
-import { IconAction } from "@/components/IconAction";
 import { ChatMessage, ChatMessageProps, ChatMessageSkeleton } from "./ChatMessage";
 import { ChatMessageData } from "./types";
-import { last } from "@pastable/core";
 
 interface ChatListProps extends Pick<ChatMessageProps, "onUsernameClick"> {
     messages: ChatMessageData[];
@@ -35,12 +34,7 @@ export function ChatList({ messages, isLoading, onUsernameClick }: ChatListProps
     }, [atBottom, setShowButton]);
 
     const parentRef = useRef(null as HTMLDivElement);
-    const rowVirtualizer = useVirtual({
-        size: isLoading ? 10 : messages.length,
-        parentRef,
-        estimateSize: useCallback(() => 35, []),
-        overscan: 5,
-    });
+    const rowVirtualizer = useVirtual({ size: isLoading ? 10 : messages.length, parentRef });
 
     const lastMessageIdRef = useRef(null as ChatMessageData["id"]);
     // Detect when chat is fully scrolled & Auto scroll on new messages
@@ -75,27 +69,25 @@ export function ChatList({ messages, isLoading, onUsernameClick }: ChatListProps
                     {rowVirtualizer.virtualItems.map((virtualRow) => (
                         <div
                             key={virtualRow.index}
+                            ref={virtualRow.measureRef}
                             className={virtualRow.index % 2 ? "ListItemOdd" : "ListItemEven"}
                             style={{
                                 position: "absolute",
                                 top: 0,
                                 left: 0,
                                 width: "100%",
-                                height: `${virtualRow.size}px`,
                                 transform: `translateY(${virtualRow.start}px)`,
                             }}
                         >
-                            <Box pt={["0.55rem", null, "0.65rem", null, "0.75rem"]}>
-                                {isLoading ? (
-                                    <ChatMessageSkeleton key={virtualRow.index} />
-                                ) : (
-                                    <ChatMessage
-                                        key={messages[virtualRow.index].msg}
-                                        onUsernameClick={onUsernameClick}
-                                        {...messages[virtualRow.index]}
-                                    />
-                                )}
-                            </Box>
+                            {isLoading ? (
+                                <ChatMessageSkeleton key={virtualRow.index} />
+                            ) : (
+                                <ChatMessage
+                                    key={messages[virtualRow.index].msg}
+                                    onUsernameClick={onUsernameClick}
+                                    {...messages[virtualRow.index]}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>

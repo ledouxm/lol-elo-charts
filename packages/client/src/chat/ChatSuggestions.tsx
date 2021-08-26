@@ -30,7 +30,7 @@ export function useChatSuggestions<T = any>({
     }, [value, items, filterFn]);
     const closeSuggestions = callAll(() => yNav.resetActive(), closeSuggestionsProp);
 
-    const [, yNav] = useVerticalNav({
+    const [_yIndex, yNav] = useVerticalNav({
         ...verticalNav,
         isOpen: true,
         containerRef: resultListRef,
@@ -45,6 +45,8 @@ export function useChatSuggestions<T = any>({
 
     // When items change, reset active & activable items
     useEffect(() => {
+        if (!suggestions.length) return;
+
         yNav.resetActive();
         yNav.initActivableItems();
     }, [suggestions]);
@@ -66,5 +68,13 @@ export function ChatSuggestionsList<T = any>({ suggestions, renderItem, emptyLab
     );
 }
 export const ChatSuggestionListItem = (props: BoxProps) => (
-    <Box as="span" px="4" className="suggestion" _selected={{ bgColor: "gray.600" }} cursor="pointer" {...props} />
+    <Box
+        as="span"
+        px="4"
+        className="suggestion"
+        _selected={{ bgColor: "gray.600" }}
+        _hover={{ bgColor: "gray.500" }}
+        cursor="pointer"
+        {...props}
+    />
 );

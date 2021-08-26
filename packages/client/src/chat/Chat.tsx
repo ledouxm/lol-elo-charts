@@ -57,7 +57,7 @@ export function Chat() {
                 return false;
             }
 
-            return;
+            return true;
         }
 
         actions.add({ id, msg, from: me, self: true, confirmed: false, type: ChatType.Lobby });
@@ -66,6 +66,7 @@ export function Chat() {
     };
 
     useSocketEvent<ChatReceivedPayload>("rooms.msg#" + lobby.name, ({ id, msg, from, type = ChatType.Lobby }) => {
+        console.log("MESSAGE", { id, msg, from, type });
         // Do not add msg sent by self, since they were optimistically added on submit
         if (from?.id === me.id) {
             // But instead confirm that they were properly sent

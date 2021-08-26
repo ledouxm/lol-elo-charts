@@ -1,7 +1,7 @@
 import { useMyPresence } from "@/hooks/usePresence";
 import { LobbyRoomInterface, useRoomContext } from "@/room/LobbyRoom";
 import { Player } from "@/types";
-import { KeyboardEvent, MouseEvent, useContext } from "react";
+import { KeyboardEvent, MouseEvent, useContext, useMemo } from "react";
 import {
     ChatSuggestionListItem,
     ChatSuggestionsList,
@@ -12,7 +12,7 @@ import {
 import { ChatSuggestionsContext } from "./ChatSuggestionsProvider";
 
 const filterFn = ({ value, item }: UseChatSuggestionsFilterFnProps<Player["username"]>) =>
-    item.startsWith(value.replace("/w ", "").toLowerCase());
+    item.toLowerCase().startsWith(value.replace("/w ", "").toLowerCase());
 
 export const ChatUsernameSuggestions = ({ resultListRef }: Pick<UseChatSuggestionsProps, "resultListRef">) => {
     const { setValue, closeSuggestions, focusInput } = useContext(ChatSuggestionsContext);
@@ -48,12 +48,12 @@ export const ChatUsernameSuggestions = ({ resultListRef }: Pick<UseChatSuggestio
 };
 
 // Using a Set here allow de-duplicating usernames
-export const getLobbyUsernames = (lobby: LobbyRoomInterface, me: Player) =>
-    Array.from(new Set(lobby?.clients.filter((item) => item.id !== me.id).map((item) => item.username.toLowerCase())));
+const getLobbyUsernames = (lobby: LobbyRoomInterface, me: Player) =>
+    Array.from(new Set((lobby?.clients || []).filter((item) => item.id !== me.id).map((item) => item.username)));
 export const useLobbyUsernames = () => {
     const me = useMyPresence();
     const lobby = useRoomContext();
-    const usernames = getLobbyUsernames(lobby, me);
+    const usernames = useMemo(() => getLobbyUsernames(lobby, me), [lobby.clients, me]);
 
     return usernames;
 };

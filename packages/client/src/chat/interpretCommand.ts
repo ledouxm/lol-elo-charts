@@ -3,10 +3,9 @@ import { useSocketEmit } from "@/hooks/useSocketConnection";
 import { LobbyRoomInterface } from "@/room/LobbyRoom";
 import { Player } from "@/types";
 import { SelectionActions } from "@pastable/core";
-import { ChatEvent } from "./Chat";
 import { ChatCommandName, commandListMap } from "./ChatCommand";
 import { ChatType } from "./ChatMessage";
-import { ChatMessageData, ChatWhisperPayload } from "./types";
+import { ChatMessageData } from "./types";
 
 export function interpretChatCommand({
     id,
@@ -24,13 +23,12 @@ export function interpretChatCommand({
     if (command === ChatCommandName.Whisper) {
         const [toUsername, message] = [parts[0], parts.slice(1).join(" ")];
 
-        if (!usernames.includes(toUsername)) return ChatInterpretCommandError.NotInLobby;
         if (!message) return ChatInterpretCommandError.NoMessage;
+        if (!usernames.includes(toUsername)) return ChatInterpretCommandError.NotInLobby;
+        if (!isUser(player.id)) return ChatInterpretCommandError.NeedsToBeUserToInitiateWhisper;
 
-        const toId = lobby.clients.find(
-            (participant) => isUser(participant.id) && participant.username === toUsername
-        )?.id;
-        if (!toId) return;
+        const toPlayer = lobby.clients.find((client) => client.username === toUsername);
+        if (!toPlayer) return ChatInterpretCommandError.NotInLobby;
 
         // TODO ?
         // Directly pass toId if found to avoid searching for the participant from its username server-side
@@ -46,7 +44,10 @@ export function interpretChatCommand({
         };
 
         actions.add(msgData);
-        emit("rooms.relay#" + lobby.name, [`whisper#${toId}`, id + "__#" + msg]);
+        emit("dm#" + toPlayer.id, [
+            `rooms.msg#` + lobby.name,
+            { id, msg: message, from: player, type: ChatType.Whisper },
+        ]);
         return;
     }
 
@@ -74,7 +75,7 @@ export function interpretChatCommand({
         };
 
         actions.add(msgData);
-        emit("rooms.relay#" + lobby.name, [`whisper#${toId}`, id + "__#" + msg]);
+        emit("dm#" + toId, [`rooms.msg#` + lobby.name, { id, msg: message, from: player, type: ChatType.Whisper }]);
         return;
     }
 
@@ -97,6 +98,7 @@ enum ChatInterpretCommandError {
     UnknownCommand = "Unknown command.",
     NoMessage = "Nothing to send.",
     NotInLobby = "You need to be in the same lobby to DM someone !",
+    NeedsToBeUserToInitiateWhisper = "Only registered users can initiate a private conversation.",
     NoWhisperReceived = "No one to reply to... how sad :(",
 }
 
