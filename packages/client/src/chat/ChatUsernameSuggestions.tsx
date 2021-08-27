@@ -2,6 +2,7 @@ import { useMyPresence } from "@/hooks/usePresence";
 import { LobbyRoomInterface, useRoomContext } from "@/room/LobbyRoom";
 import { Player } from "@/types";
 import { KeyboardEvent, MouseEvent, useContext, useMemo } from "react";
+import { ChatCommandName } from "./ChatCommand";
 import {
     ChatSuggestionListItem,
     ChatSuggestionsList,
@@ -11,20 +12,24 @@ import {
 } from "./ChatSuggestions";
 import { ChatSuggestionsContext } from "./ChatSuggestionsProvider";
 
-const filterFn = ({ value, item }: UseChatSuggestionsFilterFnProps<Player["username"]>) =>
-    item.toLowerCase().startsWith(value.replace("/w ", "").toLowerCase());
-
-export const ChatUsernameSuggestions = ({ resultListRef }: Pick<UseChatSuggestionsProps, "resultListRef">) => {
+export const ChatUsernameSuggestions = ({
+    resultListRef,
+    commandName,
+}: Pick<UseChatSuggestionsProps, "resultListRef"> & { commandName: ChatCommandName }) => {
     const { setValue, closeSuggestions, focusInput } = useContext(ChatSuggestionsContext);
 
     const usernames = useLobbyUsernames();
     const selectUsername = (index: number, event: KeyboardEvent | MouseEvent) => {
         if (!suggestions[index]) return;
 
-        setValue(`/w ${suggestions[index]} `);
+        setValue(`/${commandName} ${suggestions[index]} `);
         closeSuggestions();
         event.type === "click" && focusInput();
     };
+
+    const filterFn = ({ value, item }: UseChatSuggestionsFilterFnProps<Player["username"]>) =>
+        item.toLowerCase().startsWith(value.replace(`/${commandName} `, "").toLowerCase());
+
     const suggestions = useChatSuggestions({
         items: usernames,
         filterFn,
@@ -42,7 +47,7 @@ export const ChatUsernameSuggestions = ({ resultListRef }: Pick<UseChatSuggestio
                     {item}
                 </ChatSuggestionListItem>
             )}
-            emptyLabel="User not found in friends/lobby."
+            emptyLabel="User not found in lobby."
         />
     );
 };

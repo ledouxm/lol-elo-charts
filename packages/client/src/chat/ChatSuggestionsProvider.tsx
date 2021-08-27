@@ -6,6 +6,7 @@ import { RelativePortal, RelativePortalProps } from "@/components/RelativePortal
 import { ChatCommandSuggestions } from "./ChatCommandSuggestions";
 import { ChatUsernameSuggestions } from "./ChatUsernameSuggestions";
 import { AnyState } from "@/functions/xstate";
+import { ChatCommandName } from "./ChatCommand";
 
 export const ChatSuggestionsContext = createContext<ChatSuggestionsContextProps>(null);
 
@@ -36,7 +37,9 @@ export const ChatSuggestionsProvider = (props: ChatSuggestionsContextProps) => {
     });
 
     const canShowCommandList = !value.includes(" ");
-    const canShowUsernameList = value.startsWith("/w ");
+    const canShowUsernameList = [ChatCommandName.Whisper, ChatCommandName.Kick].some((commandName) =>
+        value.startsWith(`/${commandName} `)
+    );
     const shouldShowSuggestions =
         state.matches("filled.withCommand.withSuggestions.opened") && (canShowCommandList || canShowUsernameList);
 
@@ -46,7 +49,15 @@ export const ChatSuggestionsProvider = (props: ChatSuggestionsContextProps) => {
                 <ChatSuggestionsContext.Provider value={props}>
                     <Box w="100%" bgColor="#1f1f1e" ref={resultListRef}>
                         {canShowCommandList && <ChatCommandSuggestions resultListRef={resultListRef} />}
-                        {canShowUsernameList && <ChatUsernameSuggestions resultListRef={resultListRef} />}
+                        {value.startsWith(`/${ChatCommandName.Whisper} `) && (
+                            <ChatUsernameSuggestions
+                                resultListRef={resultListRef}
+                                commandName={ChatCommandName.Whisper}
+                            />
+                        )}
+                        {value.startsWith(`/${ChatCommandName.Kick} `) && (
+                            <ChatUsernameSuggestions resultListRef={resultListRef} commandName={ChatCommandName.Kick} />
+                        )}
                     </Box>
                 </ChatSuggestionsContext.Provider>
             )}
