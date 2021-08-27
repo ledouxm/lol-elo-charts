@@ -29,10 +29,10 @@ export const LobbyRoom = () => {
 
     useSocketEvent(`rooms/notFound`, () => {
         errorToast({ title: `Room ${name} not found` });
-        router.push("/");
+        router.push("/app");
     });
-    useSocketEvent(`rooms/leave#${name}`, () => router.push("/"));
-    useSocketEvent(`rooms/delete#${name}`, () => router.push("/"));
+    useSocketEvent(`rooms/leave#${name}`, () => router.push("/app"));
+    useSocketEvent(`rooms/delete#${name}`, () => router.push("/app"));
 
     // Keep the history of votes so that the order is consistent
     const [history, setHistory] = useState<Array<Vote>>([]);
