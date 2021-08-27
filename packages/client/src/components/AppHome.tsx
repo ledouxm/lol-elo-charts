@@ -22,7 +22,6 @@ export const AppHome = () => {
                 <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
                 <Route path={"/app/"} children={<CreateOrJoinGameForm />} />
             </Switch>
-            <AppDevTools />
         </Stack>
     );
 };

@@ -1,6 +1,9 @@
+import { LobbyRoomDemo } from "@/components/LobbyRoomDemo";
+import { PlayerList } from "@/components/PlayerList";
+import { PresenceName } from "@/components/PresenceName";
 import { successToast } from "@/functions/toasts";
 import { getRandomColor } from "@/functions/utils";
-import { usePresenceList, useUpdatePresence } from "@/hooks/usePresence";
+import { useUpdatePresence } from "@/hooks/usePresence";
 import { useRoomList } from "@/hooks/useRoomState";
 import { useSocketClient } from "@/hooks/useSocketClient";
 import { useSocketEventEmitter } from "@/hooks/useSocketConnection";
@@ -8,13 +11,11 @@ import { AvailableRoom, Player } from "@/types";
 import { Button, Center, chakra, Input, SimpleGrid, Stack, useColorMode } from "@chakra-ui/react";
 import { getRandomString } from "@pastable/core";
 import { useRef } from "react";
-import { LobbyRoomDemo } from "./LobbyRoomDemo";
-import { PlayerList } from "./PlayerList";
-import { PresenceName } from "./PresenceName";
 
 // TODO proxy+permission xxx.push() emit/throw etc
 const initialRoomState = { status: "waiting" };
-export const WebDemo = () => {
+
+export const RoomMonitor = () => {
     const setPresence = useUpdatePresence();
     const updateRandomColor = () => setPresence((player) => ({ ...player, color: getRandomColor() }));
 
@@ -27,8 +28,6 @@ export const WebDemo = () => {
     const roomList = useRoomList();
     const inputRef = useRef<HTMLInputElement>();
     const { toggleColorMode } = useColorMode();
-
-    // const presenceList = usePresenceList();
 
     return (
         <Stack w="100%">
@@ -97,7 +96,6 @@ export const WebDemo = () => {
                 ))}
             </SimpleGrid>
             <PlayerList />
-            {/* <LiveCursorsWithRefs /> */}
         </Stack>
     );
 };

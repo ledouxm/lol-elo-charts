@@ -1,16 +1,17 @@
 import { AppHome } from "@/components/AppHome";
-import { WebDemo } from "@/components/WebDemo";
+import { RoomMonitor } from "@/monitor/RoomMonitor";
 import { Center, ChakraProvider, extendTheme, Flex, Spinner, Stack } from "@chakra-ui/react";
 import { removeUndefineds } from "@pastable/core";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
 import { api, getAccessToken } from "./api";
-import "./App.css";
+import { AppDevTools } from "./components/AppDevTools";
 import { LoginForm } from "./components/LoginForm";
 import { WsEvent } from "./functions/ws";
 import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/usePresence";
 import { useSocketConnection, useSocketEmit, useSocketEvent } from "./hooks/useSocketConnection";
+import "./App.css";
 
 const queryClient = new QueryClient();
 const theme = extendTheme({ config: { initialColorMode: "light" } });
@@ -27,7 +28,7 @@ export function App() {
                                 children={
                                     <SyncWrapper>
                                         <Switch>
-                                            <Route path="/app/web" exact children={<WebDemo />} />
+                                            <Route path="/app/monitor" children={<RoomMonitor />} />
                                             <Route path="/app/" children={<AppHome />} />
                                         </Switch>
                                     </SyncWrapper>
@@ -42,6 +43,7 @@ export function App() {
                                 }
                             />
                         </Switch>
+                        <AppDevTools />
                     </BrowserRouter>
                 </Flex>
             </ChakraProvider>
