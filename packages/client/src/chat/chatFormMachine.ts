@@ -4,10 +4,10 @@ import { assign } from "xstate";
 import { commandList } from "./ChatCommand";
 
 export const getChatFormMachine = ({ inputRef }: { inputRef: MutableRefObject<HTMLInputElement> }) =>
-    createMachine(
+    createMachine<ChatFormContext, ChatFormEvents>(
         {
             id: "chatForm",
-            context: { value: "", inputRef, history: [] },
+            context: { value: "", inputRef },
             initial: "idle",
             states: {
                 idle: {},
@@ -55,19 +55,21 @@ export const getChatFormMachine = ({ inputRef }: { inputRef: MutableRefObject<HT
         },
         {
             actions: {
-                input: assign({ value: (ctx, event) => event.value }),
+                input: assign({ value: (ctx, event) => (event as ChatFormInputEvent).value }),
                 moveCursor: (ctx, event) => {}, // TODO
                 submit: (ctx, event) => {}, // TODO,
-                setInput: (ctx, event) => (ctx.inputRef.current.value = event.value),
-                setValue: assign({ value: (ctx, event) => event.value }),
+                setInput: (ctx, event) => (ctx.inputRef.current.value = (event as ChatFormInputEvent).value),
+                setValue: assign({ value: (ctx, event) => (event as ChatFormInputEvent).value }),
                 resetInput: (ctx, event) => (ctx.inputRef.current.value = ""),
                 resetValue: assign({ value: "" }),
             },
             guards: {
-                isValueEmpty: (ctx, event) => !Boolean(event.value),
-                hasCommand: (ctx, event) => event.value.startsWith("/"),
-                canShowSuggestions: (ctx, event) => canShowSuggestions(event.value || ctx.value),
-                canNOTShowSuggestions: (ctx, event) => !canShowSuggestions(event.value || ctx.value),
+                isValueEmpty: (ctx, event) => !Boolean((event as ChatFormInputEvent).value),
+                hasCommand: (ctx, event) => (event as ChatFormInputEvent).value.startsWith("/"),
+                canShowSuggestions: (ctx, event) =>
+                    canShowSuggestions((event as ChatFormInputEvent).value || ctx.value),
+                canNOTShowSuggestions: (ctx, event) =>
+                    !canShowSuggestions((event as ChatFormInputEvent).value || ctx.value),
             },
         }
     );
@@ -130,4 +132,16 @@ export function extractCommandState(value: string) {
         hasFilledSecondParam,
     };
     return state;
+}
+
+type ChatFormInputEvent = { type: "INPUT"; value: string };
+type ChatFormEvents =
+    | ChatFormInputEvent
+    | { type: "SET_VALUE"; value: string }
+    | { type: "RESET" }
+    | { type: "OPEN_SUGGESTIONS" }
+    | { type: "CLOSE_SUGGESTIONS" };
+interface ChatFormContext {
+    value: string;
+    inputRef: MutableRefObject<HTMLInputElement>;
 }
