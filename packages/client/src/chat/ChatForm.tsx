@@ -1,6 +1,6 @@
 import { TextInput } from "@/components/TextInput";
 import { getStateValuePath } from "@/functions/xstate";
-import { Button, Stack, useColorModeValue } from "@chakra-ui/react";
+import { Button, Stack } from "@chakra-ui/react";
 import { WithOnSubmit } from "@pastable/core";
 import { useMachine } from "@xstate/react";
 import { ChangeEvent, FormEvent, MutableRefObject, useRef } from "react";
@@ -38,8 +38,6 @@ export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormP
         inputElement: usernameInputRef.current,
         commandListBtnRef,
     };
-
-    const bg = useColorModeValue("gray.500", "gray.600");
 
     return (
         <form onSubmit={onSubmit} autoComplete="off">

@@ -91,6 +91,7 @@ export function Chat() {
         if (inputValue.startsWith("/w ")) return;
 
         usernameInputRef.current.value = `/w ${username} ${inputValue}`;
+        usernameInputRef.current.focus();
     };
 
     const [typeFilter, setTypeFilter] = useState(undefined);
