@@ -10,74 +10,47 @@ export const getChatFormMachine = ({ inputRef }: { inputRef: MutableRefObject<HT
             context: { value: "", inputRef, history: [] },
             initial: "idle",
             states: {
-                idle: {
-                    on: {
-                        INPUT: [
-                            { target: "filled.withCommand", cond: "hasCommand", actions: "input" },
-                            { target: "filled.withMessage", actions: "input" },
-                        ],
-                    },
-                },
+                idle: {},
                 filled: {
-                    initial: "withCommand",
+                    type: "parallel",
                     states: {
-                        withCommand: {
-                            initial: "withSuggestions",
+                        message: {
+                            initial: "basic",
                             states: {
-                                typing: {
+                                basic: {},
+                                command: {},
+                            },
+                        },
+                        suggestions: {
+                            initial: "opened",
+                            states: {
+                                opened: {
                                     on: {
-                                        OPEN_SUGGESTIONS: {
-                                            target: "withSuggestions.opened",
-                                            cond: "canShowSuggestions",
-                                        },
-                                        INPUT: {
-                                            target: "withSuggestions.opened",
-                                            cond: "canShowSuggestions",
-                                            actions: "input",
-                                        },
+                                        INPUT: { target: "closed", cond: "canNOTShowSuggestions", actions: "input" },
                                     },
                                 },
-                                withSuggestions: {
-                                    initial: "opened",
-                                    states: {
-                                        opened: {
-                                            on: {
-                                                CLOSE_SUGGESTIONS: { target: "closed" },
-                                                INPUT: {
-                                                    target: "closed",
-                                                    cond: "canNOTShowSuggestions",
-                                                    actions: "input",
-                                                },
-                                            },
-                                        },
-                                        closed: {
-                                            on: {
-                                                OPEN_SUGGESTIONS: { target: "opened", cond: "canShowSuggestions" },
-                                                INPUT: {
-                                                    target: "opened",
-                                                    cond: "canShowSuggestions",
-                                                    actions: "input",
-                                                },
-                                            },
-                                        },
-                                    },
+                                closed: {
+                                    on: { INPUT: { target: "opened", cond: "canShowSuggestions", actions: "input" } },
                                 },
                             },
-                            on: { MOVE_CURSOR: { actions: "moveCursor" } },
                         },
-                        withMessage: {},
                     },
-                    // TODO
-                    on: { SUBMIT: { target: "idle", actions: "submit" } },
                 },
             },
             on: {
                 INPUT: [
-                    { target: "idle", actions: ["resetInput", "resetValue"], cond: "isValueEmpty" },
-                    { actions: ["input"] },
+                    {
+                        target: "idle",
+                        actions: ["resetInput", "resetValue"],
+                        cond: "isValueEmpty",
+                    },
+                    { target: "filled.message.command", cond: "hasCommand", actions: "input" },
+                    { target: "filled.message.basic", actions: "input" },
                 ],
                 SET_VALUE: { actions: ["setValue", "setInput"] },
                 RESET: { target: "idle", actions: ["resetInput", "resetValue"] },
+                OPEN_SUGGESTIONS: { target: "filled.suggestions.opened" },
+                CLOSE_SUGGESTIONS: { target: "filled.suggestions.closed" },
             },
         },
         {

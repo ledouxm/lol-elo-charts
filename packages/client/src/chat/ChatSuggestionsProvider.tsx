@@ -41,7 +41,9 @@ export const ChatSuggestionsProvider = (props: ChatSuggestionsContextProps) => {
         value.startsWith(`/${commandName} `)
     );
     const shouldShowSuggestions =
-        state.matches("filled.withCommand.withSuggestions.opened") && (canShowCommandList || canShowUsernameList);
+        state.matches("filled.suggestions.opened") &&
+        state.matches("filled.message.command") &&
+        (canShowCommandList || canShowUsernameList);
 
     return (
         <RelativePortal {...{ referenceElement: inputElement, options: popperOptions }}>

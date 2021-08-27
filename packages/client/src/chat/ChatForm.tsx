@@ -33,11 +33,7 @@ export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormP
     // Used to loop through whisper history with up/down keys
     // const historyCursor = useWhisperHistory(usernameInputRef.current, !showSuggestions);
 
-    const onCommandListBtnClick = () =>
-        state.matches("filled.withCommand.withSuggestions.opened") ? closeSuggestions() : openSuggestions();
-
     const commandListBtnRef = useRef<HTMLButtonElement>();
-
     const chatContextProps = {
         state,
         value,
@@ -54,19 +50,14 @@ export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormP
     return (
         <form onSubmit={onSubmit} autoComplete="off">
             <Stack mt="auto" position="relative">
-                {state.matches("filled.withCommand.withSuggestions") && (
-                    <ChatSuggestionsProvider {...chatContextProps} />
-                )}
+                {state.matches("filled.suggestions") && <ChatSuggestionsProvider {...chatContextProps} />}
                 <TextInput
-                    placeholder="Send a message !"
+                    placeholder="Send a message ! (type / to see the list of commands"
                     ref={usernameInputRef}
                     onChange={onInput}
                     onFocus={openSuggestions}
                 />
                 <Stack direction="row" justifyContent="flex-end">
-                    <Button bg={bg} onClick={onCommandListBtnClick} ref={commandListBtnRef}>
-                        Commands
-                    </Button>
                     <Button type="submit" colorScheme="blue">
                         Send
                     </Button>
