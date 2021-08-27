@@ -58,7 +58,7 @@ const getLobbyUsernames = (lobby: LobbyRoomInterface, me: Player) =>
 export const useLobbyUsernames = () => {
     const me = useMyPresence();
     const lobby = useRoomContext();
-    const usernames = useMemo(() => getLobbyUsernames(lobby, me), [lobby.clients, me]);
+    const usernames = useMemo(() => getLobbyUsernames(lobby, me), [lobby.clients.length, me]);
 
     return usernames;
 };

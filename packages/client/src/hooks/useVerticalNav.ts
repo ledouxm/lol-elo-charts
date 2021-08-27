@@ -1,6 +1,5 @@
 import { usePrevious } from "@chakra-ui/react";
-import { KeyboardEventHandler, MutableRefObject, useCallback, useEffect, useState } from "react";
-
+import { KeyboardEventHandler, MutableRefObject, useEffect, useRef, useState } from "react";
 import { useArrayCursor } from "./useArrayCursor";
 
 export type UseVerticalNavProps = {
@@ -27,23 +26,28 @@ export function useVerticalNav({
     initialIndex,
     shouldLoop,
 }: UseVerticalNavProps) {
-    const [activableItems, setActivableItems] = useState<HTMLElement[]>([]);
-    const initActivableItems = useCallback(() => {
-        if (isOpen && containerRef.current) {
+    const activableItemsRef = useRef<Array<HTMLElement>>([]);
+    const setActivableItems = (items: Array<HTMLElement>) => (activableItemsRef.current = items);
+    const [length, setLength] = useState(0);
+
+    const initActivableItems = () => {
+        if (containerRef.current) {
             const items = Array.from(containerRef.current.querySelectorAll(activableSelector));
             items.forEach(setTabIndex(0));
             setActivableItems(items as HTMLElement[]);
+            setLength(items.length);
         } else {
             setActivableItems([]);
+            setLength(0);
         }
-    }, [isOpen]);
+    };
 
-    const [activeIndex, cursorActions] = useArrayCursor(activableItems.length, initialIndex, shouldLoop);
+    const [activeIndex, cursorActions] = useArrayCursor(length, initialIndex, shouldLoop);
     const prevActiveIndex = usePrevious(activeIndex);
 
     const resetActive = () => {
-        if (prevActiveIndex > -1 && activableItems[prevActiveIndex]) {
-            activableItems[prevActiveIndex].setAttribute("aria-selected", "false");
+        if (prevActiveIndex > -1 && activableItemsRef.current[prevActiveIndex]) {
+            activableItemsRef.current[prevActiveIndex].setAttribute("aria-selected", "false");
         }
         cursorActions.reset();
     };
@@ -54,20 +58,20 @@ export function useVerticalNav({
     // Update index & change/reset active item
     useEffect(() => {
         // When an element is active
-        if (activeIndex !== -1 && activableItems[activeIndex]) {
+        if (activeIndex !== -1 && activableItemsRef.current[activeIndex]) {
             // Unselect previous
-            if (prevActiveIndex > -1 && activableItems[prevActiveIndex]) {
-                activableItems[prevActiveIndex].setAttribute("aria-selected", "false");
+            if (prevActiveIndex > -1 && activableItemsRef.current[prevActiveIndex]) {
+                activableItemsRef.current[prevActiveIndex].setAttribute("aria-selected", "false");
             }
 
-            activableItems[activeIndex].setAttribute("aria-selected", "true");
-            activableItems[activeIndex].scrollIntoView({
+            activableItemsRef.current[activeIndex].setAttribute("aria-selected", "true");
+            activableItemsRef.current[activeIndex].scrollIntoView({
                 behavior: "smooth",
                 block: "end",
                 inline: "nearest",
             });
         }
-    }, [activableItems, prevActiveIndex, activeIndex]);
+    }, [prevActiveIndex, activeIndex]);
 
     const onKeyDown: KeyboardEventHandler = (event) => {
         if (!isOpen) return;
@@ -85,7 +89,7 @@ export function useVerticalNav({
         }
 
         // When there is no items
-        if (!activableItems.length) {
+        if (!activableItemsRef.current.length) {
             onKeyDownWithoutList?.(event);
             return;
         }
@@ -100,7 +104,7 @@ export function useVerticalNav({
         }
     };
 
-    const activeElement = activableItems[activeIndex];
+    const activeElement = activableItemsRef.current[activeIndex];
     return [activeIndex, { activeElement, resetActive, initActivableItems, onKeyDown }] as const;
 }
 

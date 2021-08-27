@@ -22,7 +22,7 @@ export const ChatCommandSuggestions = ({ resultListRef }: Pick<UseChatSuggestion
         event.type === "click" && focusInput();
     };
     const suggestions = useChatSuggestions({
-        items: commandList,
+        items: commandList, // TODO filter commandList from user.roles (get from presence.meta)
         filterFn,
         resultListRef,
         activableSelector: ".suggestion",

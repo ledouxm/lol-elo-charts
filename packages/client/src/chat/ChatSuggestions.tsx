@@ -49,7 +49,7 @@ export function useChatSuggestions<T = any>({
 
         yNav.resetActive();
         yNav.initActivableItems();
-    }, [suggestions]);
+    }, [suggestions.length]);
 
     return suggestions;
 }
