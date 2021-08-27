@@ -1,6 +1,6 @@
-import { Home } from "@/components/Home";
+import { AppHome } from "@/components/AppHome";
 import { WebDemo } from "@/components/WebDemo";
-import { Center, ChakraProvider, extendTheme, Flex, Spinner, Stack, useConst } from "@chakra-ui/react";
+import { Center, ChakraProvider, extendTheme, Flex, Spinner, Stack } from "@chakra-ui/react";
 import { removeUndefineds } from "@pastable/core";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -13,10 +13,9 @@ import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/
 import { useSocketConnection, useSocketEmit, useSocketEvent } from "./hooks/useSocketConnection";
 
 const queryClient = new QueryClient();
-
 const theme = extendTheme({ config: { initialColorMode: "light" } });
 
-function App() {
+export function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <ChakraProvider theme={theme}>
@@ -29,7 +28,7 @@ function App() {
                                     <SyncWrapper>
                                         <Switch>
                                             <Route path="/app/web" exact children={<WebDemo />} />
-                                            <Route path="/app/" children={<Home />} />
+                                            <Route path="/app/" children={<AppHome />} />
                                         </Switch>
                                     </SyncWrapper>
                                 }
@@ -82,5 +81,3 @@ const SyncWrapper = ({ children }) => {
 
     return children;
 };
-
-export default App;

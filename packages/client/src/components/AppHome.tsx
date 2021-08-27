@@ -7,7 +7,7 @@ import { LobbyRoom } from "../room/LobbyRoom";
 import { AppDevTools } from "./AppDevTools";
 import { PlayerList } from "./PlayerList";
 
-export const Home = () => {
+export const AppHome = () => {
     const history = useHistory();
 
     useSocketEvent<Array<Pick<Room, "name" | "type">>>("presence/reconnect", (list) => {
