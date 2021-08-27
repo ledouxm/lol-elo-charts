@@ -106,7 +106,12 @@ export function Chat() {
     return (
         <Stack h="100%">
             <Flex justifyContent="space-between" alignItems="center">
-                <IconAction icon={AiOutlineStop} label="Clear chat messages" onClick={clear} />
+                <IconAction
+                    icon={AiOutlineStop}
+                    label="Clear chat messages"
+                    onClick={clear}
+                    isDisabled={!Boolean(messages.length)}
+                />
                 <ChatFilterList {...tagProps} />
             </Flex>
             <ChatList messages={filtered} isLoading={!lobby?.isSynced} onUsernameClick={onUsernameClick} />
