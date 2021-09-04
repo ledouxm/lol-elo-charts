@@ -17,7 +17,7 @@ export const makePresence = <Value extends ObjectLiteral>(
         const setIsSynced = useUpdateAtom(isSyncedAtom);
         const setPresenceList = useUpdateAtom(presenceListAtom);
 
-        useSocketEvent("presence/update", (update: Value) => {
+        useSocketEvent("presence/state", (update: Value) => {
             onUpdate(update);
             setLocalPresence(update);
             setIsSynced(true);

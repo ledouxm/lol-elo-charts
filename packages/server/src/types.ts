@@ -17,6 +17,7 @@ export type WsEventPayload<Data = any> = [event: string, data?: Data];
 export interface BaseRoom<State = Map<any, any>> {
     name: string;
     clients: Set<AppWebsocket>;
+    watchers: Set<AppWebsocket>;
     state: State;
     internal: Map<any, any>;
     type: "simple" | "game";
@@ -123,6 +124,7 @@ export interface EventHandlerRef extends WsEventObject {
     };
     user: WsUser;
     globalSubscriptions: Map<GlobalSubscription, Set<AppWebsocket>>;
+    users: Map<AppWebsocket["id"], WsUser>;
     rooms: Map<string, SimpleRoom>;
     games: Map<string, GameRoom>;
 

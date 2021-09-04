@@ -72,3 +72,10 @@ ws.onConnection -> MikroORM.RequestContext -> getWsAuthState
 -   `User["id"]` = est toujours préfixé par "u-"
 -   les guests en revanche ont le prefix "g-"
 -   que ce soit pour user/guest, on renvoie un access token via jwt
+
+## Namings
+
+-   client = user|guest
+-   session = tab open
+-   user = registered user
+-   guest = unregistered user

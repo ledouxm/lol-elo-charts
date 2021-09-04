@@ -1,4 +1,5 @@
 import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
+import { LobbyRoomState } from "@/room/LobbyRoom";
 import { AvailableRoom, Player, Room } from "@/types";
 import { useConst } from "@chakra-ui/react";
 import { AnyFunction, hash, ObjectLiteral, set, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";
@@ -29,6 +30,9 @@ export const roomFamily = atomFamily(
     (props: Room) => atom(props),
     (a, b) => a.name === b.name
 );
+// TODO useRoomClient & extract client methods only ?
+// TODO useRoomEvents = extract useSocketEvent's ?
+// TODO useRoomState uses both
 export const useRoomState = <State extends ObjectLiteral = Room>(name: string) => {
     const initialValue = useConst({ name, clients: [], state: {} });
     const [room, setRoom] = useAtom(roomFamily(initialValue));
@@ -167,14 +171,27 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
         });
     });
 
-    return { name: room.name, state: room.state as State, clients: room.clients, isIn, isSynced, once, ...roomClient };
+    return {
+        name: room.name,
+        state: room.state as State,
+        clients: room.clients,
+        isIn,
+        isSynced,
+        once,
+        setRoom,
+        ...roomClient,
+    };
 };
-export type UseRoomStateReturn<State extends ObjectLiteral = Room> = ReturnType<typeof useRoomState> & { state: State };
+export type UseRoomStateReturn<State extends ObjectLiteral = LobbyRoomState> = ReturnType<typeof useRoomState> & {
+    state: State;
+};
 
 export const makeSpecificRoomClient = (client: RoomClient, name: Room["name"]) => ({
     ...client,
     get: () => client.get.apply(null, [name]) as void,
     join: () => client.join.apply(null, [name]) as void,
+    watch: () => client.watch.apply(null, [name]) as void,
+    unwatch: () => client.unwatch.apply(null, [name]) as void,
     create: (initialData: { initialState?: ObjectLiteral; type?: string }) =>
         client.create.apply(null, [name, initialData]) as void,
     update: <Field extends string = undefined>(update: Field extends undefined ? ObjectLiteral : any, field?: Field) =>

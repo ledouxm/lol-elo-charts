@@ -1,6 +1,6 @@
 import { useSocketEmit, useSocketStatus } from "@/hooks/useSocketConnection";
 import { Player, Room } from "@/types";
-import { ObjectLiteral, stringify } from "@pastable/core";
+import { ObjectLiteral } from "@pastable/core";
 import { usePresenceIsSynced } from "./usePresence";
 
 export const useSocketClient = () => {
@@ -17,6 +17,8 @@ export const useSocketClient = () => {
         list: () => emit("presence.list"),
         update: (state: Partial<Player>) => emit("presence.update", state),
         updateMeta: (meta: ObjectLiteral) => emit("presence.update#meta", meta),
+        get: (userId: Player["id"]) => emit("presence.get#" + userId),
+        getMeta: (userId: Player["id"]) => emit("presence.get:meta#" + userId),
     };
 
     const rooms: RoomClient = {
@@ -25,6 +27,8 @@ export const useSocketClient = () => {
         unsub: () => emit("unsub#rooms"),
         get: (name: Room["name"]) => emit("rooms.get#" + name),
         join: (name: Room["name"]) => emit("rooms.join#" + name),
+        watch: (name: Room["name"]) => emit("rooms.watch#" + name),
+        unwatch: (name: Room["name"]) => emit("rooms.unwatch#" + name),
         create: (name: Room["name"], { initialState, type }: { initialState?: ObjectLiteral; type?: string } = {}) =>
             emit(`rooms.create${type ? ":" + type : ""}#` + name, initialState),
         update: (name: Room["name"], update: ObjectLiteral, field?: string) =>
@@ -65,6 +69,8 @@ export interface PresenceClient {
     list: () => void;
     update: (state: Partial<Player>) => void;
     updateMeta: (meta: ObjectLiteral) => void;
+    get: (userId: Player["id"]) => void;
+    getMeta: (userId: Player["id"]) => void;
 }
 
 export interface RoomClient {
@@ -73,6 +79,8 @@ export interface RoomClient {
     unsub: () => void;
     get: (name: Room["name"]) => void;
     join: (name: Room["name"]) => void;
+    watch: (name: Room["name"]) => void;
+    unwatch: (name: Room["name"]) => void;
     create: (name: Room["name"], initialData?: { initialState?: ObjectLiteral; type?: string }) => void;
     update: (name: Room["name"], update: ObjectLiteral, field?: string) => void;
     leave: (name: Room["name"]) => void;
@@ -81,7 +89,7 @@ export interface RoomClient {
     relay: (name: Room["name"], msg: any) => void;
     broadcast: (name: Room["name"], msg: any) => void;
 }
-export interface GameRoomClient extends Omit<RoomClient, "create"> {
+export interface GameRoomClient extends Omit<RoomClient, "create" | "watch" | "unwatch"> {
     getMeta: (name: Room["name"], fields?: Array<string>) => void;
     updateMeta: (name: Room["name"], update: ObjectLiteral, field?: string) => void;
     create: (name: Room["name"], gameId: string) => void;

@@ -1,14 +1,16 @@
-import { getEventParam, getEventSpecificParam } from "../helpers";
+import { getClientMeta, getClientState, getEventParam, getEventSpecificParam } from "../helpers";
 import { EventHandlerRef, GlobalSubscription, WsEventPayload } from "../types";
 import { sendMsg } from "../ws-helpers";
 
 export function handlePresenceEvents({
+    opts,
     event,
     payload,
     ws,
     user,
     rooms,
     games,
+    users,
     globalSubscriptions,
     sendPresenceList,
     getPresenceMetaList,
@@ -91,6 +93,28 @@ export function handlePresenceEvents({
 
     if (event.startsWith("presence.list")) {
         return sendPresenceList();
+    }
+
+    // ex: [presence.get#user123]
+    // ex: [presence.get:meta#user123]
+    if (event.startsWith("presence.get")) {
+        const clientId = getEventParam(event);
+        if (!clientId) return;
+
+        const user = users.get(ws.id);
+        if (!user) return sendMsg(ws, ["presence/notFound", clientId], opts);
+
+        const type = getEventSpecificParam(event, clientId) || "state";
+        if (!Boolean(["state", "meta"].includes(type))) return sendMsg(ws, ["presence/get.invalid", clientId], opts);
+
+        const client = Array.from(user.clients)[0];
+        if (!client) sendMsg(ws, ["presence/offline", clientId], opts);
+
+        sendMsg(ws, [
+            `presence/${type}#` + clientId,
+            type === "state" ? getClientState(client) : getClientMeta(client),
+        ]);
+        return;
     }
 
     // ex: [roles.add:games#abc123, admin]

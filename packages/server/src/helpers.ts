@@ -10,6 +10,7 @@ export const getEventParam = (event: string, separator = "#") => event.split(sep
 export const getEventSpecificParam = (event: string, roomName: Room["name"]) =>
     (getEventParam(event, ":") || "").replace("#" + roomName, "");
 
+// TODO rename client -> session, makeUser -> makeClient ? since user is only a registered user here and might be udnefined
 export const makeUser = (id: AppWebsocket["id"], user?: User): WsUser => ({
     user,
     id: user?.id || id,
@@ -26,6 +27,7 @@ export const makeRoom = ({
     hooks,
     type: "simple",
     clients: new Set(),
+    watchers: new Set(),
     state: new Map(Object.entries(state || {})),
     config: { updateRate: 10 * 1000 },
     internal: new Map(Object.entries({ timers: new Map() })),

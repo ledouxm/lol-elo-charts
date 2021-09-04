@@ -11,6 +11,7 @@ import { LoginForm } from "./components/LoginForm";
 import { WsEvent } from "./functions/ws";
 import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/usePresence";
 import { useSocketConnection, useSocketEmit, useSocketEvent } from "./hooks/useSocketConnection";
+import { AppMonitor } from "./monitor/AppMonitor";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -28,7 +29,7 @@ export function App() {
                                 children={
                                     <SyncWrapper>
                                         <Switch>
-                                            <Route path="/app/monitor" children={<RoomMonitor />} />
+                                            <Route path="/app/monitor" children={<AppMonitor />} />
                                             <Route path="/app/" children={<AppHome />} />
                                         </Switch>
                                     </SyncWrapper>

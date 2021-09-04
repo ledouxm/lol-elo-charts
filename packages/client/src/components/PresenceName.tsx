@@ -1,6 +1,6 @@
 import { useLocalPresence } from "@/hooks/usePresence";
 import { Player } from "@/types";
-import { chakra, Editable, EditableInput, EditablePreview, EditableProps, Stack } from "@chakra-ui/react";
+import { Editable, EditableInput, EditablePreview, EditableProps } from "@chakra-ui/react";
 import { MutableRefObject, useEffect, useRef } from "react";
 
 export const PresenceName = () => {
@@ -10,19 +10,17 @@ export const PresenceName = () => {
 
     // Update preview if another PresenceName triggered an update
     useEffect(() => {
+        if (!presence?.username) return;
         ref.current.textContent = presence.username;
     }, [presence]);
 
     return (
-        <Stack direction="row">
-            <EditableName
-                inputRef={ref}
-                defaultValue={presence.username || "guest"}
-                onSubmit={updateName}
-                fontWeight="bold"
-            />
-            <chakra.span fontSize="xx-small">({presence.id})</chakra.span>
-        </Stack>
+        <EditableName
+            inputRef={ref}
+            defaultValue={presence?.username || "guest"}
+            onSubmit={updateName}
+            fontWeight="bold"
+        />
     );
 };
 

@@ -28,7 +28,7 @@ export function handleRoomsEvent({
         const name = getEventParam(event);
         if (!name) return sendMsg(ws, ["rooms/missingName", name], opts);
 
-        const roomId = getEventSpecificParam(event, name);
+        const roomId = getEventSpecificParam(event, name) || "lobby";
         if (!roomId) return sendMsg(ws, ["rooms/missingRoomId", { name, roomId }], opts);
         if (rooms.get(name)) return sendMsg(ws, ["rooms/exists", name], opts);
 
@@ -42,10 +42,7 @@ export function handleRoomsEvent({
 
         const sendFullState = (client: AppWebsocket) =>
             sendMsg(client, ["rooms/state#" + name, getRoomFullState(room)]);
-        const fullStateRefreshInterval = setInterval(
-            () => room.clients.forEach((client) => sendFullState(client)),
-            room.config.updateRate
-        );
+        const fullStateRefreshInterval = setInterval(() => room.clients.forEach(sendFullState), room.config.updateRate);
         const timers = room.internal.get("timers") as Map<string, NodeJS.Timer>;
         timers.set("fullState", fullStateRefreshInterval);
 
@@ -72,6 +69,34 @@ export function handleRoomsEvent({
         user.rooms.add(room);
         onJoinRoom(room);
         room.hooks?.["rooms.join"]?.({ room, ws });
+
+        return;
+    }
+
+    // ex: [rooms.watch#abc123]
+    if (event.startsWith("rooms.watch")) {
+        const name = getEventParam(event);
+        if (!name) return;
+
+        const room = rooms.get(name);
+        if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
+        if (room.watchers.has(ws)) return sendMsg(ws, ["rooms/alreadyWatching", name], opts);
+
+        room.watchers.add(ws);
+
+        return;
+    }
+
+    // ex: [rooms.unwatch#abc123]
+    if (event.startsWith("rooms.unwatch")) {
+        const name = getEventParam(event);
+        if (!name) return;
+
+        const room = rooms.get(name);
+        if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
+        if (!room.watchers.has(ws)) return sendMsg(ws, ["rooms/notWatching", name], opts);
+
+        room.watchers.delete(ws);
 
         return;
     }
@@ -130,6 +155,12 @@ export function handleRoomsEvent({
         room.hooks?.["rooms.update"]?.({ room, ws, event, field, broadcastEvent });
 
         broadcastEvent(room, event, payload);
+
+        // Watchers are not in the room as participants but still want to receive updates
+        const sendFullState = (client: AppWebsocket) =>
+            sendMsg(client, ["rooms/state#" + name, getRoomFullState(room)]);
+        room.watchers.forEach(sendFullState);
+
         return;
     }
 

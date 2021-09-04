@@ -13,6 +13,7 @@ export enum ChatCommandName {
     Kick = "kick",
 }
 
+// TODO permissions = hide kick command if roles doenst allow it
 export const commandList: ChatCommandData[] = [
     {
         command: ChatCommandName.Whisper,

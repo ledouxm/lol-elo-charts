@@ -1,3 +1,4 @@
+import { getRandomString } from "@pastable/core";
 import { IncomingMessage } from "http";
 import WebSocket from "ws";
 import { getWsAuthState } from "./auth";
@@ -87,12 +88,12 @@ export const onConnection = async (
             color: url.searchParams.get("color") || getRandomColor(),
         })
     );
-    ws.meta = new Map(Object.entries({ cursor: null }));
+    ws.meta = new Map(Object.entries({ cursor: null, sessionId: getRandomString() }));
     ws.internal = new Map(Object.entries({ timers: new Map() }));
     ws.roles = new Set(user.roles);
 
     // Send his presence
-    sendMsg(ws, ["presence/update", getClientState(ws)]);
+    sendMsg(ws, ["presence/state", getClientState(ws)]);
 
     // re-join rooms where the user is active on other clients
     sendMsg(ws, ["presence/reconnect", Array.from(user.rooms).map((room) => ({ name: room.name, type: room.type }))]);
@@ -132,6 +133,7 @@ export const onConnection = async (
         opts,
         user,
         globalSubscriptions,
+        users,
         rooms,
         games,
         // Misc
