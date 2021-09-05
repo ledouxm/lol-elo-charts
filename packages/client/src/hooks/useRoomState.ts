@@ -1,3 +1,4 @@
+import { EventCallback } from "@/functions/EventEmitter";
 import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
 import { LobbyRoomState } from "@/room/LobbyRoom";
 import { AvailableRoom, Player, Room } from "@/types";
@@ -5,7 +6,7 @@ import { useConst } from "@chakra-ui/react";
 import { AnyFunction, hash, ObjectLiteral, set, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";
 import { atom, useAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useMyPresence, usePresenceIsSynced } from "./usePresence";
 import { RoomClient, useSocketClient } from "./useSocketClient";
 
@@ -27,54 +28,41 @@ export const useRoomList = () => {
 };
 
 export const roomFamily = atomFamily(
-    (props: Room) => atom(props),
+    (props: Room & { isSynced?: boolean }) => atom(props),
     (a, b) => a.name === b.name
 );
-// TODO useRoomClient & extract client methods only ?
-// TODO useRoomEvents = extract useSocketEvent's ?
-// TODO useRoomState uses both
 export const useRoomState = <State extends ObjectLiteral = Room>(name: string) => {
     const initialValue = useConst({ name, clients: [], state: {} });
     const [room, setRoom] = useAtom(roomFamily(initialValue));
 
-    const client = useSocketClient();
-    const roomClient = useConst(makeSpecificRoomClient(client.rooms, name));
-
     const presence = useMyPresence();
     const isIn = room.clients.some((client) => client.id === presence.id);
 
+    const roomClient = useRoomClient(name);
     const emitter = useSocketEventEmitter();
-    const once = (event: string, cb: AnyFunction) => emitter.once(`rooms/${event}#${name}`, cb);
 
     const isPresenceSynced = usePresenceIsSynced();
-    const [isSynced, setRoomSynced] = useState(false);
 
     // Keep track of room.sync, if true this room will receive updates, else the user has not joined the room yet
     useEffect(() => {
-        if (isPresenceSynced && isSynced) return;
+        if (isPresenceSynced && room.isSynced) return;
 
         let cleanup;
         if (isPresenceSynced) {
-            const cb = () => setRoomSynced(true);
+            const cb = () => setRoom((room) => ({ ...room, isSynced: true }));
             cleanup = emitter.once("rooms/join#" + name, cb);
         } else {
-            setRoomSynced(false);
+            setRoom((room) => ({ ...room, isSynced: false }));
         }
 
-        if (!isSynced) {
+        if (!room.isSynced) {
             roomClient.get();
         }
 
         return () => {
             cleanup?.();
         };
-    }, [isPresenceSynced, isSynced]);
-
-    // Set room as unsynchronized on leave/kick + remove self from room.clients
-    useSocketEvent("rooms/leave#" + name, () => {
-        setRoomSynced(false);
-        setRoom((current) => ({ ...current, clients: current.clients.filter((client) => client.id !== presence.id) }));
-    });
+    }, [isPresenceSynced, room.isSynced]);
 
     // Init room hash to compare server updates to
     const prevStateHashRef = useRef<string>();
@@ -82,8 +70,17 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
         prevStateHashRef.current = hash(initialValue);
     }, []);
 
+    // Set room as unsynchronized on leave/kick + remove self from room.clients
+    useRoomEvent("rooms/leave#" + name, () => {
+        setRoom((current) => ({
+            ...current,
+            isSynced: false,
+            clients: current.clients.filter((client) => client.id !== presence.id),
+        }));
+    });
+
     // Granular state updates whenever someone triggers a state change
-    useSocketEvent<Partial<State>>("rooms/update#" + name, (update) => {
+    useRoomEvent<Partial<State>>("rooms/update#" + name, (update) => {
         setRoom((current) => {
             Object.entries(update).map(([key, value]) => {
                 const paths = key.split(".");
@@ -112,7 +109,7 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     });
 
     // Granular state updates whenever someone triggers a state change on a specific field
-    useSocketEvent<Partial<State>>("rooms/update:*#" + name, (payload, _event, path) => {
+    useRoomEvent<Partial<State>>("rooms/update:*#" + name, (payload, _event, path) => {
         setRoom((current) => {
             const updated = { ...current };
             set(updated, "state." + path, payload);
@@ -128,7 +125,7 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     });
 
     // Full room, retrieved every X seconds
-    useSocketEvent<Room>("rooms/state#" + name, (updated) => {
+    useRoomEvent<Room>("rooms/state#" + name, (updated) => {
         const updateHash = hash(updated);
         if (prevStateHashRef.current !== updateHash) {
             setRoom(updated);
@@ -137,10 +134,10 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     });
 
     // Reset room with that name on deleted
-    useSocketEvent("rooms/delete#" + name, () => setRoom(initialValue));
+    useRoomEvent("rooms/delete#" + name, () => setRoom(initialValue));
 
     // Add (or update) clients on join
-    useSocketEvent<Player>("rooms/join#" + name, (newClient) => {
+    useRoomEvent<Player>("rooms/join#" + name, (newClient) => {
         setRoom((current) => ({
             ...current,
             clients: current.clients.some((client) => client.id === newClient.id)
@@ -150,38 +147,55 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     });
 
     // Update room.clients when their presence is updated
-    useSocketEvent<Array<Player>>("presence/list", (update) => {
-        setRoom((current) => {
-            const updated = {
-                ...current,
-                clients: sortArrayOfObjectByPropFromArray(
-                    update.filter((presence) => current.clients.some((inRoom) => inRoom.id === presence.id)),
-                    "id",
-                    current.clients.map((client) => client.id)
-                ),
-            };
-            const updateHash = hash(updated);
+    useSocketEvent<Array<Player>>(
+        "presence/list",
+        (update) => {
+            console.log("presecne/list");
+            setRoom((current) => {
+                const updated = {
+                    ...current,
+                    clients: sortArrayOfObjectByPropFromArray(
+                        update.filter((presence) => current.clients.some((inRoom) => inRoom.id === presence.id)),
+                        "id",
+                        current.clients.map((client) => client.id)
+                    ),
+                };
+                const updateHash = hash(updated);
 
-            if (prevStateHashRef.current !== updateHash) {
-                prevStateHashRef.current = updateHash;
-                return updated;
-            }
+                if (prevStateHashRef.current !== updateHash) {
+                    prevStateHashRef.current = updateHash;
+                    return updated;
+                }
 
-            return current;
-        });
-    });
+                return current;
+            });
+        },
+        name
+    );
 
     return {
-        name: room.name,
+        ...room,
         state: room.state as State,
-        clients: room.clients,
         isIn,
-        isSynced,
-        once,
         setRoom,
         ...roomClient,
     };
 };
+
+const useRoomEvent = <T = any>(event: string, callback: EventCallback<T>) =>
+    useSocketEvent(event, callback, getEventParam(event));
+const getEventParam = (event: string, separator = "#") => event.split(separator)[1];
+
+export const useRoomClient = (name: Room["name"]) => {
+    const client = useSocketClient();
+    const roomClient = useConst(makeSpecificRoomClient(client.rooms, name));
+
+    const emitter = useSocketEventEmitter();
+    const once = (event: string, cb: AnyFunction) => emitter.once(`rooms/${event}#${name}`, cb);
+
+    return { ...roomClient, once };
+};
+
 export type UseRoomStateReturn<State extends ObjectLiteral = LobbyRoomState> = ReturnType<typeof useRoomState> & {
     state: State;
 };
