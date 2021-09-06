@@ -23,8 +23,13 @@ export const makePresence = <Value extends ObjectLiteral>(
             setIsSynced(true);
         });
         useSocketEvent("presence/list", setPresenceList);
-        useSocketEvent(WsEvent.Close, () => setIsSynced(false));
-        useSocketEvent(WsEvent.Error, () => setIsSynced(false));
+
+        const onDisconnect = () => {
+            setIsSynced(false);
+            setPresenceList([]);
+        };
+        useSocketEvent(WsEvent.Close, onDisconnect);
+        useSocketEvent(WsEvent.Error, onDisconnect);
     };
 
     // Presence State

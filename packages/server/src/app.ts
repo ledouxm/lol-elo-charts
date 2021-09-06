@@ -9,7 +9,7 @@ import { routes } from "./routes";
 import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsUser } from "./types";
 
 export const makeApp = async () => {
-    const app = fastify({ logger: true });
+    const app = fastify({ logger: false });
     const orm = await makeOrm();
 
     app.register(require("fastify-cors"));

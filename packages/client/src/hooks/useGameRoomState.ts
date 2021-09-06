@@ -4,7 +4,7 @@ import { useConst } from "@chakra-ui/react";
 import { AnyFunction, ObjectLiteral, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";
 import { atom, useAtom } from "jotai";
 import { atomFamily, useAtomValue } from "jotai/utils";
-import { initialPresence } from "./usePresence";
+import { useMyPresence } from "./usePresence";
 import { makeSpecificRoomClient } from "./useRoomState";
 import { GameRoomClient, useSocketClient } from "./useSocketClient";
 
@@ -35,8 +35,9 @@ export const useGameRoomRef = <State extends ObjectLiteral = Room>(name: string)
     );
 
     // Remove self from room.clients on leave
+    const me = useMyPresence();
     useSocketEvent("rooms/leave#" + name, () => {
-        gameRef.current.clients = gameRef.current.clients.filter((client) => client.id !== initialPresence.id);
+        gameRef.current.clients = gameRef.current.clients.filter((client) => client.id !== me.id);
     });
 
     // Update room.clients when their presence is updated
@@ -87,10 +88,11 @@ export const useGameRoomState = <State extends ObjectLiteral = Room>(name: strin
     );
 
     // Remove self from room.clients on leave
+    const me = useMyPresence();
     useSocketEvent("rooms/leave#" + name, () => {
         setGame((current) => ({
             ...current,
-            clients: current.clients.filter((client) => client.id !== initialPresence.id),
+            clients: current.clients.filter((client) => client.id !== me.id),
         }));
     });
 

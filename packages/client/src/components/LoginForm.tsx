@@ -1,9 +1,10 @@
-import { api, persistAccessToken } from "@/api";
+import { api, getAccessToken, persistAccessToken } from "@/api";
 import { onAxiosError, successToast } from "@/functions/toasts";
 import { getRandomColor } from "@/functions/utils";
-import { getLocalPresence, persistLocalPresence } from "@/hooks/usePresence";
+import { persistLocalPresence } from "@/hooks/usePresence";
 import { Button, Center, Flex, Stack } from "@chakra-ui/react";
 import { getRandomIntIn } from "@pastable/core";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "react-query";
 import { useHistory } from "react-router-dom";
@@ -45,6 +46,13 @@ export const LoginForm = () => {
 
     const isAsGuest = watch("asGuest");
 
+    useEffect(() => {
+        const token = getAccessToken();
+        if (token) {
+            router.replace("/app");
+        }
+    }, []);
+
     return (
         <Stack as="form" onSubmit={handleSubmit(onSubmit)} spacing={4}>
             <Stack direction="row">
@@ -59,15 +67,16 @@ export const LoginForm = () => {
                     wrapperProps={{ w: "auto" }}
                 />
             </Center>
-            <Flex direction="row" justifyContent={isAsGuest ? "center" : "space-around"}>
+            <Flex direction="row-reverse" justifyContent={isAsGuest ? "center" : "space-around"}>
+                <Button type="submit" onClick={() => setType("login")} colorScheme="twitter">
+                    Login
+                </Button>
+                {/* Reversing the order of btns so that the first one (Login) will get triggered on ENTER key submit */}
                 {!isAsGuest && (
                     <Button type="submit" onClick={() => setType("create")}>
                         Register
                     </Button>
                 )}
-                <Button type="submit" onClick={() => setType("login")} colorScheme="twitter">
-                    Login
-                </Button>
             </Flex>
         </Stack>
     );

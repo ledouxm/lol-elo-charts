@@ -1,6 +1,10 @@
 import { getNextIndex, getRandomIntIn, getRandomString, pickOne } from "@pastable/core";
 
 export const makeId = () => getRandomString(12);
+export const isUser = (id: string) => id.startsWith("u-");
+export const isGuest = (id: string) => id.startsWith("g-");
+
+// General
 
 const hexLetters = "0123456789ABCDEF".toLowerCase();
 const hexLettersArray = hexLetters.split("");

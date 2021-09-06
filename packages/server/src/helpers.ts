@@ -56,14 +56,14 @@ export enum GameId {
 
 // Presence
 export const getClients = (clients: Set<AppWebsocket>) =>
-    Array.from(clients.values()).filter((client) => client.readyState === WebSocket.OPEN);
+    Array.from(clients.values()).filter((client) => client.readyState === WebSocket.OPEN && client.id && client.state);
 export const getClientState = (ws: AppWebsocket) => ({
-    id: (ws as AppWebsocket).id,
-    ...Object.fromEntries(Array.from((ws as AppWebsocket).state.entries())),
+    id: ws.id,
+    ...Object.fromEntries(Array.from(ws.state.entries())),
 });
 export const getClientMeta = (ws: AppWebsocket) => ({
-    id: (ws as AppWebsocket).id,
-    ...Object.fromEntries(Array.from((ws as AppWebsocket).meta.entries())),
+    id: ws.id,
+    ...Object.fromEntries(Array.from(ws.meta.entries())),
 });
 export const isUserInSet = (set: Set<AppWebsocket>, id: AppWebsocket["id"]) => {
     for (let elem of set) {

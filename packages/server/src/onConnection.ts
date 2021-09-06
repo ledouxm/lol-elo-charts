@@ -5,7 +5,7 @@ import { User } from "./entities/User";
 import { handleGamesEvent } from "./events/games";
 import { handlePresenceEvents } from "./events/presence";
 import { handleRoomsEvent } from "./events/rooms";
-import { getClients, getClientState, getRoomFullState, makeUrl } from "./helpers";
+import { getClients, getClientState, getEventParam, getRoomFullState, makeUrl } from "./helpers";
 import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsEventPayload, WsUser } from "./types";
 import { getRandomColor } from "./utils";
 import { decode, sendMsg } from "./ws-helpers";
@@ -89,7 +89,7 @@ export const onConnection = async (
     );
     ws.meta = new Map(Object.entries({ cursor: null }));
     ws.internal = new Map(Object.entries({ timers: new Map() }));
-    ws.roles = new Set(user.roles); // TODO get initial global roles from db, ex: [modo, admin, superadmin]
+    ws.roles = new Set(user.roles);
 
     // Send his presence
     sendMsg(ws, ["presence/update", getClientState(ws)]);
@@ -162,15 +162,27 @@ export const onConnection = async (
         // relay (everyone) / broadcast (everyone but self)
         if (["relay", "broadcast"].includes(event)) {
             (wss.clients as Set<AppWebsocket>).forEach((client) => {
-                if (client.readyState !== WebSocket.OPEN) return;
-                if (!Array.isArray(payload.data)) return;
+                if (!Array.isArray(payload)) return;
 
                 const canSend = event === "broadcast" ? client.id !== ws.id : true;
                 if (!canSend) return;
 
-                return client.send(data, opts);
+                sendMsg(client, payload as any, opts);
             });
             return;
+        }
+
+        if (event.startsWith("dm")) {
+            const userId = getEventParam(event);
+            if (!userId) return sendMsg(ws, ["dm/missingUserId"], opts);
+
+            const user = users.get(userId);
+            if (!user) return sendMsg(ws, ["dm/notFound"], opts);
+            if (!user.clients.size) return sendMsg(ws, ["dm/offline"], opts);
+
+            // Echo to the sender so he knows it was received properly
+            sendMsg(ws, payload, opts);
+            user.clients.forEach((client) => sendMsg(client, payload, opts));
         }
 
         if (event.startsWith("sub") || event.startsWith("unsub") || event.startsWith("presence.")) {

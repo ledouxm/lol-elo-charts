@@ -1,5 +1,5 @@
 import { throttle } from "@/functions/utils";
-import { initialPresence, useLocalPresence, useOtherPresences, usePresenceList } from "@/hooks/usePresence";
+import { useLocalPresence, useMyPresence, useOtherPresences, usePresenceList } from "@/hooks/usePresence";
 import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
 import { Player } from "@/types";
 import { chakra, useEventListener } from "@chakra-ui/react";
@@ -113,6 +113,7 @@ export function LiveCursorsWithRefs() {
     // Will trigger a re-render on presence list update,
     // e.g when someone arrives/exits or update its username/color
     const presenceList = usePresenceList();
+    const me = useMyPresence();
 
     return (
         <chakra.div
@@ -128,7 +129,7 @@ export function LiveCursorsWithRefs() {
         >
             <chakra.div mt="auto" mb="20px" ref={positionTxtRef} />
             {presenceList.map(({ id, color }, index) =>
-                initialPresence.id == id ? null : <CursorWithRef key={id} color={color} index={index} setRef={setRef} />
+                me.id == id ? null : <CursorWithRef key={id} color={color} index={index} setRef={setRef} />
             )}
         </chakra.div>
     );

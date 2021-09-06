@@ -1,9 +1,10 @@
 import { getSaturedColor } from "@/functions/utils";
-import { usePresenceList, initialPresence } from "@/hooks/usePresence";
+import { usePresenceList, useMyPresence } from "@/hooks/usePresence";
 import { Box, Center, chakra, Stack } from "@chakra-ui/react";
 
 export const PlayerList = () => {
     const players = usePresenceList();
+    const me = useMyPresence();
 
     return (
         <Box pos="fixed" top="100px" right="0">
@@ -15,7 +16,7 @@ export const PlayerList = () => {
                             top="0"
                             right="100%"
                             h="100%"
-                            w={initialPresence.id === player.id ? "30px" : "20px"}
+                            w={me.id === player.id ? "30px" : "20px"}
                             bgColor={player.color}
                         ></Center>
                         <chakra.span color="white" fontWeight="bold">

@@ -1,40 +1,41 @@
+import { Chat } from "@/chat/Chat";
 import { errorToast } from "@/functions/toasts";
 import { useGameRoomRef } from "@/hooks/useGameRoomState";
 import { useMyPresence } from "@/hooks/usePresence";
-import { useRoomState } from "@/hooks/useRoomState";
+import { useRoomState, UseRoomStateReturn } from "@/hooks/useRoomState";
 import { useRoutePath } from "@/hooks/useRoutePath";
 import { useSocketClient } from "@/hooks/useSocketClient";
 import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
 import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
 import { Player, Room } from "@/types";
-import { Box, Button, Select, Stack } from "@chakra-ui/react";
+import { Box, Button, Flex, Select, SimpleGrid, Stack } from "@chakra-ui/react";
 import { findBy, getRandomString } from "@pastable/core";
 import { atomWithStorage } from "jotai/utils";
 import { createContext, useContext, useEffect, useState } from "react";
-import { Route, Switch, useHistory, useParams, useRouteMatch } from "react-router-dom";
+import { Route, Switch, useHistory, useParams } from "react-router-dom";
 import { Game, GameList } from "./GameList";
 
 export const roomNameAtom = atomWithStorage("platformer/room", "");
 export const RoomContext = createContext(
-    {} as ReturnType<typeof useRoomState> & { history: Votes; votes: Votes; selected?: string }
+    {} as LobbyRoomInterface & { history: Array<Vote>; votes: Array<Vote>; selected?: string }
 );
+export const useRoomContext = () => useContext(RoomContext);
+export type LobbyRoomInterface = UseRoomStateReturn<LobbyRoomState>;
 
 export const LobbyRoom = () => {
     const { name } = useParams<{ name?: string }>();
     const router = useHistory();
-    const room = useRoomState<RoomState>(name);
-
-    console.log(room);
+    const room = useRoomState<LobbyRoomState>(name);
 
     useSocketEvent(`rooms/notFound`, () => {
         errorToast({ title: `Room ${name} not found` });
-        router.push("/");
+        router.push("/app");
     });
-    useSocketEvent(`rooms/leave#${name}`, () => router.push("/"));
-    useSocketEvent(`rooms/delete#${name}`, () => router.push("/"));
+    useSocketEvent(`rooms/leave#${name}`, () => router.push("/app"));
+    useSocketEvent(`rooms/delete#${name}`, () => router.push("/app"));
 
     // Keep the history of votes so that the order is consistent
-    const [history, setHistory] = useState<Votes>([]);
+    const [history, setHistory] = useState<Array<Vote>>([]);
     useSocketEvent(`rooms/update:votes.*#${name}`, (gameId: string, _event, playerId) => {
         const formated = { gameId, playerId };
         setHistory((history) => [...history.filter((vote) => vote.playerId !== formated.playerId), formated]);
@@ -80,31 +81,44 @@ export const LobbyRoom = () => {
     return (
         <Stack>
             <RoomContext.Provider value={{ ...room, history, votes, selected }}>
-                <BackButton />
                 <Stack direction="row">
-                    <Box>Room {room.name}</Box>
-                    <Box>{room.clients.length} players</Box>
+                    <BackButton />
+                    {!room.isIn && <Button onClick={room.join}>Join {room.name}</Button>}
                 </Stack>
-                <Stack direction="row">
-                    <Select
-                        placeholder="Mode"
-                        maxW="200px"
-                        onChange={updateMode}
-                        isDisabled={!isRoomAdmin}
-                        value={room.state.mode}
-                    >
-                        <option value="democracy">Democracy</option>
-                        <option value="anarchy">Anarchy</option>
-                        <option value="monarchy">Monarchy</option>
-                    </Select>
-                    {isRoomAdmin && (
-                        <Button onClick={makeGame} isDisabled={!room.state.selectedGame}>
-                            make game
-                        </Button>
-                    )}
-                </Stack>
-                <Box>
-                    <pre>{JSON.stringify(room.state, null, 4)}</pre>
+
+                <SimpleGrid columns={[1, 2]}>
+                    <Stack>
+                        <Stack direction="row">
+                            <Box>Room {room.name}</Box>
+                            <Box>{room.clients.length} players</Box>
+                        </Stack>
+                        <Stack direction="row">
+                            <Select
+                                placeholder="Mode"
+                                maxW="200px"
+                                onChange={updateMode}
+                                isDisabled={!isRoomAdmin}
+                                value={room.state.mode}
+                            >
+                                <option value="democracy">Democracy</option>
+                                <option value="anarchy">Anarchy</option>
+                                <option value="monarchy">Monarchy</option>
+                            </Select>
+                            {isRoomAdmin && (
+                                <Button onClick={makeGame} isDisabled={!room.state.selectedGame}>
+                                    make game
+                                </Button>
+                            )}
+                        </Stack>
+                    </Stack>
+                    <Box>
+                        <pre>{JSON.stringify(room.state, null, 4)}</pre>
+                    </Box>
+                </SimpleGrid>
+                <Box w="50%">
+                    <Flex direction="column" minH="0" flex="1 1 auto" overflow="auto">
+                        <Chat />
+                    </Flex>
                 </Box>
                 <Switch>
                     <Route
@@ -118,7 +132,7 @@ export const LobbyRoom = () => {
     );
 };
 
-export interface RoomState {
+export interface LobbyRoomState {
     admin: string;
     selectedGame?: string;
     votes: Record<Player["id"], Game["id"]>;
@@ -131,7 +145,6 @@ export interface Vote {
     playerId: Player["id"];
     color?: string;
 }
-export type Votes = Vote[];
 
 const BackButton = () => {
     const room = useContext(RoomContext);

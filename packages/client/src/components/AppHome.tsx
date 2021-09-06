@@ -2,12 +2,12 @@ import { useSocketEvent } from "@/hooks/useSocketConnection";
 import { CreateOrJoinGameForm } from "@/room/CreateOrJoinGameForm";
 import { Room } from "@/types";
 import { Stack } from "@chakra-ui/react";
-import { Route, useHistory } from "react-router-dom";
+import { Route, Switch, useHistory } from "react-router-dom";
 import { LobbyRoom } from "../room/LobbyRoom";
 import { AppDevTools } from "./AppDevTools";
 import { PlayerList } from "./PlayerList";
 
-export const Home = () => {
+export const AppHome = () => {
     const history = useHistory();
 
     useSocketEvent<Array<Pick<Room, "name" | "type">>>("presence/reconnect", (list) => {
@@ -16,11 +16,12 @@ export const Home = () => {
     });
 
     return (
-        <Stack w="100%" overflow="hidden">
+        <Stack w="100%" overflow="auto">
             <PlayerList />
-            <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
-            <Route path={"/app/"} children={<CreateOrJoinGameForm />} />
-            <AppDevTools />
+            <Switch>
+                <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
+                <Route path={"/app/"} children={<CreateOrJoinGameForm />} />
+            </Switch>
         </Stack>
     );
 };

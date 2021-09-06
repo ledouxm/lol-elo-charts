@@ -1,5 +1,5 @@
 import { successToast } from "@/functions/toasts";
-import { initialPresence } from "@/hooks/usePresence";
+import { useMyPresence } from "@/hooks/usePresence";
 import { useRoomState } from "@/hooks/useRoomState";
 import { AvailableRoom, Room } from "@/types";
 import { Button, Stack } from "@chakra-ui/react";
@@ -9,6 +9,7 @@ import { getRandomString } from "@pastable/core";
 export const LobbyRoomDemo = ({ availableRoom }: { availableRoom: AvailableRoom }) => {
     const roomName = availableRoom.name;
 
+    const me = useMyPresence();
     const room = useRoomState<DemoRoomState>(roomName);
     const toggleDone = () => room.update({ mark: !room.state.mark });
     console.log(room.state, room.isIn, room.clients);
@@ -48,8 +49,8 @@ export const LobbyRoomDemo = ({ availableRoom }: { availableRoom: AvailableRoom 
                     <Button onClick={() => room.join()}>Join</Button>
                 ))}
             <Button onClick={() => room.delete()}>Remove</Button>
-            {room.clients.some((player) => player.id !== initialPresence.id) && (
-                <Button onClick={() => room.kick(room.clients.find((player) => player.id !== initialPresence.id).id)}>
+            {room.clients.some((player) => player.id !== me.id) && (
+                <Button onClick={() => room.kick(room.clients.find((player) => player.id !== me.id).id)}>
                     Kick (not me)
                 </Button>
             )}
