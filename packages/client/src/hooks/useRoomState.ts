@@ -122,7 +122,7 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     // Granular state updates whenever someone triggers a state change
     useRoomEvent<Partial<State>>("rooms/update#" + name, (update) => {
         setRoom((current: Room) => {
-            const updated = { ...current.state };
+            const state = { ...current.state };
             Object.entries(update).map(([key, value]) => {
                 const paths = key.split(".");
                 const first = paths[0];
@@ -132,16 +132,16 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
                     const clone = { ...(prop || {}) };
                     set(clone, paths.slice(1).join("."), value);
 
-                    updated[first] = clone;
+                    state[first] = clone;
                 } else {
-                    updated[key] = value;
+                    state[key] = value;
                 }
             });
-            const updateHash = hash(updated);
+            const updateHash = hash(state);
 
             if (prevStateHashRef.current !== updateHash) {
                 prevStateHashRef.current = updateHash;
-                return updated;
+                return { ...current, state };
             }
 
             return current;
