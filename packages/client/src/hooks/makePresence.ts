@@ -60,7 +60,7 @@ export const makePresence = <Value extends ObjectLiteral>(
         });
 
         /** Update a specific presence state */
-        useSocketEvent<Value>("presence/state#*", updatePresence);
+        useSocketEvent<Value>("presence/state#*", (update) => updatePresence(update));
 
         /** Update a specific presence state */
         useSocketEvent<Value>("presence/meta#*", (update) => updatePresence(update, "meta"));
