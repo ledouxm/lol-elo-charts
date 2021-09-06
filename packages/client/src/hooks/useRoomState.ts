@@ -43,9 +43,12 @@ const roomFamily = atomFamily(
 
         return atom(
             (get) => {
+                const room = get(baseAtom);
                 const clients = get(clientsAtom);
+
                 return {
                     ...props,
+                    ...room,
                     ref,
                     clients: clients.map((client) => client.state),
                     clientsMeta: clients.map((client) => client.meta),
