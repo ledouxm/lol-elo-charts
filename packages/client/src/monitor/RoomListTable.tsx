@@ -122,7 +122,7 @@ const RoomExpandedRow = ({ name }) => {
 
                 <TabPanels>
                     <TabPanel>
-                        <RoomClientsTable key={room} room={room} />
+                        <RoomClientsTable room={room} />
                     </TabPanel>
                     <TabPanel>
                         <JSONViewer data={room.state} collapsible />

@@ -1,9 +1,12 @@
 import { DynamicTable } from "@/components/DynamicTable";
 import { DotsIconAction } from "@/components/IconAction";
+import { successToast } from "@/functions/toasts";
 import { UseRoomStateReturn } from "@/hooks/useRoomState";
 import { useSocketClient } from "@/hooks/useSocketClient";
-import { Menu, MenuButton, MenuGroup, MenuItem, MenuList } from "@chakra-ui/react";
+import { useSocketEventEmitter } from "@/hooks/useSocketConnection";
+import { Menu, MenuButton, MenuGroup, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useMemo } from "react";
+import { SendCustomEventModal } from "./SendCustomEvent";
 
 export const RoomClientsTable = ({ room }: { room: UseRoomStateReturn }) => {
     const client = useSocketClient();
@@ -30,28 +33,39 @@ const columns = [
 
 const ClientActionMenu = ({ row }) => {
     const client = useSocketClient();
+    const userId = row.original.state.id;
+
     const refresh = () => {
-        const userId = row.original.id;
         client.presence.get(userId);
         client.presence.getMeta(userId);
     };
 
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const emitter = useSocketEventEmitter();
+    const onSubmitCustomEvent = (event) => {
+        emitter.once(event[0], () => successToast({ title: `Sent ${event[0]} !` }));
+        client.emit("dm#" + userId, event);
+        onClose();
+    };
+
     return (
-        <Menu>
-            <MenuButton as={DotsIconAction} />
-            <MenuList>
-                <MenuGroup title="Room">
-                    <MenuItem onClick={() => {}}>Kick</MenuItem>
-                    <MenuItem onClick={() => {}}>Set as lobby admin</MenuItem>
-                </MenuGroup>
-                <MenuGroup title="Presence">
-                    {/* TODO https://github.com/constantoduol/JSONEditor ? */}
-                    <MenuItem onClick={() => {}}>Send custom event</MenuItem>
-                    <MenuItem onClick={refresh}>Refresh</MenuItem>
-                    <MenuItem onClick={() => {}}>Manage roles</MenuItem>
-                    <MenuItem onClick={() => {}}>Manage state/meta</MenuItem>
-                </MenuGroup>
-            </MenuList>
-        </Menu>
+        <>
+            <Menu>
+                <MenuButton as={DotsIconAction} />
+                <MenuList>
+                    <MenuGroup title="Room">
+                        <MenuItem onClick={() => {}}>Kick</MenuItem>
+                        <MenuItem onClick={() => {}}>Set as lobby admin</MenuItem>
+                    </MenuGroup>
+                    <MenuGroup title="Presence">
+                        <MenuItem onClick={onOpen}>Send custom event</MenuItem>
+                        <MenuItem onClick={refresh}>Refresh</MenuItem>
+                        <MenuItem onClick={() => {}}>Manage roles</MenuItem>
+                        <MenuItem onClick={() => {}}>Manage state/meta</MenuItem>
+                    </MenuGroup>
+                </MenuList>
+            </Menu>
+            <SendCustomEventModal isOpen={isOpen} onClose={onClose} onSubmit={onSubmitCustomEvent} />
+        </>
     );
 };
