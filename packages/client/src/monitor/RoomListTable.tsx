@@ -23,7 +23,7 @@ import { atom, useAtom } from "jotai";
 
 export const RoomListTable = () => {
     const roomList = useRoomList();
-    console.log("RoomListTable");
+
     return (
         <DynamicTable
             columns={columns}
@@ -83,13 +83,14 @@ const RoomActionMenu = ({ row, name }) => {
             <Menu>
                 <MenuButton as={DotsIconAction} />
                 <MenuList>
-                    {/* Modal + JSON editor */}
-                    <MenuItem onClick={() => {}}>Relay event</MenuItem>
                     {room.isIn ? (
                         <MenuItem onClick={room.leave}>Leave</MenuItem>
                     ) : (
                         <MenuItem onClick={room.join}>Join</MenuItem>
                     )}
+                    {/* Modal + JSON editor */}
+                    <MenuItem onClick={() => {}}>Relay event</MenuItem>
+                    <MenuItem onClick={room.get}>Refresh</MenuItem>
                     <MenuItem onClick={room.delete}>Remove</MenuItem>
                 </MenuList>
             </Menu>
@@ -99,7 +100,6 @@ const RoomActionMenu = ({ row, name }) => {
 
 const RoomExpandedRow = ({ name }) => {
     const room = useRoomState<LobbyRoomState>(name);
-    console.log("RoomExpandedRow");
 
     // Get updates without joining the room
     useEffect(() => {
@@ -112,18 +112,17 @@ const RoomExpandedRow = ({ name }) => {
         };
     }, []);
 
-    // console.log(room);
     return (
         <Box>
             <Tabs>
                 <TabList>
                     <Tab>Clients</Tab>
-                    <Tab>State</Tab>
+                    <Tab isDisabled={!Object.keys(room.state).length}>State</Tab>
                 </TabList>
 
                 <TabPanels>
                     <TabPanel>
-                        <RoomClientsTable room={room} />
+                        <RoomClientsTable key={room} room={room} />
                     </TabPanel>
                     <TabPanel>
                         <JSONViewer data={room.state} collapsible />
