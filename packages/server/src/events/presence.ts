@@ -105,18 +105,18 @@ export function handlePresenceEvents({
         const clientId = getEventParam(event);
         if (!clientId) return;
 
-        const user = users.get(ws.id);
-        if (!user) return sendMsg(ws, ["presence/notFound", clientId], opts);
+        const foundUser = users.get(clientId);
+        if (!foundUser) return sendMsg(ws, ["presence/notFound", clientId], opts);
 
         const type = getEventSpecificParam(event, clientId) || "state";
         if (!Boolean(["state", "meta"].includes(type))) return sendMsg(ws, ["presence/get.invalid", clientId], opts);
 
-        const client = Array.from(user.clients)[0];
-        if (!client) sendMsg(ws, ["presence/offline", clientId], opts);
+        const foundClient = Array.from(foundUser.clients)[0];
+        if (!foundClient) sendMsg(ws, ["presence/offline", clientId], opts);
 
         sendMsg(ws, [
             `presence/${type}#` + clientId,
-            type === "state" ? getClientState(client) : getClientMeta(client),
+            type === "state" ? getClientState(foundClient) : getClientMeta(foundClient),
         ]);
         return;
     }
