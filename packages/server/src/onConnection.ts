@@ -6,7 +6,7 @@ import { User } from "./entities/User";
 import { handleGamesEvent } from "./events/games";
 import { handlePresenceEvents } from "./events/presence";
 import { handleRoomsEvent } from "./events/rooms";
-import { getClients, getClientState, getEventParam, getRoomFullState, makeUrl } from "./helpers";
+import { getClients, getClientState, getEventParam, getRoomClients, getRoomState, makeUrl } from "./helpers";
 import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsEventPayload, WsUser } from "./types";
 import { getRandomColor } from "./utils";
 import { decode, sendMsg } from "./ws-helpers";
@@ -44,7 +44,7 @@ export const onConnection = async (
         globalSubscriptions.get(sub).forEach((client) => sendMsg(client, [event.replace(".", "/"), payload]));
     const broadcastEvent = (room: Room, event: string, payload?: any) =>
         room.clients.forEach((client) => sendMsg(client, [event.replace(".", "/"), payload]));
-    const sendPresenceList = () => sendMsg(ws, ["presence/list", getAllClients().map(getClientState)]);
+    const sendPresenceList = () => sendMsg(ws, ["presence/list", getPresenceList()]);
 
     // Rooms
     const getRoomListEvent = () =>
@@ -57,7 +57,11 @@ export const onConnection = async (
         ] as WsEventPayload;
     const sendRoomsList = () => sendMsg(ws, getRoomListEvent());
     const onJoinRoom = (room: Room) => {
-        sendMsg(ws, ["rooms/state#" + room.name, getRoomFullState(room)]);
+        const presenceEvent = ["rooms/presence#" + room.name, getRoomClients(room)] as WsEventPayload;
+        room.clients.forEach((client) => sendMsg(client, presenceEvent));
+        room.watchers.forEach((client) => sendMsg(client, presenceEvent));
+
+        sendMsg(ws, ["rooms/state#" + room.name, getRoomState(room)]);
         broadcastEvent(room, "rooms/join#" + room.name, getClientState(ws));
         broadcastSub("rooms", getRoomListEvent());
     };
@@ -120,6 +124,9 @@ export const onConnection = async (
         user.rooms.forEach((room) => {
             if (room.type === "game" && room.config.shouldRemovePlayerStateOnDisconnect) room.state.delete(ws.id);
             room.clients.delete(ws);
+
+            // Notify everyone that has a common room with the user who left
+            room.clients.forEach((client) => sendMsg(client, ["rooms/presence#" + room.name, getRoomClients(room)]));
         });
 
         // TODO rm every user.clients ??

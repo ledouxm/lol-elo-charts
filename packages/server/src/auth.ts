@@ -11,6 +11,7 @@ import { HTTPError } from "./requests";
 /** Authorize WS connection only if access token is valid */
 export const getWsAuthState = async (ws: WebSocket, req: http.IncomingMessage) => {
     const url = makeUrl(req);
+    const id = url.searchParams.get("id");
     const name = url.searchParams.get("username");
     const token = url.searchParams.get("token");
 
@@ -19,7 +20,7 @@ export const getWsAuthState = async (ws: WebSocket, req: http.IncomingMessage) =
             const decoded = getDecodedAccessToken(token);
 
             if (decoded.type === "guest") {
-                return { isValid: true, id: "g-" + getRandomString(), name };
+                return { isValid: true, id: id || "g-" + getRandomString(), name };
             }
 
             const em = getEm();

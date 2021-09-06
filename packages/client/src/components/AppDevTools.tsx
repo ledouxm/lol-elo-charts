@@ -46,7 +46,7 @@ export const AppDevTools = (props: StackProps) => {
                             <PresenceName />
                         </Box>
                         <MenuItem onClick={toggleColorMode}>Toggle {colorMode} mode</MenuItem>
-                        <MenuItem onClick={() => togglePlayerList()}>Toggle player list</MenuItem>
+                        <MenuItem onClick={() => togglePlayerList()}>Toggle presence list</MenuItem>
                         <MenuItem onClick={updateRandomColor}>Set random presence.color</MenuItem>
                     </MenuList>
                 </Menu>

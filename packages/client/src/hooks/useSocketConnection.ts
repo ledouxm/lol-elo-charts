@@ -29,18 +29,25 @@ export type EventPayload = string | { type: string; data?: any };
 export const useSocketStatus = () => useAtomValue(wsStatusAtom);
 
 const withLogs = false && isDev();
+const makeUrl = (params: ObjectLiteral) => getWebsocketURL() + "?" + new URLSearchParams(params).toString();
+
 export const useSocketConnection = (params?: ObjectLiteral) => {
     const [current, send] = useAtom(wsMachineAtom);
-    const connectToWebsocket = () => {
-        const url = getWebsocketURL() + "?" + new URLSearchParams({ auth: "chainbreak", ...params }).toString();
-        send({ type: "OPEN", url });
-    };
+    const connectToWebsocket = (type: any = "OPEN") => send({ type, url: makeUrl(params) });
 
     // Open websocket
-    useEffect(connectToWebsocket, []);
+    useEffect(() => {
+        if (!Object.keys(params || {}).length) return;
 
-    // Try to reconnect if ws is closed when focusing window
-    useOnFocus(() => current.matches("closed") && connectToWebsocket());
+        if (current.matches("closed")) {
+            connectToWebsocket();
+        } else {
+            connectToWebsocket("SET_URL");
+        }
+    }, [params]);
+
+    // Try to reconnect if ws is closed when focusing window (and that is not the first time we try to connect)
+    useOnFocus(() => current.matches("closed") && current.context.socket && connectToWebsocket());
 
     // Debug
     useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => withLogs && console.log(payload));

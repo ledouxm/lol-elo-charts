@@ -1,3 +1,4 @@
+import { isUser } from "@/functions/utils";
 import { useLocalPresence } from "@/hooks/usePresence";
 import { Player } from "@/types";
 import { Editable, EditableInput, EditablePreview, EditableProps } from "@chakra-ui/react";
@@ -20,6 +21,7 @@ export const PresenceName = () => {
             defaultValue={presence?.username || "guest"}
             onSubmit={updateName}
             fontWeight="bold"
+            isDisabled={isUser(presence?.username)}
         />
     );
 };

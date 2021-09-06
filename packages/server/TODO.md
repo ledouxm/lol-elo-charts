@@ -1,8 +1,8 @@
 -   rename client/user/sessions using Naming section in README
 -   CommandList available restricted by client.roles
--   client atomFamily / zustand client map + valtio proxy for globally available shared presence.state/meta
 -   useRoomEvents/useRoomClient refactor
 -   RoomClientsTable actions + dynamic state/meta columns
 -   presence.get/getMeta specific fields like rooms.update
 -   AppMonitor big todo + ClientActionMenu onClick's
--   EventEmitter add identifier so that useSocketEvent can share event handlers among multiple hooks instance without having to re-create them
+-   group atoms so that fast-refresh still works fine
+-   presence/rooms -> get own rooms

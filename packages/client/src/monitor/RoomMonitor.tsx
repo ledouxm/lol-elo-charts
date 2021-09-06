@@ -1,13 +1,21 @@
 import { PlayerList } from "@/components/PlayerList";
-import { useRoomList } from "@/hooks/useRoomState";
+import { useRoomList, useRoomState } from "@/hooks/useRoomState";
 import { useSocketClient } from "@/hooks/useSocketClient";
 import { RoomCard } from "@/monitor/RoomCard";
 import { Box, Button, Center, Input, SimpleGrid, Stack } from "@chakra-ui/react";
 import { getRandomString } from "@pastable/core";
-import { useRef } from "react";
-import { RoomListTable } from "./RoomListTable";
+import { useAtomValue } from "jotai/utils";
+import { useEffect, useRef } from "react";
+import { observedRoomNameAtom, RoomListTable } from "./RoomListTable";
 
 export const RoomMonitor = () => {
+    const name = useAtomValue(observedRoomNameAtom);
+    const roomClient = useSocketClient();
+
+    useEffect(() => {
+        roomClient.rooms.list();
+    }, []);
+
     return (
         <Stack w="100%">
             <Center flexDir="column" m="8">
@@ -18,8 +26,7 @@ export const RoomMonitor = () => {
                     <RoomListTable />
                 </Box>
             </div>
-            <RoomCardGrid />
-            <PlayerList />
+            {name && <RoomPlayerList key={name} name={name} />}
         </Stack>
     );
 };
@@ -57,4 +64,9 @@ const RoomCardGrid = () => {
             ))}
         </SimpleGrid>
     );
+};
+
+const RoomPlayerList = ({ name }) => {
+    const room = useRoomState(name);
+    return <PlayerList list={room.clients} />;
 };

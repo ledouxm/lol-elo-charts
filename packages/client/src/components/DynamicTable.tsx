@@ -1,6 +1,6 @@
 import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 import { chakra, Table, TableProps, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
-import { Cell, Column, Row, TableOptions, useExpanded, useSortBy, useTable } from "react-table";
+import { Cell, Column, Row, TableOptions, useExpanded, UseExpandedOptions, useSortBy, useTable } from "react-table";
 import { ObjectLiteral } from "@pastable/core";
 import { Fragment, ReactNode } from "react";
 
@@ -18,8 +18,8 @@ export function DynamicTable({
     getCellProps?: (cell: Cell, rowIndex: number, cellIndex: number) => ObjectLiteral;
     renderSubRow?: ({ row }: { row: Row }) => ReactNode;
 } & Pick<TableProps, "size">) {
-    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, visibleColumns, state } = useTable(
-        { columns, data },
+    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, visibleColumns } = useTable(
+        { columns, data, autoResetExpanded: false } as TableOptions<UseExpandedOptions<{}>>,
         useSortBy,
         useExpanded
     );

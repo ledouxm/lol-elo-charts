@@ -15,9 +15,7 @@ export function handlePresenceEvents({
     sendPresenceList,
     getPresenceMetaList,
     broadcastPresenceList,
-    getPresenceList,
     sendGamesList,
-    broadcastEvent,
     sendRoomsList,
 }: EventHandlerRef) {
     // ex: [sub.rooms]
@@ -71,21 +69,27 @@ export function handlePresenceEvents({
         Object.entries(payload).map(([key, value]) => map.set(key, value));
 
         if (type === "meta") {
-            const listEvent = ["presence/list#meta", getPresenceMetaList()] as WsEventPayload;
+            const listEvent = ["presence/list:meta", getPresenceMetaList()] as WsEventPayload;
             globalSubscriptions.get("presence").forEach((client) => client !== ws && sendMsg(client, listEvent));
-            user.rooms.forEach((room) => broadcastEvent(room, listEvent[0], listEvent[1]));
+
+            // Same as below
+            user.rooms.forEach((room) => {
+                room.clients.forEach((client) => {
+                    if (globalSubscriptions.get("presence").has(client)) return;
+                    sendMsg(client, ["rooms/presence#" + room.name, Array.from(room.clients).map(getClientMeta)]);
+                });
+            });
         } else {
             broadcastPresenceList();
-            const list = getPresenceList();
 
             // Notify everyone that has a common room with the user who updated its presence
             // Except the ones that were already notified since they are sub'd to the global presence
-            user.rooms.forEach((room) =>
+            user.rooms.forEach((room) => {
                 room.clients.forEach((client) => {
                     if (globalSubscriptions.get("presence").has(client)) return;
-                    sendMsg(client, ["presence/list", list]);
-                })
-            );
+                    sendMsg(client, ["rooms/presence#" + room.name, Array.from(room.clients).map(getClientState)]);
+                });
+            });
         }
 
         return;

@@ -1,5 +1,4 @@
 import { TextInput } from "@/components/TextInput";
-import { getStateValuePath } from "@/functions/xstate";
 import { Button, Stack } from "@chakra-ui/react";
 import { WithOnSubmit } from "@pastable/core";
 import { useMachine } from "@xstate/react";
@@ -9,7 +8,6 @@ import { ChatSuggestionsProvider } from "./ChatSuggestionsProvider";
 
 export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormProps) => {
     const [state, send] = useMachine(() => getChatFormMachine({ inputRef: usernameInputRef }));
-    console.log(getStateValuePath(state), state.context.value);
 
     const onInput = (e: ChangeEvent<HTMLInputElement>) => send("INPUT", { value: e.target.value });
     const onSubmit = (e: FormEvent) => {
@@ -30,6 +28,7 @@ export const ChatForm = ({ onSubmit: onSubmitProp, usernameInputRef }: ChatFormP
     const commandListBtnRef = useRef<HTMLButtonElement>();
     const chatContextProps = {
         state,
+        onSubmit,
         value,
         setValue,
         openSuggestions,

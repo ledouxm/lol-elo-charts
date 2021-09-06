@@ -2,7 +2,6 @@ import { DynamicTable } from "@/components/DynamicTable";
 import { DotsIconAction, IconAction } from "@/components/IconAction";
 import { useRoomList, useRoomState } from "@/hooks/useRoomState";
 import { LobbyRoomState } from "@/room/LobbyRoom";
-import { ChevronDownIcon } from "@chakra-ui/icons";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
 import {
     Modal,
@@ -15,12 +14,16 @@ import {
 } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { JSONEditor, JSONViewer } from "react-json-editor-viewer";
+import { MdDetails } from "react-icons/md";
+import { GoTriangleUp } from "react-icons/go";
+import { JSONViewer } from "react-json-editor-viewer";
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 import { RoomClientsTable } from "./RoomClientsTable";
+import { atom, useAtom } from "jotai";
 
 export const RoomListTable = () => {
     const roomList = useRoomList();
+    console.log("RoomListTable");
     return (
         <DynamicTable
             columns={columns}
@@ -44,19 +47,37 @@ const columns = [
         Header: "",
         accessor: "__actions",
         canBeSorted: false,
-        Cell: ({ row, room }) => <RoomActionMenu row={row} name={room.name} />,
+        Cell: ({ row, room }) => (room.name ? <RoomActionMenu row={row} name={room.name} /> : null),
     },
 ];
 
+export const observedRoomNameAtom = atom("");
 const RoomActionMenu = ({ row, name }) => {
     const room = useRoomState<LobbyRoomState>(name);
+    const [observedRoomName, setObservedRoomName] = useAtom(observedRoomNameAtom);
+    const observe = () => {
+        setObservedRoomName(room.name);
+        room.watch();
+        room.ref.current.watchers = (room.ref.current.watchers || []).concat(["playerList"]);
+    };
+    const unobserve = () => {
+        setObservedRoomName("");
+        room.ref.current.watchers = (room.ref.current.watchers || []).filter((item) => item !== "playerList");
+        if (!room.ref.current.watchers?.length) room.unwatch();
+    };
 
     return (
         <Flex>
             <IconAction
                 {...row.getToggleRowExpandedProps()}
-                icon={row.isExpanded ? AiFillEyeInvisible : AiFillEye}
-                label="Inspect"
+                icon={row.isExpanded ? GoTriangleUp : MdDetails}
+                label="Expand"
+                mr="2"
+            />
+            <IconAction
+                icon={observedRoomName === room.name ? AiFillEyeInvisible : AiFillEye}
+                onClick={observedRoomName === room.name ? unobserve : observe}
+                label="Observe"
                 mr="2"
             />
             <Menu>
@@ -78,11 +99,17 @@ const RoomActionMenu = ({ row, name }) => {
 
 const RoomExpandedRow = ({ name }) => {
     const room = useRoomState<LobbyRoomState>(name);
+    console.log("RoomExpandedRow");
 
     // Get updates without joining the room
     useEffect(() => {
         room.watch();
-        return room.unwatch;
+        room.ref.current.watchers = (room.ref.current.watchers || []).concat(["expandedRow"]);
+
+        return () => {
+            room.ref.current.watchers = (room.ref.current.watchers || []).filter((item) => item !== "expandedRow");
+            if (!room.ref.current.watchers?.length) room.unwatch();
+        };
     }, []);
 
     // console.log(room);
@@ -90,16 +117,16 @@ const RoomExpandedRow = ({ name }) => {
         <Box>
             <Tabs>
                 <TabList>
-                    <Tab>State</Tab>
                     <Tab>Clients</Tab>
+                    <Tab>State</Tab>
                 </TabList>
 
                 <TabPanels>
                     <TabPanel>
-                        <JSONViewer data={room.state} collapsible />
+                        <RoomClientsTable room={room} />
                     </TabPanel>
                     <TabPanel>
-                        <RoomClientsTable room={room} />
+                        <JSONViewer data={room.state} collapsible />
                     </TabPanel>
                 </TabPanels>
             </Tabs>

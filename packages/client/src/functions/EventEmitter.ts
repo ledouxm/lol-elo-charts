@@ -15,13 +15,13 @@ export class EventEmitter {
             if (!this.namedListeners.get(evt).has(name)) {
                 this.namedListeners.get(evt).set(name, callback);
             }
-            return;
+            return () => this.off(event, callback, name);
         }
 
         if (!this.listeners.has(evt)) this.listeners.set(evt, new Set());
         this.listeners.get(evt).add(callback as any);
 
-        return () => this.off(event, callback, name);
+        return () => this.off(event, callback);
     }
 
     once<Data = unknown, Event = unknown>(event: Event, callback: (data: Data) => void) {
@@ -38,12 +38,20 @@ export class EventEmitter {
         this.debug("off", event);
         const evt = event as unknown as string;
 
+        if (name) {
+            if (callback) {
+                if (!this.namedListeners.has(evt)) this.namedListeners.set(evt, new Map());
+                return this.namedListeners.get(evt).delete(name);
+            }
+
+            return this.namedListeners.delete(evt);
+        }
+
         // Precisely remove a listener on an event
         if (callback) {
             const cbs = this.listeners.get(evt) || new Set();
             cbs.delete(callback as any);
-            this.listeners.set(evt, cbs);
-            return;
+            return this.listeners.set(evt, cbs);
         }
 
         // Or just remove all of them

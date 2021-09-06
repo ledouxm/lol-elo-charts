@@ -1,7 +1,7 @@
 import { lobbyHooks } from "@/rooms/lobby";
 import { isDefined, set } from "@pastable/core";
-import { getEventParam, getEventSpecificParam, getRoomFullState, isUserInSet, makeRoom } from "../helpers";
-import { AppWebsocket, EventHandlerRef, RoomHooks } from "../types";
+import { getEventParam, getEventSpecificParam, getRoomClients, getRoomState, isUserInSet, makeRoom } from "../helpers";
+import { AppWebsocket, EventHandlerRef, RoomHooks, WsEventPayload } from "../types";
 import { sendMsg } from "../ws-helpers";
 
 export function handleRoomsEvent({
@@ -40,9 +40,17 @@ export function handleRoomsEvent({
 
         room.hooks?.["rooms.create"]?.({ room, ws });
 
-        const sendFullState = (client: AppWebsocket) =>
-            sendMsg(client, ["rooms/state#" + name, getRoomFullState(room)]);
-        const fullStateRefreshInterval = setInterval(() => room.clients.forEach(sendFullState), room.config.updateRate);
+        const sendFullState = (client: AppWebsocket) => sendMsg(client, ["rooms/state#" + name, getRoomState(room)]);
+        const sendPresenceList = (client: AppWebsocket) =>
+            sendMsg(client, ["rooms/presence#" + name, getRoomClients(room)]);
+        const fullStateRefreshInterval = setInterval(
+            () =>
+                room.clients.forEach((client) => {
+                    sendPresenceList(client);
+                    sendFullState(client);
+                }),
+            room.config.updateRate
+        );
         const timers = room.internal.get("timers") as Map<string, NodeJS.Timer>;
         timers.set("fullState", fullStateRefreshInterval);
 
@@ -83,6 +91,8 @@ export function handleRoomsEvent({
         if (room.watchers.has(ws)) return sendMsg(ws, ["rooms/alreadyWatching", name], opts);
 
         room.watchers.add(ws);
+        sendMsg(ws, ["rooms/presence#" + name, getRoomClients(room)]);
+        sendMsg(ws, ["rooms/state#" + name, getRoomState(room)]);
 
         return;
     }
@@ -157,8 +167,7 @@ export function handleRoomsEvent({
         broadcastEvent(room, event, payload);
 
         // Watchers are not in the room as participants but still want to receive updates
-        const sendFullState = (client: AppWebsocket) =>
-            sendMsg(client, ["rooms/state#" + name, getRoomFullState(room)]);
+        const sendFullState = (client: AppWebsocket) => sendMsg(client, ["rooms/state#" + name, getRoomState(room)]);
         room.watchers.forEach(sendFullState);
 
         return;
@@ -172,7 +181,8 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
 
-        sendMsg(ws, ["rooms/state#" + name, getRoomFullState(room)]);
+        sendMsg(ws, ["rooms/presence#" + name, getRoomClients(room)]);
+        sendMsg(ws, ["rooms/state#" + name, getRoomState(room)]);
         return;
     }
 
@@ -190,6 +200,9 @@ export function handleRoomsEvent({
         room.hooks?.["rooms.leave"]?.({ room, ws });
 
         sendMsg(ws, ["rooms/leave#" + name], opts);
+        const presenceEvent = ["rooms/presence#" + room.name, getRoomClients(room)] as WsEventPayload;
+        room.clients.forEach((client) => sendMsg(client, presenceEvent));
+        room.watchers.forEach((client) => sendMsg(client, presenceEvent));
         broadcastSub("rooms", getRoomListEvent());
         return;
     }
@@ -202,7 +215,6 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["games/notFound", name], opts);
 
-        // TODO check permissions
         const client = Array.from(room.clients).find((client) => client.id === payload);
         if (!client) return sendMsg(ws, ["clients/notFound", name], opts);
 
@@ -215,7 +227,9 @@ export function handleRoomsEvent({
         room.hooks?.["rooms.kick"]?.({ room, ws });
 
         sendMsg(client, ["rooms/leave#" + name], opts);
-        // TODO prévenir les autres joueurs de la room
+        const presenceEvent = ["rooms/presence#" + room.name, getRoomClients(room)] as WsEventPayload;
+        room.clients.forEach((client) => sendMsg(client, presenceEvent));
+        room.watchers.forEach((client) => sendMsg(client, presenceEvent));
         broadcastSub("rooms", getRoomListEvent());
         return;
     }

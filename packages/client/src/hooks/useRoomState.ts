@@ -3,11 +3,11 @@ import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnecti
 import { LobbyRoomState } from "@/room/LobbyRoom";
 import { AvailableRoom, Player, Room } from "@/types";
 import { useConst } from "@chakra-ui/react";
-import { AnyFunction, hash, ObjectLiteral, set, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";
+import { AnyFunction, hash, ObjectLiteral, pick, set } from "@pastable/core";
 import { atom, useAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import { useEffect, useRef } from "react";
-import { useMyPresence, usePresenceIsSynced } from "./usePresence";
+import { presencesMapAtom, useMyPresence, usePresenceIsSynced } from "./usePresence";
 import { RoomClient, useSocketClient } from "./useSocketClient";
 
 // TODO on un-sync(=ws disconnect), reset everything ?
@@ -27,13 +27,50 @@ export const useRoomList = () => {
     return roomList;
 };
 
-export const roomFamily = atomFamily(
-    (props: Room & { isSynced?: boolean }) => atom(props),
+const roomFamily = atomFamily(
+    (props: Room & { clientIds: Array<string> }) => {
+        const baseAtom = atom(props);
+
+        // Pick clients in presenceMap using baseAtom.clientIds
+        const clientsAtom = atom((get) => {
+            const room = get(baseAtom);
+            const presenceMap = get(presencesMapAtom);
+            const clients = Object.values(pick(presenceMap, room.clientIds || [])).filter(Boolean);
+            return clients;
+        });
+        // Shared ref so that any useRoomState instance can share the same context without re-renders
+        const ref = { current: {} as ObjectLiteral };
+
+        return atom(
+            (get) => {
+                const clients = get(clientsAtom);
+                return {
+                    ...props,
+                    ref,
+                    clients: clients.map((client) => client.state),
+                    clientsMeta: clients.map((client) => client.meta),
+                    presences: clients,
+                };
+            },
+            (get, set, update) => {
+                // Set baseAtom, update is like a useState update here
+                const newState = typeof update === "function" ? update(get(baseAtom)) : update;
+
+                set(baseAtom, newState);
+            }
+        );
+    },
+    (a, b) => a.name === b.name
+);
+const roomSyncedFamily = atomFamily(
+    (props: { name: string; isSynced: boolean }) => atom(props),
     (a, b) => a.name === b.name
 );
 export const useRoomState = <State extends ObjectLiteral = Room>(name: string) => {
-    const initialValue = useConst({ name, clients: [], state: {} });
+    const initialValue = useConst({ name, clients: [], clientIds: [], state: {} });
     const [room, setRoom] = useAtom(roomFamily(initialValue));
+    const [roomSync, setRoomSync] = useAtom(roomSyncedFamily({ name, isSynced: false }));
+    const isRoomSynced = roomSync.isSynced;
 
     const presence = useMyPresence();
     const isIn = room.clients.some((client) => client.id === presence.id);
@@ -45,43 +82,44 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
 
     // Keep track of room.sync, if true this room will receive updates, else the user has not joined the room yet
     useEffect(() => {
-        if (isPresenceSynced && room.isSynced) return;
+        if (isPresenceSynced && isRoomSynced) return;
 
         let cleanup;
         if (isPresenceSynced) {
-            const cb = () => setRoom((room) => ({ ...room, isSynced: true }));
+            const cb = () => setRoomSync({ name, isSynced: true });
             cleanup = emitter.once("rooms/join#" + name, cb);
         } else {
-            setRoom((room) => ({ ...room, isSynced: false }));
+            setRoomSync({ name, isSynced: false });
         }
 
-        if (!room.isSynced) {
+        if (!isRoomSynced) {
             roomClient.get();
         }
 
         return () => {
             cleanup?.();
         };
-    }, [isPresenceSynced, room.isSynced]);
+    }, [isPresenceSynced, isRoomSynced]);
 
     // Init room hash to compare server updates to
     const prevStateHashRef = useRef<string>();
     useEffect(() => {
-        prevStateHashRef.current = hash(initialValue);
+        prevStateHashRef.current = hash(initialValue.state);
     }, []);
 
     // Set room as unsynchronized on leave/kick + remove self from room.clients
     useRoomEvent("rooms/leave#" + name, () => {
-        setRoom((current) => ({
+        setRoom((current: Room) => ({
             ...current,
-            isSynced: false,
-            clients: current.clients.filter((client) => client.id !== presence.id),
+            clientIds: current.clients.filter((client) => client.id !== presence.id).map((item) => item.id),
         }));
+        setRoomSync({ name, isSynced: false });
     });
 
     // Granular state updates whenever someone triggers a state change
     useRoomEvent<Partial<State>>("rooms/update#" + name, (update) => {
-        setRoom((current) => {
+        setRoom((current: Room) => {
+            const updated = { ...current.state };
             Object.entries(update).map(([key, value]) => {
                 const paths = key.split(".");
                 const first = paths[0];
@@ -91,12 +129,11 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
                     const clone = { ...(prop || {}) };
                     set(clone, paths.slice(1).join("."), value);
 
-                    current.state[first] = clone;
+                    updated[first] = clone;
                 } else {
-                    current.state[key] = value;
+                    updated[key] = value;
                 }
             });
-            const updated = { ...current, state: { ...current.state } };
             const updateHash = hash(updated);
 
             if (prevStateHashRef.current !== updateHash) {
@@ -110,14 +147,14 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
 
     // Granular state updates whenever someone triggers a state change on a specific field
     useRoomEvent<Partial<State>>("rooms/update:*#" + name, (payload, _event, path) => {
-        setRoom((current) => {
-            const updated = { ...current };
-            set(updated, "state." + path, payload);
-            const updateHash = hash(updated);
+        setRoom((current: Room) => {
+            const state = { ...current.state };
+            set(state, path, payload);
+            const updateHash = hash(state);
 
             if (prevStateHashRef.current !== updateHash) {
                 prevStateHashRef.current = updateHash;
-                return updated;
+                return { ...current, state };
             }
 
             return current;
@@ -128,55 +165,28 @@ export const useRoomState = <State extends ObjectLiteral = Room>(name: string) =
     useRoomEvent<Room>("rooms/state#" + name, (updated) => {
         const updateHash = hash(updated);
         if (prevStateHashRef.current !== updateHash) {
-            setRoom(updated);
+            setRoom((current) => ({ ...current, state: updated }));
             prevStateHashRef.current = updateHash;
+        }
+
+        if (!roomSync.isSynced) {
+            setRoomSync({ name, isSynced: true });
         }
     });
 
     // Reset room with that name on deleted
     useRoomEvent("rooms/delete#" + name, () => setRoom(initialValue));
 
-    // Add (or update) clients on join
-    useRoomEvent<Player>("rooms/join#" + name, (newClient) => {
-        setRoom((current) => ({
-            ...current,
-            clients: current.clients.some((client) => client.id === newClient.id)
-                ? updateItem(current.clients, "id", newClient)
-                : current.clients.concat(newClient),
-        }));
+    // Pick clients from presence map
+    useRoomEvent<Array<Player>>("rooms/presence#" + name, (list) => {
+        setRoom((current) => ({ ...current, clientIds: list.map((item) => item.id).sort() }));
     });
-
-    // Update room.clients when their presence is updated
-    useSocketEvent<Array<Player>>(
-        "presence/list",
-        (update) => {
-            console.log("presecne/list");
-            setRoom((current) => {
-                const updated = {
-                    ...current,
-                    clients: sortArrayOfObjectByPropFromArray(
-                        update.filter((presence) => current.clients.some((inRoom) => inRoom.id === presence.id)),
-                        "id",
-                        current.clients.map((client) => client.id)
-                    ),
-                };
-                const updateHash = hash(updated);
-
-                if (prevStateHashRef.current !== updateHash) {
-                    prevStateHashRef.current = updateHash;
-                    return updated;
-                }
-
-                return current;
-            });
-        },
-        name
-    );
 
     return {
         ...room,
         state: room.state as State,
         isIn,
+        isSynced: roomSync.isSynced,
         setRoom,
         ...roomClient,
     };

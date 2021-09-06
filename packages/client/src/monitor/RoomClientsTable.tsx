@@ -9,6 +9,7 @@ export const RoomClientsTable = ({ room }: { room: UseRoomStateReturn }) => {
     const client = useSocketClient();
     // On room.clients change, retrieve presence.meta so get client.meta.sessionid
     useEffect(() => {
+        return; // TODO
         room.clients.forEach((player) => {
             client.presence.get(player.id);
             client.presence.getMeta(player.id);

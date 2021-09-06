@@ -1,4 +1,5 @@
 import { Chat } from "@/chat/Chat";
+import { PlayerList } from "@/components/PlayerList";
 import { errorToast } from "@/functions/toasts";
 import { useGameRoomRef } from "@/hooks/useGameRoomState";
 import { useMyPresence } from "@/hooks/usePresence";
@@ -128,6 +129,7 @@ export const LobbyRoom = () => {
                     <Route path={path + "/"} children={<GameList onClick={voteForGame} />} />
                 </Switch>
             </RoomContext.Provider>
+            <PlayerList list={room.clients} />
         </Stack>
     );
 };

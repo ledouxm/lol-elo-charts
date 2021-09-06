@@ -95,7 +95,7 @@ export function LiveCursorsWithRefs() {
     const setRef = (node, index) => (cursorsRef.current[index] = node);
 
     /** On others presence meta update, set their cursor positions accordingly */
-    useSocketEvent<Array<PlayerMeta>>("presence/list#meta", (updated) => {
+    useSocketEvent<Array<PlayerMeta>>("presence/list:meta", (updated) => {
         updated.forEach((updatedMeta, index) => {
             if (!cursorsRef.current[index] || !updatedMeta.cursor) return;
 

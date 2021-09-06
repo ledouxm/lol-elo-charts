@@ -85,6 +85,9 @@ const canShowSuggestions = (value: string) => {
 
     const state = extractCommandState(value);
 
+    // Comman fully typed without params
+    if (state.hasNoParams && state.cmd) return false;
+
     // Started typing a command name
     if (state.hasCommandThatStartsWith && !state.hasSpace) return true;
 
@@ -92,7 +95,7 @@ const canShowSuggestions = (value: string) => {
     // ex: "/whoops"
     if (!state.hasCommand) return false;
 
-    // Command fully typed
+    // Command fully typed with params
     // ex: "/w player1 message"
     if (isCommandFullyTyped(state)) return false;
 

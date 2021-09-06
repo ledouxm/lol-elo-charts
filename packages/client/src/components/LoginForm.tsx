@@ -1,6 +1,6 @@
 import { api, getAccessToken, persistAccessToken } from "@/api";
 import { onAxiosError, successToast } from "@/functions/toasts";
-import { getRandomColor } from "@/functions/utils";
+import { getRandomColor, makeId } from "@/functions/utils";
 import { persistLocalPresence } from "@/hooks/usePresence";
 import { Button, Center, Flex, Stack } from "@chakra-ui/react";
 import { getRandomIntIn } from "@pastable/core";
@@ -23,7 +23,11 @@ export const LoginForm = () => {
     const router = useHistory();
     const loginMutation = useMutation(login, {
         onSuccess: (data) => {
-            persistLocalPresence({ id: data.id, username: data.username, color: data.color || getRandomColor() });
+            persistLocalPresence({
+                id: makeId(),
+                username: data.username,
+                color: data.color || getRandomColor(),
+            });
             persistAccessToken(data.token);
             router.push("/app/");
             successToast({ title: `Successfully logged` });

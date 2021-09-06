@@ -50,6 +50,7 @@ export const createWebSocketMachine = () =>
                 },
             },
             on: {
+                SET_URL: { actions: "setUrlAndOptions" },
                 CLOSE: [
                     { target: "retrying", cond: "canRetry" },
                     { target: "closed", actions: "closeWebSocket" },
@@ -212,8 +213,9 @@ const defaultOptions: Partial<WebSocketConnectOptions> = {
 };
 
 type OpenEvent = { type: "OPEN"; url: string; options?: WebSocketConnectOptions };
+type SetUrlEvent = { type: "SET_URL"; url: string; options?: WebSocketConnectOptions };
 type EmitEvent = { type: "EMIT"; event: string; data: any };
 type DisconnectEvent = { type: "DISCONNECT"; code?: number; reason?: string };
 type CloseWsEvent = { type: "CLOSE"; event: CloseEvent };
 type OpenedEvent = { type: "OPENED"; event: Event; socket: WebSocket };
-type WebSocketMachineEvent = OpenEvent | EmitEvent | DisconnectEvent | CloseWsEvent | OpenedEvent;
+type WebSocketMachineEvent = OpenEvent | SetUrlEvent | EmitEvent | DisconnectEvent | CloseWsEvent | OpenedEvent;

@@ -1,8 +1,7 @@
 import { AppHome } from "@/components/AppHome";
-import { RoomMonitor } from "@/monitor/RoomMonitor";
 import { Center, ChakraProvider, extendTheme, Flex, Spinner, Stack } from "@chakra-ui/react";
 import { removeUndefineds } from "@pastable/core";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
 import { api, getAccessToken } from "./api";
@@ -55,12 +54,13 @@ export function App() {
 const SyncWrapper = ({ children }) => {
     const emit = useSocketEmit();
     useSocketEvent(WsEvent.Open, () => {
-        emit("sub#presence");
+        // emit("sub#presence");
         emit("sub#rooms");
-        emit("sub#games");
+        // emit("sub#games");
     });
 
-    useSocketConnection(removeUndefineds({ ...getLocalPresence(), token: getAccessToken() }));
+    const params = useMemo(() => removeUndefineds({ ...getLocalPresence(), token: getAccessToken() }), []);
+    useSocketConnection(params);
     usePresenceInit();
 
     useEffect(() => {
