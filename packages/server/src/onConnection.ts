@@ -127,6 +127,7 @@ export const onConnection = async (
 
             // Notify everyone that has a common room with the user who left
             room.clients.forEach((client) => sendMsg(client, ["rooms/presence#" + room.name, getRoomClients(room)]));
+            room.watchers.forEach((client) => sendMsg(client, ["rooms/presence#" + room.name, getRoomClients(room)]));
         });
 
         // TODO rm every user.clients ??
