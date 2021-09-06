@@ -3,32 +3,39 @@ import { DotsIconAction } from "@/components/IconAction";
 import { UseRoomStateReturn } from "@/hooks/useRoomState";
 import { useSocketClient } from "@/hooks/useSocketClient";
 import { Menu, MenuButton, MenuGroup, MenuItem, MenuList } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 export const RoomClientsTable = ({ room }: { room: UseRoomStateReturn }) => {
     const client = useSocketClient();
-    // On room.clients change, retrieve presence.meta so get client.meta.sessionid
-    useEffect(() => {
-        return; // TODO
-        room.clients.forEach((player) => {
-            client.presence.get(player.id);
-            client.presence.getMeta(player.id);
-        });
-    }, [room.clients]);
+    const ids = useMemo(() => room.clientIds, [room.clientIds]);
 
-    console.log(room.clients);
-    return <DynamicTable columns={columns} data={room.clients} />;
+    // On room.clients change, retrieve presence.meta so we can display client.meta.sessionid
+    useEffect(() => {
+        room.presences.forEach(({ state, meta }) => {
+            if (!Object.keys(state).length) client.presence.get(state.id);
+            if (!Object.keys(meta).length) client.presence.getMeta(state.id);
+        });
+    }, [ids]);
+
+    return <DynamicTable columns={columns} data={room.presences} />;
 };
 
 // TODO dynamic columns (= display columns for state.XXX.YYY or meta.ZZZ)
 const columns = [
-    { Header: "username", accessor: "username" },
-    { Header: "id", accessor: "id" },
+    { Header: "username", accessor: "state.username" },
+    { Header: "id", accessor: "state.id" },
     { Header: "sessionId", accessor: "meta.sessionId" },
-    { Header: "", accessor: "__actions", canBeSorted: false, Cell: () => <ClientActionMenu /> },
+    { Header: "", accessor: "__actions", canBeSorted: false, Cell: ({ row }) => <ClientActionMenu row={row} /> },
 ];
 
-const ClientActionMenu = () => {
+const ClientActionMenu = ({ row }) => {
+    const client = useSocketClient();
+    const refresh = () => {
+        const userId = row.original.id;
+        client.presence.get(userId);
+        client.presence.getMeta(userId);
+    };
+
     return (
         <Menu>
             <MenuButton as={DotsIconAction} />
@@ -40,6 +47,7 @@ const ClientActionMenu = () => {
                 <MenuGroup title="Presence">
                     {/* TODO https://github.com/constantoduol/JSONEditor ? */}
                     <MenuItem onClick={() => {}}>Send custom event</MenuItem>
+                    <MenuItem onClick={refresh}>Refresh</MenuItem>
                     <MenuItem onClick={() => {}}>Manage roles</MenuItem>
                     <MenuItem onClick={() => {}}>Manage state/meta</MenuItem>
                 </MenuGroup>
