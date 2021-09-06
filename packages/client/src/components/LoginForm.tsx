@@ -24,7 +24,7 @@ export const LoginForm = () => {
     const loginMutation = useMutation(login, {
         onSuccess: (data) => {
             persistLocalPresence({
-                id: makeId(),
+                id: data.id || "g-" + makeId(),
                 username: data.username,
                 color: data.color || getRandomColor(),
             });
