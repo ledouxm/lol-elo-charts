@@ -1,8 +1,8 @@
 -   rename client/user/sessions using Naming section in README
 -   CommandList available restricted by client.roles
--   useRoomEvents/useRoomClient refactor
 -   RoomClientsTable actions + dynamic state/meta columns
 -   presence.get/getMeta specific fields like rooms.update
 -   AppMonitor big todo + ClientActionMenu onClick's
 -   group atoms so that fast-refresh still works fine
--   presence/rooms -> get own rooms
+-   presence/rooms -> get current list of own joined rooms
+-   useSocketClient chain methods ?

@@ -59,6 +59,7 @@ export const LobbyRoom = () => {
     const emitter = useSocketEventEmitter();
     const path = useRoutePath();
 
+    // TODO extract that out of this component since lobby (SimpleRoom) will not always need to create a GameRoom ?
     // Create game with the one selected & random name + update this room.state.game
     const makeGame = () => {
         const gameRoomName = getRandomString();
