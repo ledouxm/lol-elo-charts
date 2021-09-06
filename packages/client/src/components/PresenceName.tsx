@@ -21,7 +21,7 @@ export const PresenceName = () => {
             defaultValue={presence?.username || "guest"}
             onSubmit={updateName}
             fontWeight="bold"
-            isDisabled={isUser(presence?.username)}
+            isDisabled={isUser(presence?.username || "")}
         />
     );
 };
