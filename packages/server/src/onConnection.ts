@@ -5,6 +5,7 @@ import { getWsAuthState } from "./auth";
 import { User } from "./entities/User";
 import { handleGamesEvent } from "./events/games";
 import { handlePresenceEvents } from "./events/presence";
+import { handleRolesEvent } from "./events/roles";
 import { handleRoomsEvent } from "./events/rooms";
 import { getClients, getClientState, getEventParam, getRoomClients, getRoomState, makeUrl } from "./helpers";
 import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsEventPayload, WsUser } from "./types";
@@ -197,6 +198,10 @@ export const onConnection = async (
 
         if (event.startsWith("sub") || event.startsWith("unsub") || event.startsWith("presence.")) {
             return handlePresenceEvents({ ...ref, event, payload });
+        }
+
+        if (event.startsWith("roles.")) {
+            return handleRolesEvent({ ...ref, event, payload });
         }
 
         if (event.startsWith("rooms.")) {

@@ -1,17 +1,20 @@
-import { useSocketEmit, useSocketStatus } from "@/hooks/useSocketConnection";
+import { useSocketEmit, useSocketEventEmitter, useSocketStatus } from "@/hooks/useSocketConnection";
 import { Player, Room } from "@/types";
 import { ObjectLiteral } from "@pastable/core";
 import { usePresenceIsSynced } from "./usePresence";
 
-export const useSocketClient = () => {
+export const useSocketClient = (): SocketClient => {
     const emit = useSocketEmit();
+    const emitter = useSocketEventEmitter();
+    const once = emitter.once.bind(emitter);
+
     const status = useSocketStatus();
     const isSynced = usePresenceIsSynced();
 
     const relay = (msg: any) => emit("relay", msg);
     const broadcast = (msg: any) => emit("broadcast", msg);
 
-    const presence: PresenceClient = {
+    const presence = {
         sub: (topic: string) => emit("sub#" + topic),
         unsub: (topic: string) => emit("unsub#" + topic),
         list: () => emit("presence.list"),
@@ -21,7 +24,7 @@ export const useSocketClient = () => {
         getMeta: (userId: Player["id"]) => emit("presence.get:meta#" + userId),
     };
 
-    const rooms: RoomClient = {
+    const rooms = {
         list: () => emit("rooms.list"),
         sub: () => emit("sub#rooms"),
         unsub: () => emit("unsub#rooms"),
@@ -50,7 +53,7 @@ export const useSocketClient = () => {
             emit(`games.create:${gameId}#` + name, initialState),
         update: (name: Room["name"], update: ObjectLiteral, field?: string) =>
             emit(`games.update:${field ? ":" + field : ""}#` + name, update),
-        getMeta: (name: Room["name"], fields?: Array<string>) => emit(`games.update.meta:${fields.join(",")}#` + name),
+        getMeta: (name: Room["name"], fields?: Array<string>) => emit(`games.get.meta:${fields.join(",")}#` + name),
         updateMeta: (name: Room["name"], update: ObjectLiteral, field?: string) =>
             emit(`games.update.meta:${field}#` + name, update),
         kick: (name: Room["name"], id: Player["id"]) => emit("games.kick#" + name, id),
@@ -60,9 +63,27 @@ export const useSocketClient = () => {
         broadcast: (name: Room["name"], msg: any) => emit("games.broadcast#" + name, msg),
     };
 
-    return { emit, status, isSynced, presence, rooms, games, relay, broadcast };
+    const roles = {
+        get: (userId?: Player["id"]) => emit("roles.get" + (userId ? "#" + userId : "")),
+        add: (userId: Player["id"], roles: Array<string>) => emit(`roles.add#` + userId, roles),
+        delete: (userId: Player["id"], roles: Array<string>) => emit(`roles.delete#` + userId, roles),
+    };
+
+    return { emit, once, status, isSynced, presence, rooms, games, roles, relay, broadcast };
 };
 
+export interface SocketClient {
+    emit: ReturnType<typeof useSocketEmit>;
+    once: ReturnType<typeof useSocketEventEmitter>["once"];
+    status: string;
+    isSynced: boolean;
+    presence: PresenceClient;
+    rooms: RoomClient;
+    games: GameRoomClient;
+    roles: RoleClient;
+    relay: (msg: any) => void;
+    broadcast: (msg: any) => void;
+}
 export interface PresenceClient {
     sub: (topic: string) => void;
     unsub: (topic: string) => void;
@@ -93,4 +114,10 @@ export interface GameRoomClient extends Omit<RoomClient, "create" | "watch" | "u
     getMeta: (name: Room["name"], fields?: Array<string>) => void;
     updateMeta: (name: Room["name"], update: ObjectLiteral, field?: string) => void;
     create: (name: Room["name"], gameId: string) => void;
+}
+
+export interface RoleClient {
+    get: (userId?: Player["id"]) => void;
+    add: (userId: Player["id"], roles: Array<string>) => void;
+    delete: (userId: Player["id"], roles: Array<string>) => void;
 }

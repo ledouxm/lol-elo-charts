@@ -5,7 +5,8 @@ import { UseRoomStateReturn } from "@/hooks/useRoomState";
 import { useSocketClient } from "@/hooks/useSocketClient";
 import { useSocketEventEmitter } from "@/hooks/useSocketConnection";
 import { Menu, MenuButton, MenuGroup, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ManageRolesModal } from "./ManageRolesModal";
 import { SendCustomEventModal } from "./SendCustomEventModal";
 
 export const RoomClientsTable = ({ room }: { room: UseRoomStateReturn }) => {
@@ -41,6 +42,12 @@ const ClientActionMenu = ({ row }) => {
     };
 
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const [openedModal, setOpenedModal] = useState<ModalType>(null);
+    const openModal = (name: ModalType) => {
+        setOpenedModal(name);
+        onOpen();
+    };
+
     const emitter = useSocketEventEmitter();
     const onSubmitCustomEvent = (event) => {
         emitter.once(event[0], () => successToast({ title: `Sent ${event[0]} !` }));
@@ -58,14 +65,21 @@ const ClientActionMenu = ({ row }) => {
                         <MenuItem onClick={() => {}}>Set as lobby admin</MenuItem>
                     </MenuGroup>
                     <MenuGroup title="Presence">
-                        <MenuItem onClick={onOpen}>Send custom event</MenuItem>
+                        <MenuItem onClick={() => openModal("event")}>Send custom event</MenuItem>
                         <MenuItem onClick={refresh}>Refresh</MenuItem>
-                        <MenuItem onClick={() => {}}>Manage roles</MenuItem>
-                        <MenuItem onClick={() => {}}>Manage state/meta</MenuItem>
+                        <MenuItem onClick={() => openModal("roles")}>Manage roles</MenuItem>
+                        <MenuItem onClick={() => openModal("state")}>Manage state/meta</MenuItem>
                     </MenuGroup>
                 </MenuList>
             </Menu>
-            <SendCustomEventModal isOpen={isOpen} onClose={onClose} onSubmit={onSubmitCustomEvent} />
+            <SendCustomEventModal
+                isOpen={isOpen && openedModal === "event"}
+                onClose={onClose}
+                onSubmit={onSubmitCustomEvent}
+            />
+            <ManageRolesModal isOpen={isOpen && openedModal === "roles"} onClose={onClose} userId={userId} />
         </>
     );
 };
+
+type ModalType = "event" | "roles" | "state";

@@ -1,4 +1,5 @@
 import { RequestContext } from "@mikro-orm/core";
+import { isDev } from "@pastable/core";
 import fastify from "fastify";
 import WebSocket from "ws";
 import { getOrm, makeOrm } from "./db";
@@ -56,7 +57,14 @@ export const makeWsApp = (options: WebSocket.ServerOptions) => {
     const ctx = { ...states, ...methods };
 
     const orm = getOrm();
-    wss.on("connection", (ws, req) => RequestContext.create(orm.em, () => onConnection(ws as AppWebsocket, req, ctx)));
+    wss.on("connection", (ws, req) => {
+        try {
+            RequestContext.create(orm.em, () => onConnection(ws as AppWebsocket, req, ctx));
+        } catch (error) {
+            if (isDev()) throw error;
+            console.error(error);
+        }
+    });
 
     // Clean broken connections every X seconds
     const interval = setInterval(() => {

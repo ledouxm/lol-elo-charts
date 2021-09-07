@@ -6,3 +6,5 @@
 -   group atoms so that fast-refresh still works fine
 -   presence/rooms -> get current list of own joined rooms
 -   useSocketClient chain methods ?
+-   admin role needed to see /monitor
+-   presence.get meta array

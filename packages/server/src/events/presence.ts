@@ -105,11 +105,11 @@ export function handlePresenceEvents({
         const clientId = getEventParam(event);
         if (!clientId) return;
 
-        const foundUser = users.get(clientId);
-        if (!foundUser) return sendMsg(ws, ["presence/notFound", clientId], opts);
-
         const type = getEventSpecificParam(event, clientId) || "state";
         if (!Boolean(["state", "meta"].includes(type))) return sendMsg(ws, ["presence/get.invalid", clientId], opts);
+
+        const foundUser = users.get(clientId);
+        if (!foundUser) return sendMsg(ws, ["presence/notFound", clientId], opts);
 
         const foundClient = Array.from(foundUser.clients)[0];
         if (!foundClient) sendMsg(ws, ["presence/offline", clientId], opts);
@@ -119,24 +119,5 @@ export function handlePresenceEvents({
             type === "state" ? getClientState(foundClient) : getClientMeta(foundClient),
         ]);
         return;
-    }
-
-    // ex: [roles.add:games#abc123, admin]
-    if (event.startsWith("roles.")) {
-        const name = getEventParam(event);
-        if (!name) return;
-
-        const type = getEventSpecificParam(event, name);
-        if (!type) return;
-
-        const room = type === "rooms" ? rooms.get(name) : games.get(name);
-        if (!room) return sendMsg(ws, [type + "/notFound", name]);
-
-        const canSet = ws.roles.has("admin") || ws.roles.has(`${type}.${room.name}.admin`);
-        if (!canSet) return sendMsg(ws, [type + "/forbidden", name]);
-
-        const isAdd = event.startsWith("roles.add");
-        if (isAdd) ws.roles.add(`${type}.${room.name}.${payload}`);
-        else ws.roles.delete(`${type}.${room.name}.${payload}`);
     }
 }
