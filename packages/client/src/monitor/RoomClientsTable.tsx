@@ -6,7 +6,7 @@ import { useSocketClient } from "@/hooks/useSocketClient";
 import { useSocketEventEmitter } from "@/hooks/useSocketConnection";
 import { Menu, MenuButton, MenuGroup, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useMemo } from "react";
-import { SendCustomEventModal } from "./SendCustomEvent";
+import { SendCustomEventModal } from "./SendCustomEventModal";
 
 export const RoomClientsTable = ({ room }: { room: UseRoomStateReturn }) => {
     const client = useSocketClient();
