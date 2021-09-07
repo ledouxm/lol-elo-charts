@@ -1,7 +1,17 @@
-import { getSaturedColor } from "@/functions/utils";
+import { getSaturedColor, isColorDark } from "@/functions/utils";
 import { usePresenceList, useMyPresence } from "@/hooks/usePresence";
 import { Player } from "@/types";
-import { Box, BoxProps, Center, chakra, CloseButton, Stack, Tooltip, useDisclosure } from "@chakra-ui/react";
+import {
+    Box,
+    BoxProps,
+    Center,
+    chakra,
+    CloseButton,
+    Stack,
+    Tooltip,
+    useColorModeValue,
+    useDisclosure,
+} from "@chakra-ui/react";
 import { atomWithToggleAndStorage, WithChildren } from "@pastable/core";
 import { useAtomValue } from "jotai/utils";
 import { AiOutlineUnorderedList } from "react-icons/ai";
@@ -33,6 +43,7 @@ export const PlayerList = ({ list, withToggle = true }: { list: Array<Player>; w
 
 const PlayerName = ({ player }: { player: Player }) => {
     const me = useMyPresence();
+
     return (
         <ColoredTag
             color={player.color}
@@ -40,9 +51,7 @@ const PlayerName = ({ player }: { player: Player }) => {
             sideWidth={me.id === player.id ? "30px" : "20px"}
         >
             <Tooltip label={<chakra.span fontSize="xx-small">({player.id})</chakra.span>}>
-                <chakra.span color="white" fontWeight="bold">
-                    {player.username}
-                </chakra.span>
+                <chakra.span fontWeight="bold">{player.username}</chakra.span>
             </Tooltip>
         </ColoredTag>
     );
@@ -54,8 +63,10 @@ const ColoredTag = ({
     sideColor,
     sideWidth = "20px",
 }: WithChildren & { color: string; sideColor: string; sideWidth?: BoxProps["w"] }) => {
+    const fontColor = isColorDark(color) ? "white" : "black";
+
     return (
-        <Box py="2" px="4" w="250px" bgColor={color} pos="relative">
+        <Box py="2" px="4" w="250px" bgColor={color} pos="relative" color={fontColor}>
             <Center pos="absolute" top="0" right="100%" h="100%" w={sideWidth} bgColor={sideColor}></Center>
             {children}
         </Box>

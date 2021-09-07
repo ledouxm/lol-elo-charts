@@ -1,4 +1,5 @@
 import { getNextIndex, getRandomIntIn, getRandomString, pickOne } from "@pastable/core";
+import { Color } from "three";
 
 export const makeId = () => getRandomString(12);
 export const isUser = (id: string) => id.startsWith("u-");
@@ -22,6 +23,17 @@ export const getSaturedColor = (hexColor: string) => {
     chars[8] = getNextHexChar(chars[8], 2);
 
     return chars.join("");
+};
+
+/** color as # + hex */
+export const isColorDark = (color: string) => {
+    const colorObj = new Color(color);
+
+    const [r, g, b] = colorObj.toArray().map((val) => Math.floor(val * 255));
+
+    const hsp = Math.sqrt(0.299 * Math.pow(r, 2) + 0.587 * Math.pow(g, 2) + 0.114 * Math.pow(b, 2));
+
+    return hsp < 127.5;
 };
 
 export function rainbow(step: number, numOfSteps = 1000) {

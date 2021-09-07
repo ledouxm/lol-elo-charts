@@ -2,7 +2,7 @@ import { useSocketEvent } from "@/hooks/useSocketConnection";
 import { CreateOrJoinGameForm } from "@/room/CreateOrJoinGameForm";
 import { Room } from "@/types";
 import { Stack } from "@chakra-ui/react";
-import { Route, useHistory } from "react-router-dom";
+import { Route, Switch, useHistory } from "react-router-dom";
 import { LobbyRoom } from "../room/LobbyRoom";
 import { PresenceList } from "./PlayerList";
 
@@ -17,8 +17,10 @@ export const AppHome = () => {
     return (
         <Stack w="100%" overflow="auto">
             <PresenceList />
-            <CreateOrJoinGameForm />
-            <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
+            <Switch>
+                <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
+                <Route path={"/app/"} children={<CreateOrJoinGameForm />} />
+            </Switch>
         </Stack>
     );
 };

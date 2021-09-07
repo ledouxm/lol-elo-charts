@@ -46,18 +46,14 @@ export const CreateOrJoinGameForm = () => {
         getValues("type") === "join" ? joinGame(values) : createGame(values);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack>
-                <Input type="text" {...register("gameId", { required: true })} />
-                <Stack direction="row">
-                    <Button type="submit" onClick={() => setType("create")}>
-                        Create room
-                    </Button>
-                    <Button type="submit" onClick={() => setType("join")}>
-                        Join room
-                    </Button>
-                </Stack>
-            </Stack>
-        </form>
+        <Stack as="form" direction="row" onSubmit={handleSubmit(onSubmit)}>
+            <Input type="text" {...register("gameId", { required: true })} />
+            <Button type="submit" onClick={() => setType("create")}>
+                Create room
+            </Button>
+            <Button type="submit" onClick={() => setType("join")}>
+                Join room
+            </Button>
+        </Stack>
     );
 };
