@@ -1,16 +1,18 @@
 import { AppHome } from "@/components/AppHome";
 import { Center, ChakraProvider, extendTheme, Flex, Spinner, Stack } from "@chakra-ui/react";
 import { removeUndefineds } from "@pastable/core";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
-import { api, getAccessToken } from "./api";
+import { BrowserRouter, Link, Route, Switch, useHistory } from "react-router-dom";
+import { api } from "./api";
 import { AppDevTools } from "./components/AppDevTools";
 import { LoginForm } from "./components/LoginForm";
 import { WsEvent } from "./functions/ws";
 import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/usePresence";
 import { useSocketConnection, useSocketEmit, useSocketEvent } from "./hooks/useSocketConnection";
 import { AppMonitor } from "./monitor/AppMonitor";
+import { getAccessToken } from "@/api";
+import { useEffect } from "react";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -63,10 +65,13 @@ const SyncWrapper = ({ children }) => {
     useSocketConnection(params);
     usePresenceInit();
 
+    const history = useHistory();
     useEffect(() => {
         const token = getAccessToken();
-        if (!token) {
+        if (token) {
             api.defaults.headers.authorization = token;
+        } else {
+            history.replace("/");
         }
     }, []);
 
