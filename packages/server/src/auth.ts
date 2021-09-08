@@ -17,7 +17,7 @@ export const getWsAuthState = async (ws: WebSocket, req: http.IncomingMessage) =
 
     try {
         if (token) {
-            const decoded = getDecodedAccessToken(token);
+            const decoded = getDecodedAccessTokenOrFail(token);
 
             if (decoded.type === "guest") {
                 return { isValid: true, id: id || "g-" + getRandomString(), name };
@@ -65,10 +65,29 @@ export const persistUser = async (name: User["username"], password: string) => {
     return user;
 };
 
+export const getUserByTokenOrFail = async (token: string): Promise<User> => {
+    const decoded = getDecodedAccessToken(token);
+    if (!decoded) throw new HTTPError("Token expiré", 401);
+
+    const user = await getEm().findOne(User, { id: decoded.id });
+    if (!user) throw new HTTPError("Utilisateur non trouvé", 401);
+
+    return user;
+};
+
 export const makeAccessToken = (user: User) =>
     jwt.sign({ type: "user", id: user.id, name: user.username }, getJwtSecret());
 export const makeGuestAccessToken = (name: string) => jwt.sign({ type: "guest", name }, getJwtSecret());
-export const getDecodedAccessToken = (token: string) => jwt.verify(token, getJwtSecret()) as DecodedToken;
+export const getDecodedAccessTokenOrFail = (token: string) => jwt.verify(token, getJwtSecret()) as DecodedToken;
+export const getDecodedAccessToken = (token: string): DecodedToken | null => {
+    let decoded;
+    try {
+        decoded = jwt.verify(token, getJwtSecret());
+        return decoded;
+    } catch (error) {
+        return null;
+    }
+};
 
 interface DecodedToken {
     id?: string;

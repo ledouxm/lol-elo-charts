@@ -2,6 +2,8 @@ import { isDev } from "@pastable/utils";
 import { FastifyRequest, FastifyReply } from "fastify";
 
 import { makeDebug } from "@/utils";
+import { getUserByTokenOrFail } from "./auth";
+import { User } from "./entities/User";
 
 const debug = makeDebug("requests");
 
@@ -13,13 +15,19 @@ export const handleRequest =
     };
 
 export const handleAuthenticatedRequest =
-    <T = any>(action: Action<WithAccessToken & T>) =>
+    <T = any>(action: Action<WithAccessToken & { user: User } & T>) =>
     async (request: FastifyRequest, response: FastifyReply) => {
         if (!request.headers.authorization)
             return handleError(new HTTPError("Unauthenticated user", 401), request, response);
 
-        const params = { ...mergeParams(request), access_token: request.headers.authorization };
-        return handleAction(action, params, request, response);
+        try {
+            const user = await getUserByTokenOrFail(request.headers.authorization);
+
+            const params = { ...mergeParams(request), access_token: request.headers.authorization, user };
+            return handleAction(action, params, request, response);
+        } catch (error) {
+            return handleError(error as HTTPError, request, response);
+        }
     };
 
 export type Action<Params, Return = any> = (
@@ -46,9 +54,12 @@ const handleAction = async <T = any>(action: Action<T>, params: T, request: Fast
         if (error instanceof HTTPError) return response.status(error.code).send(error.response);
 
         debug(error);
-        return response
-            .status(500)
-            .send(isDev() ? { error: error.message, stack: error.stack } : { error: "Unexpected error" });
+        return (
+            response
+                .status(500)
+                // @ts-ignore
+                .send(isDev() ? { error: error.message, stack: error.stack } : { error: "Unexpected error" })
+        );
     }
 };
 
