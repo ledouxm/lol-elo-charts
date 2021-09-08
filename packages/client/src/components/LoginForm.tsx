@@ -1,7 +1,7 @@
 import { api, getAccessToken, persistAccessToken } from "@/api";
 import { onAxiosError, successToast } from "@/functions/toasts";
 import { getRandomColor, makeId } from "@/functions/utils";
-import { persistLocalPresence } from "@/hooks/usePresence";
+import { persistLocalPresence, persistRoles } from "@/hooks/usePresence";
 import { Button, Center, Flex, Stack } from "@chakra-ui/react";
 import { getRandomIntIn } from "@pastable/core";
 import { useEffect } from "react";
@@ -28,7 +28,7 @@ export const LoginForm = () => {
                 username: data.username,
                 color: data.color || getRandomColor(),
             });
-            sessionStorage.setItem("wss/token", data.roles || []);
+            persistRoles(data.roles || []);
             persistAccessToken(data.token);
             router.push("/app/");
             successToast({ title: `Successfully logged` });
@@ -43,7 +43,7 @@ export const LoginForm = () => {
                 username: data.username,
                 color: data.color || getRandomColor(),
             });
-            sessionStorage.setItem("wss/roles", data.roles || []);
+            persistRoles(data.roles || []);
             persistAccessToken(data.token);
             router.push("/app/");
             successToast({ title: `Account created` });

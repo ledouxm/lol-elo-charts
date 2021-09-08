@@ -6,6 +6,9 @@ import { makePresence } from "./makePresence";
 export const getLocalPresence = () => safeJSONParse(sessionStorage.getItem("wss/player")) as Player;
 export const persistLocalPresence = (state: Player) => sessionStorage.setItem("wss/player", stringify(state, 0));
 
+export const getRoles = () => (safeJSONParse(sessionStorage.getItem("wss/roles")) || {}).roles as Array<string>;
+export const persistRoles = (roles: Array<string>) => sessionStorage.setItem("wss/roles", stringify({ roles }, 0));
+
 export const {
     isSyncedAtom,
     presencesMapAtom,
