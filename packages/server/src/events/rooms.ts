@@ -286,6 +286,17 @@ export function handleRoomsEvent({
         room.clients.forEach((client) => ws !== client && sendMsg(client, payload as any, opts));
         return;
     }
+
+    if (event.startsWith("rooms.any")) {
+        const name = getEventParam(event);
+        if (!name) return;
+
+        const room = rooms.get(name);
+        if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
+
+        room.hooks?.[event]?.({ room, ws });
+        return;
+    }
 }
 
 export const hooksByRoomId: Record<string, RoomHooks> = {

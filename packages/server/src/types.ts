@@ -53,7 +53,8 @@ export type RoomEvents =
     | "rooms.before.delete"
     | "rooms.delete"
     | "rooms.relay"
-    | "rooms.broadcast";
+    | "rooms.broadcast"
+    | `rooms.any.${string}`;
 
 export interface RoomContext<T = any> extends Partial<Pick<EventHandlerRef, "broadcastEvent">> {
     ws: AppWebsocket;
