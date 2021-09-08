@@ -28,6 +28,7 @@ export const LoginForm = () => {
                 username: data.username,
                 color: data.color || getRandomColor(),
             });
+            sessionStorage.setItem("wss/token", data.roles || []);
             persistAccessToken(data.token);
             router.push("/app/");
             successToast({ title: `Successfully logged` });
@@ -37,7 +38,12 @@ export const LoginForm = () => {
 
     const createMutation = useMutation(createUser, {
         onSuccess: (data) => {
-            persistLocalPresence({ id: data.id, username: data.username, color: data.color || getRandomColor() });
+            persistLocalPresence({
+                id: data.id,
+                username: data.username,
+                color: data.color || getRandomColor(),
+            });
+            sessionStorage.setItem("wss/roles", data.roles || []);
             persistAccessToken(data.token);
             router.push("/app/");
             successToast({ title: `Account created` });
