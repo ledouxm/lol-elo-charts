@@ -3,10 +3,19 @@ import { Stack, StackProps } from "@chakra-ui/react";
 import { FiMonitor } from "react-icons/fi";
 import { IoGameControllerOutline } from "react-icons/io5";
 import { Route, Switch, useHistory } from "react-router-dom";
+import { getRoles } from "@/hooks/usePresence";
 import { RoomMonitor } from "./RoomMonitor";
+import { useEffect } from "react";
 
 export const AppMonitor = () => {
     const history = useHistory();
+
+    useEffect(() => {
+        const roles = getRoles();
+        if (!roles.includes("admin")) {
+            history.replace("/app");
+        }
+    }, []);
 
     // vertical accordion-like (not chakraui tho since it uses btns and cant be nested)
     // for: [presence, rooms, games]

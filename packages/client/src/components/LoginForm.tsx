@@ -1,7 +1,7 @@
 import { api, getAccessToken, persistAccessToken } from "@/api";
 import { onAxiosError, successToast } from "@/functions/toasts";
 import { getRandomColor, makeId } from "@/functions/utils";
-import { persistLocalPresence, persistRoles } from "@/hooks/usePresence";
+import { persistLocalPresence, persistRoles, useSetRoles } from "@/hooks/usePresence";
 import { Button, Center, Flex, Stack } from "@chakra-ui/react";
 import { atomWithToggleAndStorage, getRandomIntIn } from "@pastable/core";
 import { useAtom } from "jotai";
@@ -29,6 +29,7 @@ export const LoginForm = () => {
     const setType = (type: "login" | "create") => setValue("type", type);
 
     const router = useHistory();
+    const setRoles = useSetRoles();
     const loginMutation = useMutation(login, {
         onSuccess: (data) => {
             persistLocalPresence({
@@ -38,6 +39,8 @@ export const LoginForm = () => {
             });
             persistRoles(data.roles || []);
             persistAccessToken(data.token);
+
+            setRoles(data.roles || []);
             router.push("/app/");
             successToast({ title: `Successfully logged` });
         },
@@ -53,6 +56,8 @@ export const LoginForm = () => {
             });
             persistRoles(data.roles || []);
             persistAccessToken(data.token);
+
+            setRoles(data.roles || []);
             router.push("/app/");
             successToast({ title: `Account created` });
         },
