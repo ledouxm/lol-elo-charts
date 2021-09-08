@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { User } from "./entities/User";
+import { User, UserRole } from "./entities/User";
 
 export type GlobalSubscription = "presence" | "rooms" | "games";
 
@@ -108,7 +108,7 @@ export type AppWebsocket = WebSocket & {
     state: Map<any, any>;
     meta: Map<any, any>;
     internal: Map<any, any>;
-    roles: Set<string>;
+    roles: Set<UserRole | string>;
     isAlive?: boolean;
     user: WsUser;
 };

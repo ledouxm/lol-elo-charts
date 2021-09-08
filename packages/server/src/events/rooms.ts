@@ -118,10 +118,13 @@ export function handleRoomsEvent({
 
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
-        if (!room.clients.has(ws)) return sendMsg(ws, ["rooms/update.empty", name], opts);
+
+        const isAdmin = ws.roles.has("global.admin");
+        // Only admins can update a room without being in it
+        if (!isAdmin && !room.clients.has(ws)) return sendMsg(ws, ["rooms/update.empty", name], opts);
 
         const field = getEventSpecificParam(event, name);
-        const canUpdate = room.hooks?.["rooms.before.update"]?.({ room, ws, field }, payload);
+        const canUpdate = isAdmin || room.hooks?.["rooms.before.update"]?.({ room, ws, field }, payload);
         if (isDefined(canUpdate) && !canUpdate) return sendMsg(ws, ["rooms/forbidden", name]);
 
         if (field) {

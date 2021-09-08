@@ -9,7 +9,7 @@ export function handleRolesEvent({ opts, event, payload, ws, users }: EventHandl
         const clientId = getEventParam(event);
         if (!clientId) return sendMsg(ws, ["roles/missingName"], opts);
 
-        const canSet = ws.roles.has("admin");
+        const canSet = ws.roles.has("global.admin");
         if (!canSet) return sendMsg(ws, ["roles/forbidden"], opts);
 
         const foundUser = users.get(clientId);
@@ -30,7 +30,7 @@ export function handleRolesEvent({ opts, event, payload, ws, users }: EventHandl
     if (event.startsWith("roles.get")) {
         const clientId = getEventParam(event) || ws.id;
 
-        const canGet = ws.roles.has("admin");
+        const canGet = ws.roles.has("global.admin");
         if (!canGet) return sendMsg(ws, ["roles/forbidden"], opts);
 
         const foundUser = users.get(clientId);

@@ -28,7 +28,7 @@ export const lobbyHooks: LobbyHooks = {
     },
     "rooms.before.update": ({ ws, room, field }, update) => {
         // Check permissions before updating room.state
-        const isAdmin = ws.roles.has("admin") || ws.roles.has(`rooms.${room.name}.admin`);
+        const isAdmin = ws.roles.has("global.admin") || ws.roles.has(`rooms.${room.name}.admin`);
         if (isAdmin) return true;
 
         if (field) {
