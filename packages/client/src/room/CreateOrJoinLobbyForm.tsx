@@ -6,7 +6,7 @@ import { Button, Input, Stack } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 
-export const CreateOrJoinGameForm = () => {
+export const CreateOrJoinLobbyForm = () => {
     const { register, handleSubmit, getValues, setValue } = useForm({
         defaultValues: { gameId: "oui", type: "create" },
     });
@@ -20,9 +20,9 @@ export const CreateOrJoinGameForm = () => {
     const createGame = ({ gameId }: { gameId: string }) => {
         client.rooms.create(gameId, { initialState: { admin: me.id }, type: "lobby" });
 
-        const off = emitter.on("rooms/exists", (name: string) => {
-            errorToast({ title: `Room ${name} already exists` });
-        });
+        const off = emitter.once("rooms/exists", (name: string) =>
+            errorToast({ title: `Room ${name} already exists` })
+        );
 
         emitter.once("rooms/state#" + gameId, () => {
             router.push("/app/lobby/" + gameId);
@@ -34,7 +34,7 @@ export const CreateOrJoinGameForm = () => {
     const joinGame = ({ gameId }: { gameId: string }) => {
         client.rooms.join(gameId);
 
-        const off = emitter.on("rooms/notFound", (name) => errorToast({ title: `Room ${name} not found` }));
+        const off = emitter.once("rooms/notFound", (name) => errorToast({ title: `Room ${name} not found` }));
         emitter.once("rooms/state#" + gameId, () => {
             router.push("/app/lobby/" + gameId);
             successToast({ title: `Room ${gameId} joined` });

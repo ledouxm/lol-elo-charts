@@ -1,5 +1,5 @@
 import { useSocketEvent } from "@/hooks/useSocketConnection";
-import { CreateOrJoinGameForm } from "@/room/CreateOrJoinGameForm";
+import { CreateOrJoinLobbyForm } from "@/room/CreateOrJoinLobbyForm";
 import { Room } from "@/types";
 import { Stack } from "@chakra-ui/react";
 import { Route, Switch, useHistory } from "react-router-dom";
@@ -19,7 +19,7 @@ export const AppHome = () => {
             <PresenceList />
             <Switch>
                 <Route path={"/app/lobby/:name"} children={<LobbyRoom />} />
-                <Route path={"/app/"} children={<CreateOrJoinGameForm />} />
+                <Route path={"/app/"} children={<CreateOrJoinLobbyForm />} />
             </Switch>
         </Stack>
     );
