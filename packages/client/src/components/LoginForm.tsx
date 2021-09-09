@@ -1,7 +1,7 @@
 import { api, getAccessToken, persistAccessToken } from "@/api";
 import { onAxiosError, successToast } from "@/functions/toasts";
 import { getRandomColor, makeId } from "@/functions/utils";
-import { persistLocalPresence, persistRoles, useSetRoles } from "@/hooks/usePresence";
+import { persistLocalPresence, persistRoles, useSetRoles } from "@/socket/usePresence";
 import { Button, Center, Flex, Stack } from "@chakra-ui/react";
 import { atomWithToggleAndStorage, getRandomIntIn } from "@pastable/core";
 import { useAtom } from "jotai";

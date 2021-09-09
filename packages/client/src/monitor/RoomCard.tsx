@@ -1,6 +1,6 @@
 import { successToast } from "@/functions/toasts";
-import { useMyPresence } from "@/hooks/usePresence";
-import { useRoomState } from "@/hooks/useRoomState";
+import { useMyPresence } from "@/socket/usePresence";
+import { useRoomState } from "@/socket/useRoomState";
 import { AvailableRoom, Player, Room } from "@/types";
 import { Button, Menu, MenuButton, MenuItem, MenuList, Stack, Tag, Tooltip } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";

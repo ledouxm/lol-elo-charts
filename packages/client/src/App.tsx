@@ -7,9 +7,9 @@ import { BrowserRouter, Link, Route, Switch, useHistory } from "react-router-dom
 import { api } from "./api";
 import { AppDevTools } from "./components/AppDevTools";
 import { LoginForm } from "./components/LoginForm";
-import { WsEvent } from "./functions/ws";
-import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./hooks/usePresence";
-import { useSocketConnection, useSocketEmit, useSocketEvent } from "./hooks/useSocketConnection";
+import { WsEvent } from "./socket/ws";
+import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./socket/usePresence";
+import { useSocketConnection, useSocketEmit, useSocketEvent } from "./socket/useSocketConnection";
 import { AppMonitor } from "./monitor/AppMonitor";
 import { getAccessToken } from "@/api";
 import { useEffect } from "react";

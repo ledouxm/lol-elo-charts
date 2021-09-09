@@ -1,6 +1,6 @@
 import { getRandomColor } from "@/functions/utils";
-import { useGameRoomRef } from "@/hooks/useGameRoomState";
-import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
+import { useGameRoomRef } from "@/socket/useGameRoomState";
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
 import { Triplet, useCylinder } from "@react-three/cannon";
 import { MeshProps, useFrame } from "@react-three/fiber";
 import { atom } from "jotai";

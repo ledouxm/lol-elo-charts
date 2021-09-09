@@ -1,8 +1,8 @@
 import { IconAction } from "@/components/IconAction";
 import { errorToast } from "@/functions/toasts";
 import { makeId } from "@/functions/utils";
-import { useMyPresence } from "@/hooks/usePresence";
-import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
+import { useMyPresence } from "@/socket/usePresence";
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
 import { useRoomContext } from "@/room/LobbyRoom";
 import { Flex, Stack } from "@chakra-ui/react";
 import { useSelection } from "@pastable/core";

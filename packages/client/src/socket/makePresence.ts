@@ -1,5 +1,5 @@
-import { WsEvent } from "@/functions/ws";
-import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
+import { WsEvent } from "@/socket/ws";
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
 import { isType, ObjectLiteral, pick, SetState } from "@pastable/core";
 import { atom } from "jotai";
 import { atomFamily, useAtomValue, useUpdateAtom } from "jotai/utils";

@@ -4,7 +4,7 @@ import { atomWithMachine } from "jotai/xstate";
 import { InvokeCreator, assign, createMachine } from "xstate";
 
 import { EventEmitter } from "@/functions/EventEmitter";
-import { SocketReadyState, WsEvent, decode, encode } from "@/functions/ws";
+import { SocketReadyState, WsEvent, decode, encode } from "@/socket/ws";
 
 // TODO: queue, send BaseSocketEvent when needed
 

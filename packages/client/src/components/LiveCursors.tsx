@@ -1,6 +1,6 @@
 import { throttle } from "@/functions/utils";
-import { useLocalPresence, useMyPresence, useOtherPresences, usePresenceList } from "@/hooks/usePresence";
-import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
+import { useLocalPresence, useMyPresence, useOtherPresences, usePresenceList } from "@/socket/usePresence";
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
 import { Player } from "@/types";
 import { chakra, useEventListener } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";

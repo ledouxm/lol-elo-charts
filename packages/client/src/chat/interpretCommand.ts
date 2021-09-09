@@ -1,5 +1,5 @@
 import { isUser } from "@/functions/utils";
-import { useSocketEmit } from "@/hooks/useSocketConnection";
+import { useSocketEmit } from "@/socket/useSocketConnection";
 import { LobbyRoomInterface } from "@/room/LobbyRoom";
 import { Player } from "@/types";
 import { SelectionActions } from "@pastable/core";

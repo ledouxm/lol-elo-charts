@@ -1,9 +1,9 @@
 import { DynamicTable } from "@/components/DynamicTable";
 import { DotsIconAction } from "@/components/IconAction";
 import { successToast } from "@/functions/toasts";
-import { UseRoomStateReturn } from "@/hooks/useRoomState";
-import { useSocketClient } from "@/hooks/useSocketClient";
-import { useSocketEventEmitter } from "@/hooks/useSocketConnection";
+import { UseRoomStateReturn } from "@/socket/useRoomState";
+import { useSocketClient } from "@/socket/useSocketClient";
+import { useSocketEventEmitter } from "@/socket/useSocketConnection";
 import { Menu, MenuButton, MenuGroup, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import { ManageRolesModal } from "./ManageRolesModal";

@@ -1,6 +1,6 @@
 import { DotsIconAction, IconAction } from "@/components/IconAction";
 import { getRandomColor } from "@/functions/utils";
-import { useRoles, useUpdatePresence } from "@/hooks/usePresence";
+import { useRoles, useUpdatePresence } from "@/socket/usePresence";
 import { Box, Menu, MenuButton, MenuItem, MenuList, Stack, StackProps, useColorMode } from "@chakra-ui/react";
 import { useUpdateAtom } from "jotai/utils";
 import { FiMonitor } from "react-icons/fi";

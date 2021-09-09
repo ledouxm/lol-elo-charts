@@ -1,5 +1,5 @@
 import { EventCallback } from "@/functions/EventEmitter";
-import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
+import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
 import { LobbyRoomState } from "@/room/LobbyRoom";
 import { AvailableRoom, Player, Room } from "@/types";
 import { useConst } from "@chakra-ui/react";

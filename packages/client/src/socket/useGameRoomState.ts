@@ -1,4 +1,4 @@
-import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
+import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
 import { Player, Room } from "@/types";
 import { useConst } from "@chakra-ui/react";
 import { AnyFunction, ObjectLiteral, sortArrayOfObjectByPropFromArray, updateItem } from "@pastable/core";

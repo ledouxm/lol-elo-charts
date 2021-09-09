@@ -1,5 +1,5 @@
 import { getSaturedColor, isColorDark } from "@/functions/utils";
-import { usePresenceList, useMyPresence } from "@/hooks/usePresence";
+import { usePresenceList, useMyPresence } from "@/socket/usePresence";
 import { Player } from "@/types";
 import {
     Box,

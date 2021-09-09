@@ -1,4 +1,4 @@
-import { useMyPresence } from "@/hooks/usePresence";
+import { useMyPresence } from "@/socket/usePresence";
 import { LobbyRoomInterface, useRoomContext } from "@/room/LobbyRoom";
 import { Player } from "@/types";
 import { KeyboardEvent, MouseEvent, useContext, useMemo } from "react";

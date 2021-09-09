@@ -2,9 +2,9 @@ import { api } from "@/api";
 import { TextInput } from "@/components/TextInput";
 import { errorToast, successToast } from "@/functions/toasts";
 import { isGuest } from "@/functions/utils";
-import { UseRoomStateReturn } from "@/hooks/useRoomState";
-import { useSocketClient } from "@/hooks/useSocketClient";
-import { useSocketEvent } from "@/hooks/useSocketConnection";
+import { UseRoomStateReturn } from "@/socket/useRoomState";
+import { useSocketClient } from "@/socket/useSocketClient";
+import { useSocketEvent } from "@/socket/useSocketConnection";
 import { Player } from "@/types";
 import {
     Button,

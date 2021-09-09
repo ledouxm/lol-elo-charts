@@ -1,6 +1,6 @@
 import { PlayerList } from "@/components/PlayerList";
-import { useRoomList, useRoomState } from "@/hooks/useRoomState";
-import { useSocketClient } from "@/hooks/useSocketClient";
+import { useRoomList, useRoomState } from "@/socket/useRoomState";
+import { useSocketClient } from "@/socket/useSocketClient";
 import { RoomCard } from "@/monitor/RoomCard";
 import { Box, Button, Center, Input, SimpleGrid, Stack } from "@chakra-ui/react";
 import { getRandomString } from "@pastable/core";

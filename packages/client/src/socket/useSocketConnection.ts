@@ -1,5 +1,5 @@
-import { getWebsocketURL, WsEvent } from "@/functions/ws";
-import { emit, wsMachineAtom, wsStatusAtom } from "@/machines/websocketMachine";
+import { getWebsocketURL, WsEvent } from "@/socket/ws";
+import { emit, wsMachineAtom, wsStatusAtom } from "@/socket/websocketMachine";
 import { AnyFunction, isDev, ObjectLiteral, useEvent } from "@pastable/core";
 import { useAtom } from "jotai";
 import { useEffect } from "react";

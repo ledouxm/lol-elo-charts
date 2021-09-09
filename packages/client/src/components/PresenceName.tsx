@@ -1,5 +1,5 @@
 import { isUser } from "@/functions/utils";
-import { useLocalPresence } from "@/hooks/usePresence";
+import { useLocalPresence } from "@/socket/usePresence";
 import { Player } from "@/types";
 import { Editable, EditableInput, EditablePreview, EditableProps } from "@chakra-ui/react";
 import { MutableRefObject, useEffect, useRef } from "react";

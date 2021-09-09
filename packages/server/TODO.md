@@ -5,7 +5,6 @@
 -   AppMonitor big todo + ClientActionMenu onClick's
 -   group atoms so that fast-refresh still works fine
 -   toast forbidden/error everywhere ?
--   refactor dossiers front ? socket -> useSocketX + webSocketMachine, presence / make/use, etc ?
 
 ## Server:
 

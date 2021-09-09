@@ -1,6 +1,6 @@
 import { DynamicTable } from "@/components/DynamicTable";
 import { DotsIconAction, IconAction } from "@/components/IconAction";
-import { useRoomList, useRoomState } from "@/hooks/useRoomState";
+import { useRoomList, useRoomState } from "@/socket/useRoomState";
 import { LobbyRoomState } from "@/room/LobbyRoom";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
 import {

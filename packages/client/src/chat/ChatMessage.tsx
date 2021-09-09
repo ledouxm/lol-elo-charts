@@ -2,7 +2,7 @@ import { Box, Flex, Skeleton, Square } from "@chakra-ui/react";
 
 import { MiniText, TinyText } from "@/components/Text";
 import { ChatMessageData } from "./types";
-import { useMyPresence } from "@/hooks/usePresence";
+import { useMyPresence } from "@/socket/usePresence";
 import { isUser } from "@/functions/utils";
 
 export interface ChatMessageProps extends ChatMessageData {

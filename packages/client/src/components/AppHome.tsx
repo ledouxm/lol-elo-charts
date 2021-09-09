@@ -1,4 +1,4 @@
-import { useSocketEvent } from "@/hooks/useSocketConnection";
+import { useSocketEvent } from "@/socket/useSocketConnection";
 import { CreateOrJoinLobbyForm } from "@/room/CreateOrJoinLobbyForm";
 import { Room } from "@/types";
 import { Stack } from "@chakra-ui/react";

@@ -3,7 +3,7 @@ import { Stack, StackProps } from "@chakra-ui/react";
 import { FiMonitor } from "react-icons/fi";
 import { IoGameControllerOutline } from "react-icons/io5";
 import { Route, Switch, useHistory } from "react-router-dom";
-import { getRoles } from "@/hooks/usePresence";
+import { getRoles } from "@/socket/usePresence";
 import { RoomMonitor } from "./RoomMonitor";
 import { useEffect } from "react";
 

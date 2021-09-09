@@ -1,6 +1,6 @@
 import { getRandomColor } from "@/functions/utils";
-import { useLocalPresence } from "@/hooks/usePresence";
-import { useSocketEmit } from "@/hooks/useSocketConnection";
+import { useLocalPresence } from "@/socket/usePresence";
+import { useSocketEmit } from "@/socket/useSocketConnection";
 import { roundTo } from "@pastable/core";
 import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";

@@ -1,12 +1,12 @@
 import { Chat } from "@/chat/Chat";
 import { PlayerList } from "@/components/PlayerList";
 import { errorToast } from "@/functions/toasts";
-import { useGameRoomRef } from "@/hooks/useGameRoomState";
-import { useMyPresence } from "@/hooks/usePresence";
-import { useRoomState, UseRoomStateReturn } from "@/hooks/useRoomState";
+import { useGameRoomRef } from "@/socket/useGameRoomState";
+import { useMyPresence } from "@/socket/usePresence";
+import { useRoomState, UseRoomStateReturn } from "@/socket/useRoomState";
 import { useRoutePath } from "@/hooks/useRoutePath";
-import { useSocketClient } from "@/hooks/useSocketClient";
-import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
+import { useSocketClient } from "@/socket/useSocketClient";
+import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
 import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
 import { Player, Room } from "@/types";
 import { Box, Button, Flex, Select, SimpleGrid, Stack } from "@chakra-ui/react";
