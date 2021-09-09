@@ -14,6 +14,11 @@ export const getEventSpecificParam = (event: string, roomName: Room["name"]) =>
 export const isUser = (id: string) => id.startsWith("u-");
 export const isGuest = (id: string) => id.startsWith("g-");
 
+export const isGlobalAdmin = (ws: AppWebsocket) => ws.user.roles.has("global.admin");
+export const isRoomAdmin = (ws: AppWebsocket, roomName: Room["name"]) => ws.user.roles.has(`rooms.${roomName}.admin`);
+export const canSetField = (ws: AppWebsocket, roomName: Room["name"], fieldPath: string) =>
+    ws.user.roles.has(`rooms.${roomName}.set#${fieldPath}`);
+
 export const makeUser = (id: AppWebsocket["id"], user?: User): WsUser => ({
     user,
     id: user?.id || id,

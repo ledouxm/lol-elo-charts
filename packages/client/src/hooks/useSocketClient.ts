@@ -92,7 +92,7 @@ export const makeSpecificRoomClient = (client: RoomClient, name: Room["name"]) =
     update: <Field extends string = undefined>(update: Field extends undefined ? ObjectLiteral : any, field?: Field) =>
         client.update.apply(null, [name, update, field]),
     leave: () => client.leave.apply(null, [name]) as void,
-    kick: (id: Player["id"]) => client.leave.apply(null, [name, id]) as void,
+    kick: (id: Player["id"]) => client.kick.apply(null, [name, id]) as void,
     delete: () => client.delete.apply(null, [name]) as void,
     relay: (msg: any) => client.relay.apply(null, [name, msg]) as void,
     broadcast: (msg: any) => client.broadcast.apply(null, [name, msg]) as void,

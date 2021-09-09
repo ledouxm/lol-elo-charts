@@ -1,6 +1,14 @@
 import { lobbyHooks } from "@/rooms/lobby";
 import { isDefined, set } from "@pastable/core";
-import { getEventParam, getEventSpecificParam, getRoomClients, getRoomState, isUserInSet, makeRoom } from "../helpers";
+import {
+    getEventParam,
+    getEventSpecificParam,
+    getRoomClients,
+    getRoomState,
+    isGlobalAdmin,
+    isUserInSet,
+    makeRoom,
+} from "../helpers";
 import { AppWebsocket, EventHandlerRef, RoomHooks, WsEventPayload } from "../types";
 import { sendMsg } from "../ws-helpers";
 
@@ -119,7 +127,7 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
 
-        const isAdmin = ws.user.roles.has("global.admin");
+        const isAdmin = isGlobalAdmin(ws);
         // Only admins can update a room without being in it
         if (!isAdmin && !room.clients.has(ws)) return sendMsg(ws, ["rooms/update.empty", name], opts);
 

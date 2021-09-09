@@ -1,4 +1,4 @@
-import { getRoomState } from "@/helpers";
+import { canSetField, getRoomState, isGlobalAdmin, isRoomAdmin } from "@/helpers";
 import { GameRoom, MapObject, RoomHooks, SimpleRoom } from "@/types";
 import { getMostOcurrence } from "@/utils";
 import { sendMsg } from "@/ws-helpers";
@@ -21,18 +21,18 @@ export const lobbyHooks: LobbyHooks = {
         room.state.set("mode", "democracy");
     },
     "rooms.join": ({ ws, room }) => {
-        if (ws.user.roles.has(`rooms.${room.name}.admin`)) return;
+        if (isRoomAdmin(ws, room.name)) return;
 
         // Allow anyone joining to vote
         ws.user.roles.add(`rooms.${room.name}.set#votes.${ws.id}`);
     },
     "rooms.before.update": ({ ws, room, field }, update) => {
         // Check permissions before updating room.state
-        const isAdmin = ws.user.roles.has("global.admin") || ws.user.roles.has(`rooms.${room.name}.admin`);
+        const isAdmin = isGlobalAdmin(ws) || isRoomAdmin(ws, room.name);
         if (isAdmin) return true;
 
         if (field) {
-            return ws.user.roles.has(`rooms.${room.name}.set#${field}`);
+            return canSetField(ws, room.name, field);
         }
 
         return false;
@@ -58,7 +58,7 @@ export const lobbyHooks: LobbyHooks = {
     },
     "rooms.leave": ({ ws, room }) => {
         // Pass admin role to a random room.client
-        if (ws.user.roles.has(`rooms.${room.name}.admin`)) {
+        if (isRoomAdmin(ws, room.name)) {
             const client = pickOne(Array.from(room.clients));
             if (client) {
                 client.user.roles.add(`rooms.${room.name}.admin`);
