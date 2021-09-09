@@ -8,7 +8,7 @@ import { atom, useAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import { useEffect, useRef } from "react";
 import { presencesMapAtom, useMyPresence, usePresenceIsSynced } from "./usePresence";
-import { RoomClient, useSocketClient } from "./useSocketClient";
+import { makeSpecificRoomClient, useSocketClient } from "./useSocketClient";
 
 // TODO on un-sync(=ws disconnect), reset everything ?
 export const roomListAtom = atom([] as Array<AvailableRoom>);
@@ -212,20 +212,3 @@ export const useRoomClient = (name: Room["name"]) => {
 export type UseRoomStateReturn<State extends ObjectLiteral = LobbyRoomState> = ReturnType<typeof useRoomState> & {
     state: State;
 };
-
-export const makeSpecificRoomClient = (client: RoomClient, name: Room["name"]) => ({
-    ...client,
-    get: () => client.get.apply(null, [name]) as void,
-    join: () => client.join.apply(null, [name]) as void,
-    watch: () => client.watch.apply(null, [name]) as void,
-    unwatch: () => client.unwatch.apply(null, [name]) as void,
-    create: (initialData: { initialState?: ObjectLiteral; type?: string }) =>
-        client.create.apply(null, [name, initialData]) as void,
-    update: <Field extends string = undefined>(update: Field extends undefined ? ObjectLiteral : any, field?: Field) =>
-        client.update.apply(null, [name, update, field]),
-    leave: () => client.leave.apply(null, [name]) as void,
-    kick: (id: Player["id"]) => client.leave.apply(null, [name, id]) as void,
-    delete: () => client.delete.apply(null, [name]) as void,
-    relay: (msg: any) => client.relay.apply(null, [name, msg]) as void,
-    broadcast: (msg: any) => client.broadcast.apply(null, [name, msg]) as void,
-});

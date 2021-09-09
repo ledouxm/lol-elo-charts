@@ -5,8 +5,7 @@ import { AnyFunction, ObjectLiteral, sortArrayOfObjectByPropFromArray, updateIte
 import { atom, useAtom } from "jotai";
 import { atomFamily, useAtomValue } from "jotai/utils";
 import { useMyPresence } from "./usePresence";
-import { makeSpecificRoomClient } from "./useRoomState";
-import { GameRoomClient, useSocketClient } from "./useSocketClient";
+import { makeSpecificGameRoomClient, useSocketClient } from "./useSocketClient";
 
 export const gameRefFamily = atomFamily(
     (props: Room) => atom({ current: props }),
@@ -114,12 +113,3 @@ export const useGameRoomState = <State extends ObjectLiteral = Room>(name: strin
 
     return { name: game.name, state: game.state as Room & State, clients: game.clients, once, ...gameClient };
 };
-
-const makeSpecificGameRoomClient = (client: GameRoomClient, name: Room["name"]) => ({
-    ...makeSpecificRoomClient(client as any, name),
-    create: (gameId: string, initialData: { initialState?: ObjectLiteral; type?: string }) =>
-        client.create.apply(null, [gameId, initialData]) as void,
-    getMeta: (update: ObjectLiteral, fields?: Array<string>) =>
-        client.getMeta.apply(null, [name, update, fields]) as void,
-    updateMeta: (update: ObjectLiteral, field?: string) => client.updateMeta.apply(null, [name, update, field]) as void,
-});

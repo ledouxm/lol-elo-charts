@@ -11,6 +11,9 @@ export const getEventSpecificParam = (event: string, roomName: Room["name"]) =>
     (getEventParam(event, ":") || "").replace("#" + roomName, "");
 
 // TODO rename client -> session, makeUser -> makeClient ? since user is only a registered user here and might be udnefined
+export const isUser = (id: string) => id.startsWith("u-");
+export const isGuest = (id: string) => id.startsWith("g-");
+
 export const makeUser = (id: AppWebsocket["id"], user?: User): WsUser => ({
     user,
     id: user?.id || id,

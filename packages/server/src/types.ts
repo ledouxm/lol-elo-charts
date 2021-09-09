@@ -109,7 +109,6 @@ export type AppWebsocket = WebSocket & {
     state: Map<any, any>;
     meta: Map<any, any>;
     internal: Map<any, any>;
-    roles: Set<UserRole | string>;
     isAlive?: boolean;
     user: WsUser;
 };

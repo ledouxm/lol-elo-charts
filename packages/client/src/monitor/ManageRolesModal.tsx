@@ -1,8 +1,14 @@
+import { api } from "@/api";
 import { TextInput } from "@/components/TextInput";
+import { errorToast, successToast } from "@/functions/toasts";
+import { isGuest } from "@/functions/utils";
+import { UseRoomStateReturn } from "@/hooks/useRoomState";
 import { useSocketClient } from "@/hooks/useSocketClient";
 import { useSocketEvent } from "@/hooks/useSocketConnection";
+import { Player } from "@/types";
 import {
     Button,
+    chakra,
     FormLabel,
     Modal,
     ModalBody,
@@ -15,15 +21,27 @@ import {
     Tag,
     TagCloseButton,
     TagLabel,
+    UseDisclosureReturn,
     Wrap,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
+import { useMutation } from "react-query";
 
-export function ManageRolesModal({ isOpen, onClose, userId }) {
-    const inputRef = useRef<HTMLInputElement>(null);
+const addGlobalRole = (roles: Array<string>) => api.post("/roles/add", { roles });
+const deleteGlobalRole = (roles: Array<string>) => api.post("/roles/delete", { roles });
+
+export function ManageRolesModal({
+    isOpen,
+    onClose,
+    userId,
+    room,
+}: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & { userId?: Player["id"]; room: UseRoomStateReturn }) {
+    const globalInputRef = useRef<HTMLInputElement>(null);
+    const roomInputRef = useRef<HTMLInputElement>(null);
     const [roles, setRoles] = useState([]);
 
     const client = useSocketClient();
+    /** Get current roles */
     useEffect(() => {
         if (!isOpen) return;
 
@@ -33,12 +51,31 @@ export function ManageRolesModal({ isOpen, onClose, userId }) {
 
     useSocketEvent("roles/updated#" + userId, setRoles);
 
-    const addRole = () => {
-        client.roles.add(userId, [inputRef.current.value]);
-        inputRef.current.value = "";
-        inputRef.current.focus();
+    const queryOptions: any = { onSuccess: () => successToast({ title: "Success" }), onError: () => errorToast() };
+    const addMutation = useMutation(() => addGlobalRole([globalInputRef.current.value]), queryOptions);
+    const deleteMutation = useMutation(() => deleteGlobalRole([globalInputRef.current.value]), queryOptions);
+
+    const resetInput = (ref) => {
+        ref.current.value = "";
+        ref.current.focus();
     };
-    const deleteRole = (name: string) => client.roles.delete(userId, [name]);
+    const addRole = () => {
+        addMutation.mutate();
+        setTimeout(() => resetInput(globalInputRef), 0);
+    };
+    const addRoomRole = () => {
+        client.rooms.addRole(room.name, userId, roomInputRef.current.value);
+        client.once("roles/updated#" + userId, () => successToast({ title: "Success" }));
+        resetInput(roomInputRef);
+    };
+    const deleteRole = (name: string) => {
+        if (name.startsWith("global")) {
+            deleteMutation.mutate();
+        } else {
+            client.once("roles/updated#" + userId, () => successToast({ title: "Success" }));
+            client.roles.delete(userId, name);
+        }
+    };
 
     return (
         <>
@@ -48,18 +85,38 @@ export function ManageRolesModal({ isOpen, onClose, userId }) {
                     <ModalHeader>Manage roles</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Stack direction="row" mb="2" alignItems="flex-end">
-                            <TextInput label="Add a new role" placeholder="role name" ref={inputRef} />
-                            <Button colorScheme="blue" onClick={addRole}>
-                                Add
-                            </Button>
+                        <Stack>
+                            <Stack direction="row" alignItems="flex-end" display={isGuest(userId) ? "none" : ""}>
+                                <TextInput
+                                    label="Add a new global role"
+                                    placeholder="global role name"
+                                    ref={globalInputRef}
+                                />
+                                <Button colorScheme="blue" onClick={addRole}>
+                                    Add
+                                </Button>
+                            </Stack>
+                            <Stack direction="row" alignItems="flex-end">
+                                <TextInput
+                                    label="Add a new room role name"
+                                    placeholder={`just fill name: rooms.${room.name}.\${name}`}
+                                    ref={roomInputRef}
+                                />
+                                <Button colorScheme="blue" onClick={addRoomRole}>
+                                    Add
+                                </Button>
+                            </Stack>
                         </Stack>
-                        {roles.length ? <FormLabel>Roles</FormLabel> : <span>No roles yet</span>}
-                        <Wrap>
-                            {roles.map((role) => (
-                                <RoleTag onCloseClick={() => deleteRole(role)}>{role}</RoleTag>
-                            ))}
-                        </Wrap>
+                        <chakra.div mt="2">
+                            {roles.length ? <FormLabel>Roles</FormLabel> : <span>No roles yet</span>}
+                            <Wrap>
+                                {roles.map((role) => (
+                                    <RoleTag key={role} onCloseClick={() => deleteRole(role)}>
+                                        {role}
+                                    </RoleTag>
+                                ))}
+                            </Wrap>
+                        </chakra.div>
                     </ModalBody>
 
                     <ModalFooter>

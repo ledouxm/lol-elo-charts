@@ -1,10 +1,17 @@
--   rename client/user/sessions using Naming section in README
+## Client:
+
 -   CommandList available restricted by client.roles
 -   RoomClientsTable actions + dynamic state/meta columns
--   presence.get/getMeta specific fields like rooms.update
 -   AppMonitor big todo + ClientActionMenu onClick's
 -   group atoms so that fast-refresh still works fine
+-   toast forbidden/error everywhere ?
+-   refactor dossiers front ? socket -> useSocketX + webSocketMachine, presence / make/use, etc ?
+
+## Server:
+
+-   rename client/user/sessions using Naming section in README
+-   presence.get/getMeta specific fields like rooms.update
 -   presence/rooms -> get current list of own joined rooms
--   useSocketClient chain methods ?
--   admin role needed to see /monitor
--   presence.get meta array
+-   presence.get meta for multiple clients, return array
+-   uniformiser les réponses errors ws
+-   organize imports prettier corov2

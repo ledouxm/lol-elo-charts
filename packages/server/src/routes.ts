@@ -2,8 +2,8 @@ import { getRandomIntIn } from "@pastable/core";
 import { FastifyPluginCallback } from "fastify";
 import { getUserByNameAndPassword, makeAccessToken, makeGuestAccessToken, persistUser } from "./auth";
 import { getEm } from "./db";
-import { formatUser, User } from "./entities/User";
-import { handleRequest } from "./requests";
+import { formatUser, User, UserRole } from "./entities/User";
+import { handleAuthenticatedRequest, handleRequest, HTTPError } from "./requests";
 
 export const routes: FastifyPluginCallback = (app, _options, done) => {
     app.get("/", async () => ({ hello: "world" }));
@@ -12,7 +12,7 @@ export const routes: FastifyPluginCallback = (app, _options, done) => {
     app.post(
         "/auth/register",
         handleRequest(async ({ name, password }: { name: string; password?: string }) => {
-            if (!name || !password) return { isValid: false, error: "Missing name or pw" };
+            if (!name || !password) throw new HTTPError("Missing name or pw", 400);
             const user = await persistUser(name, password);
             const token = makeAccessToken(user);
             return { ...formatUser(user), token };
@@ -40,6 +40,33 @@ export const routes: FastifyPluginCallback = (app, _options, done) => {
 
         return { username: name, token };
     });
+
+    app.post(
+        "/roles/add",
+        handleAuthenticatedRequest<{ roles: Array<UserRole> }>(async ({ user, roles }) => {
+            if (!roles) throw new HTTPError("Missing roles argument");
+            if (!Array.isArray(roles)) throw new HTTPError("Roles should be an array");
+            if (!roles.length) throw new HTTPError("Roles should not be empty");
+
+            user.roles.push(...roles);
+            const em = getEm();
+            em.persistAndFlush(user);
+            return { ...formatUser(user) };
+        })
+    );
+    app.post(
+        "/roles/delete",
+        handleAuthenticatedRequest<{ roles: Array<UserRole> }>(async ({ user, roles }) => {
+            if (!roles) throw new HTTPError("Missing roles argument");
+            if (!Array.isArray(roles)) throw new HTTPError("Roles should be an array");
+            if (!roles.length) throw new HTTPError("Roles should not be empty");
+
+            user.roles = user.roles.filter((role) => roles.includes(role));
+            const em = getEm();
+            em.persistAndFlush(user);
+            return { ...formatUser(user) };
+        })
+    );
 
     done();
 };

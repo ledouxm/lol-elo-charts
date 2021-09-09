@@ -21,7 +21,7 @@ export const RoomClientsTable = ({ room }: { room: UseRoomStateReturn }) => {
         });
     }, [ids]);
 
-    return <DynamicTable columns={columns} data={room.presences} />;
+    return <DynamicTable columns={columns} data={room.presences} getCellProps={() => ({ room })} />;
 };
 
 // TODO dynamic columns (= display columns for state.XXX.YYY or meta.ZZZ)
@@ -29,10 +29,15 @@ const columns = [
     { Header: "username", accessor: "state.username" },
     { Header: "id", accessor: "state.id" },
     { Header: "sessionId", accessor: "meta.sessionId" },
-    { Header: "", accessor: "__actions", canBeSorted: false, Cell: ({ row }) => <ClientActionMenu row={row} /> },
+    {
+        Header: "",
+        accessor: "__actions",
+        canBeSorted: false,
+        Cell: ({ row, room }) => <ClientActionMenu row={row} room={room} />,
+    },
 ];
 
-const ClientActionMenu = ({ row }) => {
+const ClientActionMenu = ({ row, room }: { row: any; room: UseRoomStateReturn }) => {
     const client = useSocketClient();
     const userId = row.original.state.id;
 
@@ -55,14 +60,17 @@ const ClientActionMenu = ({ row }) => {
         onClose();
     };
 
+    const kick = () => room.kick(userId);
+    const setAsLobbyAdmin = () => room.update(userId, "admin");
+
     return (
         <>
             <Menu>
                 <MenuButton as={DotsIconAction} />
                 <MenuList>
                     <MenuGroup title="Room">
-                        <MenuItem onClick={() => {}}>Kick</MenuItem>
-                        <MenuItem onClick={() => {}}>Set as lobby admin</MenuItem>
+                        <MenuItem onClick={kick}>Kick</MenuItem>
+                        <MenuItem onClick={setAsLobbyAdmin}>Set as lobby admin</MenuItem>
                     </MenuGroup>
                     <MenuGroup title="Presence">
                         <MenuItem onClick={() => openModal("event")}>Send custom event</MenuItem>
@@ -77,7 +85,12 @@ const ClientActionMenu = ({ row }) => {
                 onClose={onClose}
                 onSubmit={onSubmitCustomEvent}
             />
-            <ManageRolesModal isOpen={isOpen && openedModal === "roles"} onClose={onClose} userId={userId} />
+            <ManageRolesModal
+                isOpen={isOpen && openedModal === "roles"}
+                onClose={onClose}
+                userId={userId}
+                room={room}
+            />
         </>
     );
 };

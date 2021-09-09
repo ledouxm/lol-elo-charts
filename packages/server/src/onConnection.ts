@@ -95,7 +95,6 @@ export const onConnection = async (
     );
     ws.meta = new Map(Object.entries({ sessionId: getRandomString() }));
     ws.internal = new Map(Object.entries({ timers: new Map() }));
-    ws.roles = new Set(user.roles);
 
     // Send his presence
     sendMsg(ws, ["presence/state", getClientState(ws)]);
@@ -117,9 +116,6 @@ export const onConnection = async (
         timers.clear();
 
         userIds.delete(ws.id); // Unlock user id
-
-        // Save client roles in user
-        ws.roles.forEach((role) => user.roles.add(role));
 
         // Remove user from each room he was in
         user.rooms.forEach((room) => {

@@ -63,7 +63,7 @@ const ColoredTag = ({
     sideColor,
     sideWidth = "20px",
 }: WithChildren & { color: string; sideColor: string; sideWidth?: BoxProps["w"] }) => {
-    const fontColor = isColorDark(color.slice(0, -2)) ? "white" : "black";
+    const fontColor = isColorDark(color.length > 7 ? color.slice(0, -2) : color) ? "white" : "black";
 
     return (
         <Box py="2" px="4" w="250px" bgColor={color} pos="relative" color={fontColor}>

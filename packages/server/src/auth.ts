@@ -74,6 +74,7 @@ export const getUserByTokenOrFail = async (token: string): Promise<User> => {
 
     return user;
 };
+export const getUserById = (id: User["id"]) => getEm().findOne(User, { id });
 
 export const makeAccessToken = (user: User) =>
     jwt.sign({ type: "user", id: user.id, name: user.username }, getJwtSecret());

@@ -119,7 +119,7 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
 
-        const isAdmin = ws.roles.has("global.admin");
+        const isAdmin = ws.user.roles.has("global.admin");
         // Only admins can update a room without being in it
         if (!isAdmin && !room.clients.has(ws)) return sendMsg(ws, ["rooms/update.empty", name], opts);
 

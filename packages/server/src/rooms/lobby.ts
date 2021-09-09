@@ -17,22 +17,22 @@ export interface LobbyHooks extends RoomHooks<LobbyGameRoom> {}
 
 export const lobbyHooks: LobbyHooks = {
     "rooms.create": ({ ws, room }) => {
-        ws.roles.add(`rooms.${room.name}.admin`);
+        ws.user.roles.add(`rooms.${room.name}.admin`);
         room.state.set("mode", "democracy");
     },
     "rooms.join": ({ ws, room }) => {
-        if (ws.roles.has(`rooms.${room.name}.admin`)) return;
+        if (ws.user.roles.has(`rooms.${room.name}.admin`)) return;
 
         // Allow anyone joining to vote
-        ws.roles.add(`rooms.${room.name}.set#votes.${ws.id}`);
+        ws.user.roles.add(`rooms.${room.name}.set#votes.${ws.id}`);
     },
     "rooms.before.update": ({ ws, room, field }, update) => {
         // Check permissions before updating room.state
-        const isAdmin = ws.roles.has("global.admin") || ws.roles.has(`rooms.${room.name}.admin`);
+        const isAdmin = ws.user.roles.has("global.admin") || ws.user.roles.has(`rooms.${room.name}.admin`);
         if (isAdmin) return true;
 
         if (field) {
-            return ws.roles.has(`rooms.${room.name}.set#${field}`);
+            return ws.user.roles.has(`rooms.${room.name}.set#${field}`);
         }
 
         return false;
@@ -58,10 +58,10 @@ export const lobbyHooks: LobbyHooks = {
     },
     "rooms.leave": ({ ws, room }) => {
         // Pass admin role to a random room.client
-        if (ws.roles.has(`rooms.${room.name}.admin`)) {
+        if (ws.user.roles.has(`rooms.${room.name}.admin`)) {
             const client = pickOne(Array.from(room.clients));
             if (client) {
-                client.roles.add(`rooms.${room.name}.admin`);
+                client.user.roles.add(`rooms.${room.name}.admin`);
                 room.state.set("admin", client.id);
             }
         }
