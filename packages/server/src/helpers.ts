@@ -1,8 +1,9 @@
+import { ObjectLiteral } from "@pastable/typings";
 import http from "http";
 import { URL } from "url";
 import WebSocket from "ws";
 import { User } from "./entities/User";
-import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, Room, RoomHooks, SimpleRoom, WsUser } from "./types";
+import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, Room, RoomHooks, SimpleRoom, WsClient } from "./types";
 
 export const makeUrl = (req: http.IncomingMessage) =>
     new URL((req.url.startsWith("/") ? "http://localhost" : "") + req.url);
@@ -14,15 +15,18 @@ export const getEventSpecificParam = (event: string, roomName: Room["name"]) =>
 export const isUser = (id: string) => id.startsWith("u-");
 export const isGuest = (id: string) => id.startsWith("g-");
 
-export const isGlobalAdmin = (ws: AppWebsocket) => ws.user.roles.has("global.admin");
-export const isRoomAdmin = (ws: AppWebsocket, roomName: Room["name"]) => ws.user.roles.has(`rooms.${roomName}.admin`);
+export const isGlobalAdmin = (ws: AppWebsocket) => ws.client.roles.has("global.admin");
+export const isRoomAdmin = (ws: AppWebsocket, roomName: Room["name"]) => ws.client.roles.has(`rooms.${roomName}.admin`);
 export const canSetField = (ws: AppWebsocket, roomName: Room["name"], fieldPath: string) =>
-    ws.user.roles.has(`rooms.${roomName}.set#${fieldPath}`);
+    ws.client.roles.has(`rooms.${roomName}.set#${fieldPath}`);
 
-export const makeUser = (id: AppWebsocket["id"], user?: User): WsUser => ({
+export const makeWsClient = (id: AppWebsocket["id"], initialState: ObjectLiteral, user?: User): WsClient => ({
     user,
     id: user?.id || id,
-    clients: new Set(),
+    state: new Map(Object.entries(initialState || {})),
+    meta: new Map(Object.entries({})),
+    internal: new Map(Object.entries({ timers: new Map() })),
+    sessions: new Set(),
     rooms: new Set(),
     roles: new Set(user?.roles || []),
 });
@@ -66,16 +70,13 @@ export enum GameId {
 
 // Presence
 export const getClients = (clients: Set<AppWebsocket>) =>
-    Array.from(clients.values()).filter((client) => client.readyState === WebSocket.OPEN && client.id && client.state);
+    Array.from(clients.values()).filter((ws) => ws.readyState === WebSocket.OPEN && ws.id && ws.client.state);
 export const getClientState = (ws: AppWebsocket) => ({
     id: ws.id,
-    ...Object.fromEntries(Array.from(ws.state.entries())),
+    ...Object.fromEntries(Array.from(ws.client.state.entries())),
 });
-export const getClientMeta = (ws: AppWebsocket) => ({
-    id: ws.id,
-    ...Object.fromEntries(Array.from(ws.meta.entries())),
-});
-export const isUserInSet = (set: Set<AppWebsocket>, id: AppWebsocket["id"]) => {
+export const getClientMeta = (ws: AppWebsocket) => Object.fromEntries(Array.from(ws.client.meta.entries()));
+export const isIdInSet = (set: Set<AppWebsocket>, id: AppWebsocket["id"]) => {
     for (let elem of set) {
         if (elem.id === id) return true;
     }

@@ -1,4 +1,4 @@
-import { getRandomString } from "@pastable/core";
+import { getRandomString, ObjectLiteral } from "@pastable/core";
 import { IncomingMessage } from "http";
 import WebSocket from "ws";
 import { getWsAuthState } from "./auth";
@@ -7,8 +7,16 @@ import { handleGamesEvent } from "./events/games";
 import { handlePresenceEvents } from "./events/presence";
 import { handleRolesEvent } from "./events/roles";
 import { handleRoomsEvent } from "./events/rooms";
-import { getClients, getClientState, getEventParam, getRoomClients, getRoomState, makeUrl } from "./helpers";
-import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsEventPayload, WsUser } from "./types";
+import {
+    getClients,
+    getClientState,
+    getEventParam,
+    getRoomClients,
+    getRoomState,
+    makeUrl,
+    makeWsClient,
+} from "./helpers";
+import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsEventPayload, WsClient } from "./types";
 import { getRandomColor } from "./utils";
 import { decode, sendMsg } from "./ws-helpers";
 
@@ -20,11 +28,9 @@ export const onConnection = async (
         opts,
         rooms,
         games,
-        users,
-        userIds,
-        userCounts,
+        clients,
+        clientCounts,
         globalSubscriptions,
-        getWsUser,
         getAllClients,
         getPresenceList,
         getPresenceMetaList,
@@ -34,6 +40,14 @@ export const onConnection = async (
     if (!auth.isValid) return;
 
     // TODO clearInterval+setInterval on xxx/list to avoid duplication with globalSubscriptions
+    const getWsClient = (id: AppWebsocket["id"], initialState: ObjectLiteral, user?: User) => {
+        if (!clients.has(id)) {
+            clients.set(id, makeWsClient(id, initialState, user));
+        }
+
+        return clients.get(id);
+    };
+
     // Misc
     const broadcastPresenceList = (excludeSelf?: boolean) =>
         globalSubscriptions.get("presence").forEach((client) => {
@@ -80,28 +94,23 @@ export const onConnection = async (
 
     const url = makeUrl(req);
     ws.isAlive = true;
-    ws.id = auth.user?.id || auth.id;
-    userIds.add(ws.id);
+    ws.id = auth.user?.id || auth.id; // db user.id || random guest id
+    ws.sessionId = getRandomString(14);
 
-    const user = getWsUser(ws.id, auth.user);
-    ws.user = user;
-    user.clients.add(ws);
-
-    ws.state = new Map(
-        Object.entries({
-            username: auth.name || "Guest" + ++userCounts,
-            color: url.searchParams.get("color") || getRandomColor(),
-        })
-    );
-    ws.meta = new Map(Object.entries({ sessionId: getRandomString() }));
-    ws.internal = new Map(Object.entries({ timers: new Map() }));
+    const initialState = {
+        username: auth.name || "Guest" + ++clientCounts,
+        color: url.searchParams.get("color") || getRandomColor(),
+    };
+    const client = getWsClient(ws.id, initialState, auth.user);
+    ws.client = client;
+    client.sessions.add(ws);
 
     // Send his presence
     sendMsg(ws, ["presence/state", getClientState(ws)]);
 
     // re-join rooms where the user is active on other clients
-    sendMsg(ws, ["presence/reconnect", Array.from(user.rooms).map((room) => ({ name: room.name, type: room.type }))]);
-    user.rooms.forEach((room) => {
+    sendMsg(ws, ["presence/reconnect", Array.from(client.rooms).map((room) => ({ name: room.name, type: room.type }))]);
+    client.rooms.forEach((room) => {
         room.clients.add(ws);
         onJoinRoom(room);
     });
@@ -111,14 +120,12 @@ export const onConnection = async (
         broadcastPresenceList(true);
 
         // Remove user timers
-        const timers = ws.internal.get("timers") as Map<GlobalSubscription, NodeJS.Timer>;
+        const timers = ws.client.internal.get("timers");
         timers.forEach((timer) => clearInterval(timer));
         timers.clear();
 
-        userIds.delete(ws.id); // Unlock user id
-
         // Remove user from each room he was in
-        user.rooms.forEach((room) => {
+        client.rooms.forEach((room) => {
             if (room.type === "game" && room.config.shouldRemovePlayerStateOnDisconnect) room.state.delete(ws.id);
             room.clients.delete(ws);
 
@@ -136,9 +143,9 @@ export const onConnection = async (
     const ref = {
         ws,
         opts,
-        user,
+        client,
         globalSubscriptions,
-        users,
+        clients,
         rooms,
         games,
         // Misc
@@ -183,13 +190,13 @@ export const onConnection = async (
             const userId = getEventParam(event);
             if (!userId) return sendMsg(ws, ["dm/missingUserId"], opts);
 
-            const user = users.get(userId);
+            const user = clients.get(userId);
             if (!user) return sendMsg(ws, ["dm/notFound"], opts);
-            if (!user.clients.size) return sendMsg(ws, ["dm/offline"], opts);
+            if (!user.sessions.size) return sendMsg(ws, ["dm/offline"], opts);
 
             // Echo to the sender so he knows it was received properly
             sendMsg(ws, payload, opts);
-            user.clients.forEach((client) => sendMsg(client, payload, opts));
+            user.sessions.forEach((client) => sendMsg(client, payload, opts));
         }
 
         if (event.startsWith("sub") || event.startsWith("unsub") || event.startsWith("presence.")) {
@@ -215,11 +222,9 @@ export interface WsContext {
     opts: { binary: boolean };
     rooms: Map<string, SimpleRoom<Map<any, any>>>;
     games: Map<string, GameRoom<Map<any, any>, Map<any, any>>>;
-    users: Map<string, WsUser>;
-    userIds: Set<WsUser["id"]>;
-    userCounts: number;
+    clients: Map<string, WsClient>;
+    clientCounts: number;
     globalSubscriptions: Map<GlobalSubscription, Set<AppWebsocket>>;
-    getWsUser: (id: AppWebsocket["id"], user?: User) => WsUser;
     getAllClients: () => AppWebsocket[];
     getPresenceList: () => any[];
     getPresenceMetaList: () => any[];

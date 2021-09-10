@@ -3229,11 +3229,6 @@ react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-json-editor-viewer@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/react-json-editor-viewer/-/react-json-editor-viewer-1.0.7.tgz#e1a23d2d3f98ed45f962fbe04d96102805e63074"
-  integrity sha512-vDgNOyhWhIsTIvmfIW84ZAWtLx0FAiStI+GLvqQ8/Tz05lBsgGCzOfBHduJKYBD40UamhDRMgaa6vYHbO4g4ig==
-
 react-merge-refs@^1.0.0, react-merge-refs@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-merge-refs/-/react-merge-refs-1.1.0.tgz#73d88b892c6c68cbb7a66e0800faa374f4c38b06"

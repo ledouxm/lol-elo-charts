@@ -1,14 +1,16 @@
+import { ChevronDownIcon } from "@chakra-ui/icons";
+import { Button, Menu, MenuButton, MenuItem, MenuList, Stack, Tag, Tooltip } from "@chakra-ui/react";
+import { getRandomString } from "@pastable/core";
+import { useEffect } from "react";
+
 import { successToast } from "@/functions/toasts";
+import { LobbyRoomState } from "@/room/LobbyRoom";
 import { useMyPresence } from "@/socket/usePresence";
 import { useRoomState } from "@/socket/useRoomState";
 import { AvailableRoom, Player, Room } from "@/types";
-import { Button, Menu, MenuButton, MenuItem, MenuList, Stack, Tag, Tooltip } from "@chakra-ui/react";
-import { ChevronDownIcon } from "@chakra-ui/icons";
-import { getRandomString } from "@pastable/core";
+
 import { Debug } from "../components/Debug";
-import { RoomClientsTable } from "./RoomClientsTable";
-import { useEffect } from "react";
-import { LobbyRoomState } from "@/room/LobbyRoom";
+import { RoomClientsTable } from "./ClientsTable";
 
 // TODO card style ? https://choc-ui.tech/docs/elements/cards#cards/ma
 export const RoomCard = ({ availableRoom }: { availableRoom: AvailableRoom }) => {

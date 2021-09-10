@@ -23,3 +23,8 @@ export interface AvailableRoom {
     name: string;
     clients: Array<Pick<Player, "id">>;
 }
+
+export interface Presence {
+    state: ObjectLiteral;
+    meta: ObjectLiteral;
+}

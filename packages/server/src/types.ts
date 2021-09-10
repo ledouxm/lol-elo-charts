@@ -1,19 +1,22 @@
+import { ObjectLiteral } from "@pastable/typings";
 import WebSocket from "ws";
-import { User, UserRole } from "./entities/User";
+import { User } from "./entities/User";
 
 export type GlobalSubscription = "presence" | "rooms" | "games";
 
-export interface WsUser {
+export interface WsClient {
     id: User["id"];
     user?: User;
-    clients: Set<AppWebsocket>;
+    state: MapObject<{ id: User["id"]; username: User["username"]; color: string }>;
+    meta: MapObject<ObjectLiteral>;
+    sessions: Set<AppWebsocket>;
+    internal: MapObject<{ timers: Map<GlobalSubscription, NodeJS.Timer> }>;
     rooms: Set<Room | GameRoom>;
     roles: Set<string>;
 }
 
 export type WsEventPayload<Data = any> = [event: string, data?: Data];
 
-// TODO statemachine events
 export interface BaseRoom<State = Map<any, any>> {
     name: string;
     clients: Set<AppWebsocket>;
@@ -105,12 +108,10 @@ export interface GameRoomConfig {
 }
 
 export type AppWebsocket = WebSocket & {
-    id?: string;
-    state: Map<any, any>;
-    meta: Map<any, any>;
-    internal: Map<any, any>;
-    isAlive?: boolean;
-    user: WsUser;
+    id: string;
+    sessionId: string;
+    isAlive: boolean;
+    client: WsClient;
 };
 
 interface WsEventObject {
@@ -122,9 +123,9 @@ export interface EventHandlerRef extends WsEventObject {
     opts: {
         binary: boolean;
     };
-    user: WsUser;
+    client: WsClient;
     globalSubscriptions: Map<GlobalSubscription, Set<AppWebsocket>>;
-    users: Map<AppWebsocket["id"], WsUser>;
+    clients: Map<AppWebsocket["id"], WsClient>;
     rooms: Map<string, SimpleRoom>;
     games: Map<string, GameRoom>;
 

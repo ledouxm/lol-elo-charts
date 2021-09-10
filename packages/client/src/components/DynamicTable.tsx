@@ -1,8 +1,8 @@
 import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
-import { chakra, Table, TableProps, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
-import { Cell, Column, Row, TableOptions, useExpanded, UseExpandedOptions, useSortBy, useTable } from "react-table";
+import { Table, TableProps, Tbody, Td, Th, Thead, Tr, chakra } from "@chakra-ui/react";
 import { ObjectLiteral } from "@pastable/core";
 import { Fragment, ReactNode } from "react";
+import { Cell, Column, Row, TableOptions, UseExpandedOptions, useExpanded, useSortBy, useTable } from "react-table";
 
 export function DynamicTable({
     columns,
@@ -11,13 +11,7 @@ export function DynamicTable({
     getCellProps,
     size = "sm",
     renderSubRow,
-}: {
-    columns: TableOptions<{}>["columns"];
-    data: TableOptions<{}>["data"];
-    getHeaderProps?: (column: Column, colIndex: number) => ObjectLiteral;
-    getCellProps?: (cell: Cell, rowIndex: number, cellIndex: number) => ObjectLiteral;
-    renderSubRow?: ({ row }: { row: Row }) => ReactNode;
-} & Pick<TableProps, "size">) {
+}: DynamicTableProps) {
     const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, visibleColumns } = useTable(
         { columns, data, autoResetExpanded: false } as TableOptions<UseExpandedOptions<{}>>,
         useSortBy,
@@ -77,4 +71,12 @@ export function DynamicTable({
             </Tbody>
         </Table>
     );
+}
+
+export interface DynamicTableProps extends Pick<TableProps, "size"> {
+    columns: TableOptions<{}>["columns"];
+    data: TableOptions<{}>["data"];
+    getHeaderProps?: (column: Column, colIndex: number) => ObjectLiteral;
+    getCellProps?: (cell: Cell, rowIndex: number, cellIndex: number) => ObjectLiteral;
+    renderSubRow?: ({ row }: { row: Row }) => ReactNode;
 }

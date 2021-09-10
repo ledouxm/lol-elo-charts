@@ -1,25 +1,18 @@
-import { DynamicTable } from "@/components/DynamicTable";
-import { DotsIconAction, IconAction } from "@/components/IconAction";
-import { useRoomList, useRoomState } from "@/socket/useRoomState";
-import { LobbyRoomState } from "@/room/LobbyRoom";
-import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
-import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
-    ModalCloseButton,
-} from "@chakra-ui/react";
+import { Box, Flex, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
+import { atom, useAtom } from "jotai";
 import { useEffect } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { MdDetails } from "react-icons/md";
 import { GoTriangleUp } from "react-icons/go";
-import { JSONViewer } from "react-json-editor-viewer";
-import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
-import { RoomClientsTable } from "./RoomClientsTable";
-import { atom, useAtom } from "jotai";
+import { MdDetails } from "react-icons/md";
+
+import { DynamicTable } from "@/components/DynamicTable";
+import { DotsIconAction, IconAction } from "@/components/IconAction";
+import { LobbyRoomState } from "@/room/LobbyRoom";
+import { useRoomList, useRoomState } from "@/socket/useRoomState";
+
+import { RoomClientsTable } from "./ClientsTable";
+import { JsonEditor } from "./JsonEditor";
 
 export const RoomListTable = () => {
     const roomList = useRoomList();
@@ -125,40 +118,10 @@ const RoomExpandedRow = ({ name }) => {
                         <RoomClientsTable room={room} />
                     </TabPanel>
                     <TabPanel>
-                        <JSONViewer data={room.state} collapsible />
+                        <JsonEditor value={room.state} mode="view" />
                     </TabPanel>
                 </TabPanels>
             </Tabs>
         </Box>
     );
 };
-
-const editorStyles = { root: { color: "white" } };
-
-function RoomModalInspectState() {
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    return (
-        <>
-            <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Modal Title</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>{/* <Lorem count={2} /> */}</ModalBody>
-
-                    <ModalFooter>
-                        <Button colorScheme="blue" mr={3} onClick={onClose}>
-                            Close
-                        </Button>
-                        <Button variant="ghost">Secondary Action</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </>
-    );
-}
-
-// - inspect -> opens a details page/box where we can see :
-// ---- room.state/meta
-// ---- edit form with custom state depending on type (lobby = LobbyState) with json editor or even more specific ?
-// ---- each client state/meta & same actions as presence table + "set room role" = prefilled role for this room

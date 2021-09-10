@@ -1,9 +1,12 @@
-import { WsEvent } from "@/socket/ws";
-import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
-import { isType, ObjectLiteral, pick, SetState } from "@pastable/core";
+import { ObjectLiteral, SetState, isType, pick } from "@pastable/core";
 import { atom } from "jotai";
 import { atomFamily, useAtomValue, useUpdateAtom } from "jotai/utils";
 import { SetStateAction, useRef } from "react";
+
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
+import { WsEvent } from "@/socket/ws";
+
+const defaultPresence = { state: {}, meta: {} };
 
 export const makePresence = <Value extends ObjectLiteral>(
     initialPresence: Value,
@@ -14,7 +17,9 @@ export const makePresence = <Value extends ObjectLiteral>(
     const usePresenceIsSynced = () => useAtomValue(isSyncedAtom);
 
     // Presence State
-    const presencesMapAtom = atom({ [initialPresence.id]: { state: initialPresence, meta: {} } } as PresenceMap<Value>);
+    const presencesMapAtom = atom({
+        [initialPresence.id]: { state: initialPresence || {}, meta: {} },
+    } as PresenceMap<Value>);
     const presenceFamilyAtom = atomFamily((id: string) => atom((get) => get(presencesMapAtom)[id]));
 
     // Either set state or meta at presence.id in map
@@ -23,7 +28,7 @@ export const makePresence = <Value extends ObjectLiteral>(
         return (presence: Value, key: "state" | "meta" = "state") =>
             setPresenceMap((current) => ({
                 ...current,
-                [presence.id]: { ...current[presence.id], [key]: presence },
+                [presence.id]: { ...defaultPresence, ...current[presence.id], [key]: presence },
             }));
     };
 
@@ -46,7 +51,9 @@ export const makePresence = <Value extends ObjectLiteral>(
         // Update presence map from global presence list
         useSocketEvent<Array<Value>>("presence/list", (list) =>
             setPresenceMap((current) =>
-                Object.fromEntries(list.map((item) => [item.id, { meta: {}, ...current[item.id], state: item }]))
+                Object.fromEntries(
+                    list.map((item) => [item.id, { ...defaultPresence, ...current[item.id], state: item }])
+                )
             )
         );
         // TODO presence/list:meta ?
@@ -55,7 +62,9 @@ export const makePresence = <Value extends ObjectLiteral>(
         useSocketEvent<Array<Value>>("rooms/presence#*", (list) => {
             setPresenceMap((current) => ({
                 ...current,
-                ...Object.fromEntries(list.map((item) => [item.id, { meta: {}, ...current[item.id], state: item }])),
+                ...Object.fromEntries(
+                    list.map((item) => [item.id, { ...defaultPresence, ...current[item.id], state: item }])
+                ),
             }));
         });
 
@@ -63,7 +72,9 @@ export const makePresence = <Value extends ObjectLiteral>(
         useSocketEvent<Value>("presence/state#*", (update) => updatePresence(update));
 
         /** Update a specific presence state */
-        useSocketEvent<Value>("presence/meta#*", (update) => updatePresence(update, "meta"));
+        useSocketEvent<Value>("presence/meta#*", (update, _event, param) =>
+            updatePresence({ id: param, ...update }, "meta")
+        );
 
         /** Remove all presence but self on disconnect / set as unsynced */
         const onDisconnect = () => {

@@ -6,7 +6,7 @@ import {
     getRoomClients,
     getRoomState,
     isGlobalAdmin,
-    isUserInSet,
+    isIdInSet,
     makeRoom,
 } from "../helpers";
 import { AppWebsocket, EventHandlerRef, RoomHooks, WsEventPayload } from "../types";
@@ -17,7 +17,7 @@ export function handleRoomsEvent({
     payload,
     ws,
     opts,
-    user,
+    client,
     rooms,
     broadcastEvent,
     broadcastSub,
@@ -44,21 +44,23 @@ export function handleRoomsEvent({
 
         room.clients.add(ws);
         rooms.set(name, room);
-        user.rooms.add(room);
+        client.rooms.add(room);
 
         room.hooks?.["rooms.create"]?.({ room, ws });
 
         const sendFullState = (client: AppWebsocket) => sendMsg(client, ["rooms/state#" + name, getRoomState(room)]);
         const sendPresenceList = (client: AppWebsocket) =>
             sendMsg(client, ["rooms/presence#" + name, getRoomClients(room)]);
-        const fullStateRefreshInterval = setInterval(
-            () =>
-                room.clients.forEach((client) => {
-                    sendPresenceList(client);
-                    sendFullState(client);
-                }),
-            room.config.updateRate
-        );
+        const fullStateRefreshInterval = setInterval(() => {
+            room.clients.forEach((client) => {
+                sendPresenceList(client);
+                sendFullState(client);
+            });
+            room.watchers.forEach((client) => {
+                sendPresenceList(client);
+                sendFullState(client);
+            });
+        }, room.config.updateRate);
         const timers = room.internal.get("timers") as Map<string, NodeJS.Timer>;
         timers.set("fullState", fullStateRefreshInterval);
 
@@ -76,13 +78,13 @@ export function handleRoomsEvent({
 
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
-        if (isUserInSet(room.clients, ws.id)) return sendMsg(ws, ["rooms/alreadyIn", name], opts);
+        if (isIdInSet(room.clients, ws.id)) return sendMsg(ws, ["rooms/alreadyIn", name], opts);
 
         const canJoin = room.hooks?.["rooms.before.join"]?.({ room, ws });
         if (isDefined(canJoin) && !canJoin) return sendMsg(ws, ["rooms/forbidden", name]);
 
         room.clients.add(ws);
-        user.rooms.add(room);
+        client.rooms.add(room);
         onJoinRoom(room);
         room.hooks?.["rooms.join"]?.({ room, ws });
 
@@ -206,7 +208,7 @@ export function handleRoomsEvent({
         if (!room) return sendMsg(ws, ["games/notFound", name], opts);
 
         room.clients.delete(ws);
-        user.rooms.delete(room);
+        client.rooms.delete(room);
 
         room.hooks?.["rooms.leave"]?.({ room, ws });
 
@@ -226,18 +228,18 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["games/notFound", name], opts);
 
-        const client = Array.from(room.clients).find((client) => client.id === payload);
-        if (!client) return sendMsg(ws, ["clients/notFound", name], opts);
+        const foundWs = Array.from(room.clients).find((client) => client.id === payload);
+        if (!foundWs) return sendMsg(ws, ["clients/notFound", name], opts);
 
         const canKick = room.hooks?.["rooms.before.kick"]?.({ room, ws });
         if (isDefined(canKick) && !canKick) return sendMsg(ws, ["rooms/forbidden", name]);
 
-        room.clients.delete(client);
-        client.user.rooms.delete(room);
+        room.clients.delete(foundWs);
+        foundWs.client.rooms.delete(room);
 
         room.hooks?.["rooms.kick"]?.({ room, ws });
 
-        sendMsg(client, ["rooms/leave#" + name], opts);
+        sendMsg(foundWs, ["rooms/leave#" + name], opts);
         const presenceEvent = ["rooms/presence#" + room.name, getRoomClients(room)] as WsEventPayload;
         room.clients.forEach((client) => sendMsg(client, presenceEvent));
         room.watchers.forEach((client) => sendMsg(client, presenceEvent));

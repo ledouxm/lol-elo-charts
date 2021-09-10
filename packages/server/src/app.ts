@@ -1,13 +1,13 @@
 import { RequestContext } from "@mikro-orm/core";
-import { isDev } from "@pastable/core";
+import { isDev, ObjectLiteral } from "@pastable/core";
 import fastify from "fastify";
 import WebSocket from "ws";
 import { getOrm, makeOrm } from "./db";
 import { User } from "./entities/User";
-import { getClientMeta, getClients, getClientState, makeUser as makeWsUser } from "./helpers";
+import { getClientMeta, getClients, getClientState, makeWsClient } from "./helpers";
 import { onConnection } from "./onConnection";
 import { routes } from "./routes";
-import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsUser } from "./types";
+import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsClient } from "./types";
 
 export const makeApp = async () => {
     const app = fastify({ logger: false });
@@ -28,10 +28,9 @@ export const makeWsApp = (options: WebSocket.ServerOptions) => {
     // States
     const rooms = new Map<Room["name"], SimpleRoom>();
     const games = new Map<Room["name"], GameRoom>();
-    const users = new Map<AppWebsocket["id"], WsUser>();
+    const clients = new Map<AppWebsocket["id"], WsClient>();
 
-    const userIds = new Set<WsUser["id"]>();
-    let userCounts = 0; // auto-increment on connection
+    let clientCounts = 0; // auto-increment on connection
 
     const globalSubscriptions = new Map<GlobalSubscription, Set<AppWebsocket>>([
         ["presence", new Set()],
@@ -40,20 +39,12 @@ export const makeWsApp = (options: WebSocket.ServerOptions) => {
     ]);
 
     // State helpers
-    const getWsUser = (id: AppWebsocket["id"], user?: User) => {
-        if (!users.has(id)) {
-            users.set(id, makeWsUser(id, user));
-        }
-
-        return users.get(id);
-    };
-
     const getAllClients = () => getClients(wss.clients as Set<AppWebsocket>);
     const getPresenceList = () => getAllClients().map(getClientState);
     const getPresenceMetaList = () => getAllClients().map(getClientMeta);
 
-    const states = { wss, opts, rooms, games, users, userIds, userCounts, globalSubscriptions };
-    const methods = { getWsUser, getAllClients, getPresenceList, getPresenceMetaList };
+    const states = { wss, opts, rooms, games, clients, clientCounts, globalSubscriptions };
+    const methods = { getAllClients, getPresenceList, getPresenceMetaList };
     const ctx = { ...states, ...methods };
 
     const orm = getOrm();

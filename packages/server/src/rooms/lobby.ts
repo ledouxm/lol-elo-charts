@@ -17,14 +17,14 @@ export interface LobbyHooks extends RoomHooks<LobbyGameRoom> {}
 
 export const lobbyHooks: LobbyHooks = {
     "rooms.create": ({ ws, room }) => {
-        ws.user.roles.add(`rooms.${room.name}.admin`);
+        ws.client.roles.add(`rooms.${room.name}.admin`);
         room.state.set("mode", "democracy");
     },
     "rooms.join": ({ ws, room }) => {
         if (isRoomAdmin(ws, room.name)) return;
 
         // Allow anyone joining to vote
-        ws.user.roles.add(`rooms.${room.name}.set#votes.${ws.id}`);
+        ws.client.roles.add(`rooms.${room.name}.set#votes.${ws.id}`);
     },
     "rooms.before.update": ({ ws, room, field }, update) => {
         // Check permissions before updating room.state
@@ -59,10 +59,10 @@ export const lobbyHooks: LobbyHooks = {
     "rooms.leave": ({ ws, room }) => {
         // Pass admin role to a random room.client
         if (isRoomAdmin(ws, room.name)) {
-            const client = pickOne(Array.from(room.clients));
-            if (client) {
-                client.user.roles.add(`rooms.${room.name}.admin`);
-                room.state.set("admin", client.id);
+            const foundWs = pickOne(Array.from(room.clients));
+            if (foundWs) {
+                foundWs.client.roles.add(`rooms.${room.name}.admin`);
+                room.state.set("admin", foundWs.id);
             }
         }
         if (!room.clients.size) return;

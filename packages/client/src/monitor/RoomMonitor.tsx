@@ -1,33 +1,30 @@
-import { PlayerList } from "@/components/PlayerList";
-import { useRoomList, useRoomState } from "@/socket/useRoomState";
-import { useSocketClient } from "@/socket/useSocketClient";
-import { RoomCard } from "@/monitor/RoomCard";
-import { Box, Button, Center, Input, SimpleGrid, Stack } from "@chakra-ui/react";
+import { Button, Center, Flex, Input, Stack } from "@chakra-ui/react";
 import { getRandomString } from "@pastable/core";
 import { useAtomValue } from "jotai/utils";
 import { useEffect, useRef } from "react";
-import { observedRoomNameAtom, RoomListTable } from "./RoomListTable";
+
+import { PlayerList } from "@/components/PlayerList";
+import { useRoomState } from "@/socket/useRoomState";
+import { useSocketClient } from "@/socket/useSocketClient";
+
+import { RoomListTable, observedRoomNameAtom } from "./RoomListTable";
 
 export const RoomMonitor = () => {
     const name = useAtomValue(observedRoomNameAtom);
-    const roomClient = useSocketClient();
+    const client = useSocketClient();
 
     useEffect(() => {
-        roomClient.rooms.list();
+        client.rooms.list();
     }, []);
 
     return (
-        <Stack w="100%">
-            <Center flexDir="column" m="8">
+        <Flex w="100%" direction="column">
+            <Center flexDir="column" my="4">
                 <RoomControls />
             </Center>
-            <div>
-                <Box w="50%" m="auto">
-                    <RoomListTable />
-                </Box>
-            </div>
+            <RoomListTable />
             {name && <RoomPlayerList key={name} name={name} />}
-        </Stack>
+        </Flex>
     );
 };
 
@@ -52,17 +49,6 @@ const RoomControls = () => {
                 </Stack>
             </Stack>
         </Stack>
-    );
-};
-
-const RoomCardGrid = () => {
-    const roomList = useRoomList();
-    return (
-        <SimpleGrid columns={[1, 1, 2, 3, 3, 4]} w="100%" spacing="8">
-            {roomList.map((room) => (
-                <RoomCard key={room.name} availableRoom={room} />
-            ))}
-        </SimpleGrid>
     );
 };
 

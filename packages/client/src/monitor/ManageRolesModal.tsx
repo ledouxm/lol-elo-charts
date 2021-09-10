@@ -1,14 +1,5 @@
-import { api } from "@/api";
-import { TextInput } from "@/components/TextInput";
-import { errorToast, successToast } from "@/functions/toasts";
-import { isGuest } from "@/functions/utils";
-import { UseRoomStateReturn } from "@/socket/useRoomState";
-import { useSocketClient } from "@/socket/useSocketClient";
-import { useSocketEvent } from "@/socket/useSocketConnection";
-import { Player } from "@/types";
 import {
     Button,
-    chakra,
     FormLabel,
     Modal,
     ModalBody,
@@ -23,9 +14,19 @@ import {
     TagLabel,
     UseDisclosureReturn,
     Wrap,
+    chakra,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "react-query";
+
+import { api } from "@/api";
+import { TextInput } from "@/components/TextInput";
+import { errorToast, successToast } from "@/functions/toasts";
+import { isGuest } from "@/functions/utils";
+import { UseRoomStateReturn } from "@/socket/useRoomState";
+import { useSocketClient } from "@/socket/useSocketClient";
+import { useSocketEvent } from "@/socket/useSocketConnection";
+import { Player } from "@/types";
 
 const addGlobalRole = (roles: Array<string>) => api.post("/roles/add", { roles });
 const deleteGlobalRole = (roles: Array<string>) => api.post("/roles/delete", { roles });
@@ -35,7 +36,7 @@ export function ManageRolesModal({
     onClose,
     userId,
     room,
-}: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & { userId?: Player["id"]; room: UseRoomStateReturn }) {
+}: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & { userId?: Player["id"]; room?: UseRoomStateReturn }) {
     const globalInputRef = useRef<HTMLInputElement>(null);
     const roomInputRef = useRef<HTMLInputElement>(null);
     const [roles, setRoles] = useState([]);
@@ -96,16 +97,18 @@ export function ManageRolesModal({
                                     Add
                                 </Button>
                             </Stack>
-                            <Stack direction="row" alignItems="flex-end">
-                                <TextInput
-                                    label="Add a new room role name"
-                                    placeholder={`just fill name: rooms.${room.name}.\${name}`}
-                                    ref={roomInputRef}
-                                />
-                                <Button colorScheme="blue" onClick={addRoomRole}>
-                                    Add
-                                </Button>
-                            </Stack>
+                            {room && (
+                                <Stack direction="row" alignItems="flex-end">
+                                    <TextInput
+                                        label="Add a new room role name"
+                                        placeholder={`just fill name: rooms.${room.name}.\${name}`}
+                                        ref={roomInputRef}
+                                    />
+                                    <Button colorScheme="blue" onClick={addRoomRole}>
+                                        Add
+                                    </Button>
+                                </Stack>
+                            )}
                         </Stack>
                         <chakra.div mt="2">
                             {roles.length ? <FormLabel>Roles</FormLabel> : <span>No roles yet</span>}

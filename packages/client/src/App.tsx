@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { Center, ChakraProvider, Flex, Icon, Spinner, Stack, chakra, extendTheme } from "@chakra-ui/react";
+import { Center, ChakraProvider, Flex, Icon, Spinner, Stack, chakra, extendTheme, usePrevious } from "@chakra-ui/react";
 import { removeUndefineds } from "@pastable/core";
 import { useMemo } from "react";
 import { useEffect } from "react";
@@ -87,6 +87,14 @@ const SyncWrapper = ({ children }) => {
 
     const status = useSocketStatus();
     const isSynced = usePresenceIsSynced();
+
+    const prevStatus = usePrevious(status);
+    useEffect(() => {
+        if (prevStatus === "open" && status !== "open") {
+            history.push("/app");
+        }
+    }, [status]);
+
     if (status === "closed" || status === "loading") {
         return (
             <Center h="100%">

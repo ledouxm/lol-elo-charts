@@ -1,7 +1,16 @@
-import { JsonEditor as Editor } from "jsoneditor-react";
 import "jsoneditor-react/es/editor.min.css";
 
-export const JsonEditor = ({ value, onChange, mode = "edit" }) => {
+import { JsonEditor as Editor } from "jsoneditor-react";
+
+export const JsonEditor = ({
+    value,
+    onChange,
+    mode = "edit",
+}: {
+    value: any;
+    onChange?: (json: any) => void;
+    mode?: "edit" | "view";
+}) => {
     return <Editor value={value} onChange={onChange} {...(mode === "edit" ? editProps : viewProps)} />;
 };
 const editProps = { allowedModes: [Editor.modes.tree, Editor.modes.code], history: true, enableTransform: false };
