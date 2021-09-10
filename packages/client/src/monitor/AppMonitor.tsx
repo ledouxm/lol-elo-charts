@@ -1,18 +1,20 @@
-import { IconAction } from "@/components/IconAction";
 import { Stack, StackProps } from "@chakra-ui/react";
+import { useEffect } from "react";
 import { FiMonitor } from "react-icons/fi";
 import { IoGameControllerOutline } from "react-icons/io5";
 import { Route, Switch, useHistory } from "react-router-dom";
+
+import { IconAction } from "@/components/IconAction";
 import { getRoles } from "@/socket/usePresence";
+
 import { RoomMonitor } from "./RoomMonitor";
-import { useEffect } from "react";
 
 export const AppMonitor = () => {
     const history = useHistory();
 
     useEffect(() => {
         const roles = getRoles();
-        if (!roles.includes("admin")) {
+        if (!roles.includes("global.admin")) {
             history.replace("/app");
         }
     }, []);

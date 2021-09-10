@@ -1,11 +1,13 @@
-import { DotsIconAction, IconAction } from "@/components/IconAction";
-import { getRandomColor } from "@/functions/utils";
-import { useRoles, useUpdatePresence } from "@/socket/usePresence";
 import { Box, Menu, MenuButton, MenuItem, MenuList, Stack, StackProps, useColorMode } from "@chakra-ui/react";
 import { useUpdateAtom } from "jotai/utils";
 import { FiMonitor } from "react-icons/fi";
 import { IoGameControllerOutline } from "react-icons/io5";
 import { Route, Switch, useHistory } from "react-router-dom";
+
+import { DotsIconAction, IconAction } from "@/components/IconAction";
+import { getRandomColor } from "@/functions/utils";
+import { useRoles, useUpdatePresence } from "@/socket/usePresence";
+
 import { isPlayerListShownAtom } from "./PlayerList";
 import { PresenceName } from "./PresenceName";
 
@@ -33,7 +35,7 @@ export const AppDevTools = (props: StackProps) => {
                             />
                         }
                     />
-                    {roles.includes("admin") && (
+                    {roles.includes("global.admin") && (
                         <Route
                             path="/app"
                             children={

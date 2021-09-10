@@ -1,6 +1,7 @@
 import { MutableRefObject } from "react";
 import { createMachine } from "xstate";
 import { assign } from "xstate";
+
 import { commandList } from "./ChatCommand";
 
 export const getChatFormMachine = ({ inputRef }: { inputRef: MutableRefObject<HTMLInputElement> }) =>
@@ -56,8 +57,6 @@ export const getChatFormMachine = ({ inputRef }: { inputRef: MutableRefObject<HT
         {
             actions: {
                 input: assign({ value: (ctx, event) => (event as ChatFormInputEvent).value }),
-                moveCursor: (ctx, event) => {}, // TODO
-                submit: (ctx, event) => {}, // TODO,
                 setInput: (ctx, event) => (ctx.inputRef.current.value = (event as ChatFormInputEvent).value),
                 setValue: assign({ value: (ctx, event) => (event as ChatFormInputEvent).value }),
                 resetInput: (ctx, event) => (ctx.inputRef.current.value = ""),
