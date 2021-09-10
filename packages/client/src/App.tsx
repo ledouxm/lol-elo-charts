@@ -1,19 +1,24 @@
-import { AppHome } from "@/components/AppHome";
-import { Center, ChakraProvider, extendTheme, Flex, Spinner, Stack } from "@chakra-ui/react";
+import "./App.css";
+
+import { Center, ChakraProvider, Flex, Icon, Spinner, Stack, chakra, extendTheme } from "@chakra-ui/react";
 import { removeUndefineds } from "@pastable/core";
 import { useMemo } from "react";
+import { useEffect } from "react";
+import { IoSyncOutline } from "react-icons/io5";
+import { RiWifiOffLine } from "react-icons/ri";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter, Link, Route, Switch, useHistory } from "react-router-dom";
+
+import { getAccessToken } from "@/api";
+import { AppHome } from "@/components/AppHome";
+
 import { api } from "./api";
 import { AppDevTools } from "./components/AppDevTools";
 import { LoginForm } from "./components/LoginForm";
-import { WsEvent } from "./socket/ws";
-import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./socket/usePresence";
-import { useSocketConnection, useSocketEmit, useSocketEvent } from "./socket/useSocketConnection";
 import { AppMonitor } from "./monitor/AppMonitor";
-import { getAccessToken } from "@/api";
-import { useEffect } from "react";
-import "./App.css";
+import { getLocalPresence, usePresenceInit, usePresenceIsSynced } from "./socket/usePresence";
+import { useSocketConnection, useSocketEmit, useSocketEvent, useSocketStatus } from "./socket/useSocketConnection";
+import { WsEvent } from "./socket/ws";
 
 const queryClient = new QueryClient();
 const theme = extendTheme({ config: { initialColorMode: "light" } });
@@ -62,7 +67,7 @@ const SyncWrapper = ({ children }) => {
     });
 
     const params = useMemo(() => removeUndefineds({ ...getLocalPresence(), token: getAccessToken() }), []);
-    useSocketConnection(params);
+    const state = useSocketConnection(params);
     usePresenceInit();
 
     const history = useHistory();
@@ -75,13 +80,44 @@ const SyncWrapper = ({ children }) => {
         }
     }, []);
 
+    const status = useSocketStatus();
     const isSynced = usePresenceIsSynced();
+    if (status === "closed" || status === "loading") {
+        return (
+            <Center h="100%">
+                <Stack alignItems="center">
+                    <Stack direction="row" alignItems="center">
+                        <Icon as={RiWifiOffLine} />
+                        <chakra.span>Offline</chakra.span>
+                    </Stack>
+                    {status === "closed" ? (
+                        <chakra.span>Connection closed. Will retry in a few seconds.</chakra.span>
+                    ) : (
+                        Boolean(state.context.retries || state.context.loop) && (
+                            <>
+                                <chakra.span>
+                                    Retrying... ({state.context.retries + state.context.loop * 10})
+                                </chakra.span>
+                                <Spinner size="xl" />
+                            </>
+                        )
+                    )}
+                    <Link to="/">Go back to home</Link>
+                </Stack>
+            </Center>
+        );
+    }
+
     if (!isSynced) {
         return (
             <Center h="100%">
-                <Stack>
-                    <Link to="/">Go back</Link>
+                <Stack alignItems="center">
+                    <Stack direction="row" alignItems="center">
+                        <Icon as={IoSyncOutline} />
+                        <chakra.span>Presence de-synchronized...</chakra.span>
+                    </Stack>
                     <Spinner size="xl" />
+                    <Link to="/">Go back to home</Link>
                 </Stack>
             </Center>
         );

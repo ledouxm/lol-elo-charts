@@ -20,6 +20,7 @@ export const createWebSocketMachine = () =>
                 emitter: new EventEmitter(),
                 error: null,
                 retries: 0,
+                loop: 0,
                 options: defaultOptions,
             },
             states: {
@@ -64,7 +65,10 @@ export const createWebSocketMachine = () =>
                     options: (ctx, event) => (event as OpenEvent).options || ctx.options,
                 }),
                 incrementRetries: assign({ retries: (ctx) => ctx.retries + 1 }),
-                resetRetries: assign({ retries: (_ctx) => 0 }),
+                resetRetries: assign({
+                    loop: (ctx) => (ctx.retries > 0 ? ctx.loop + 1 : ctx.loop),
+                    retries: (_ctx) => 0,
+                }),
                 setSocket: assign({ socket: (_ctx, event) => (event as OpenedEvent).socket }),
                 closeWebSocket: (ctx, _event) => close(ctx.socket),
                 disconnect: (ctx: WebSocketMachineContext, event) => {
@@ -190,6 +194,7 @@ interface WebSocketMachineContext {
     /** Connection error */
     error: string | null;
     options: WebSocketConnectOptions;
+    loop: number;
     retries: number;
     onOpen?: (event: Event) => void;
     onClose?: (event: CloseEvent) => void;

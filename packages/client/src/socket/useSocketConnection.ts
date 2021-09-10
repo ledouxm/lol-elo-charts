@@ -1,13 +1,12 @@
-import { getWebsocketURL, WsEvent } from "@/socket/ws";
-import { emit, wsMachineAtom, wsStatusAtom } from "@/socket/websocketMachine";
-import { AnyFunction, isDev, ObjectLiteral, useEvent } from "@pastable/core";
+import { AnyFunction, ObjectLiteral, isDev, useEvent } from "@pastable/core";
 import { useAtom } from "jotai";
+import { atom } from "jotai";
+import { useAtomValue } from "jotai/utils";
 import { useEffect } from "react";
 
-import { atom } from "jotai";
-
 import { makeEventEmitterHook } from "@/functions/makeEventEmitterHook";
-import { useAtomValue } from "jotai/utils";
+import { emit, wsMachineAtom, wsStatusAtom } from "@/socket/websocketMachine";
+import { WsEvent, getWebsocketURL } from "@/socket/ws";
 
 const wsEmitterAtom = atom((get) => get(wsMachineAtom).context.emitter);
 export const useSocketEventEmitter = () => useAtomValue(wsEmitterAtom);
@@ -51,6 +50,8 @@ export const useSocketConnection = (params?: ObjectLiteral) => {
 
     // Debug
     useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => withLogs && console.log(payload));
+
+    return current;
 };
 
 const useOnFocus = (callback: AnyFunction) => {
