@@ -1,8 +1,10 @@
-import { getRandomColor, makeId } from "@/functions/utils";
-import { Player } from "@/types";
 import { getRandomIntIn, safeJSONParse, stringify } from "@pastable/core";
 import { atom } from "jotai";
 import { useAtomValue, useUpdateAtom } from "jotai/utils";
+
+import { getRandomColor, makeId } from "@/functions/utils";
+import { Player } from "@/types";
+
 import { makePresence } from "./makePresence";
 
 export const getLocalPresence = () => safeJSONParse(sessionStorage.getItem("wss/player")) as Player;

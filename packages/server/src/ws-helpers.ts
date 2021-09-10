@@ -1,6 +1,8 @@
-import { WsEventPayload } from "./types";
-import { TextEncoder, TextDecoder } from "util";
+import { TextDecoder, TextEncoder } from "util";
+
 import WebSocket from "ws";
+
+import { WsEventPayload } from "./types";
 
 export const sendBinaryMsg = (ws: WebSocket, payload: WsEventPayload, opts?: any) =>
     ws.readyState === WebSocket.OPEN && ws.send(encode(payload), opts);

@@ -1,6 +1,8 @@
+import { ObjectLiteral } from "@pastable/core";
+
 import { useSocketEmit, useSocketEventEmitter, useSocketStatus } from "@/socket/useSocketConnection";
 import { Player, Room } from "@/types";
-import { ObjectLiteral } from "@pastable/core";
+
 import { usePresenceIsSynced } from "./usePresence";
 
 export const useSocketClient = (): SocketClient => {

@@ -1,9 +1,10 @@
 import { getRandomIntIn } from "@pastable/core";
 import { FastifyPluginCallback } from "fastify";
+
 import { getUserByNameAndPassword, makeAccessToken, makeGuestAccessToken, persistUser } from "./auth";
 import { getEm } from "./db";
-import { formatUser, User, UserRole } from "./entities/User";
-import { handleAuthenticatedRequest, handleRequest, HTTPError } from "./requests";
+import { User, UserRole, formatUser } from "./entities/User";
+import { HTTPError, handleAuthenticatedRequest, handleRequest } from "./requests";
 
 export const routes: FastifyPluginCallback = (app, _options, done) => {
     app.get("/", async () => ({ hello: "world" }));

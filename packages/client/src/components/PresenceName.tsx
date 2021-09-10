@@ -1,8 +1,9 @@
+import { Editable, EditableInput, EditablePreview, EditableProps } from "@chakra-ui/react";
+import { MutableRefObject, useEffect, useRef } from "react";
+
 import { isUser } from "@/functions/utils";
 import { useLocalPresence } from "@/socket/usePresence";
 import { Player } from "@/types";
-import { Editable, EditableInput, EditablePreview, EditableProps } from "@chakra-ui/react";
-import { MutableRefObject, useEffect, useRef } from "react";
 
 export const PresenceName = () => {
     const [presence, setPresence] = useLocalPresence();

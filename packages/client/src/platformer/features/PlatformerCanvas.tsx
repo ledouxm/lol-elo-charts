@@ -1,16 +1,18 @@
-import { Room } from "@/types";
 import { Box, BoxProps } from "@chakra-ui/react";
 import { Physics, Triplet } from "@react-three/cannon";
 import { Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { createContext, Suspense, useEffect, useRef } from "react";
+import { Suspense, createContext, useEffect, useRef } from "react";
+
+import { Room } from "@/types";
+
 import { AppLight } from "../components/AppLight";
 import { SkyDome } from "../components/SkyDome";
 import { useInputsRef } from "../hooks/useInputsRef";
 import { Character } from "./character/Character";
 import { HexagonGrid } from "./Hexagon";
 import { Players } from "./Player";
-import { getRandomStagePosition, Stage } from "./Stage";
+import { Stage, getRandomStagePosition } from "./Stage";
 
 const requestPointerLock = () => {
     const canvas = document.body;

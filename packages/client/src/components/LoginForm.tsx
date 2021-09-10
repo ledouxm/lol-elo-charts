@@ -1,7 +1,3 @@
-import { api, getAccessToken, persistAccessToken } from "@/api";
-import { onAxiosError, successToast } from "@/functions/toasts";
-import { getRandomColor, makeId } from "@/functions/utils";
-import { persistLocalPresence, persistRoles, useSetRoles } from "@/socket/usePresence";
 import { Button, Center, Flex, Stack } from "@chakra-ui/react";
 import { atomWithToggleAndStorage, getRandomIntIn } from "@pastable/core";
 import { useAtom } from "jotai";
@@ -9,6 +5,12 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "react-query";
 import { useHistory } from "react-router-dom";
+
+import { api, getAccessToken, persistAccessToken } from "@/api";
+import { onAxiosError, successToast } from "@/functions/toasts";
+import { getRandomColor, makeId } from "@/functions/utils";
+import { persistLocalPresence, persistRoles, useSetRoles } from "@/socket/usePresence";
+
 import { SwitchInput } from "./SwitchInput";
 import { TextInput } from "./TextInput";
 

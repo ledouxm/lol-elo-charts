@@ -1,7 +1,9 @@
-import { sliceColor } from "@/platformer/features/character/Character";
-import { Box, Center, chakra, SimpleGrid, Stack } from "@chakra-ui/react";
+import { Box, Center, SimpleGrid, Stack, chakra } from "@chakra-ui/react";
 import { sortArrayOfObjectByPropFromArray } from "@pastable/core";
 import { useContext } from "react";
+
+import { sliceColor } from "@/platformer/features/character/Character";
+
 import { RoomContext } from "./LobbyRoom";
 
 const gamesList = [

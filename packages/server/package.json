@@ -10,7 +10,8 @@
         "build": "yarn prebuild && ttsc -b tsconfig.build.json --force",
         "start": "yarn mikro-orm migration:up && NODE_ENV=production node dist/main.js",
         "migration:create": "yarn prebuild && yarn mikro-orm migration:create",
-        "migration:up": "yarn mikro-orm migration:up"
+        "migration:up": "yarn mikro-orm migration:up",
+        "prettier": "prettier --write \"./{src,tests}/**/*\""
     },
     "dependencies": {
         "@mikro-orm/core": "^4.5.7",
@@ -36,6 +37,7 @@
         "@zerollup/ts-transform-paths": "^1.7.18",
         "esno": "^0.8.0",
         "nodemon": "^2.0.12",
+        "prettier": "^2.4.0",
         "prettier-plugin-sorted": "^2.0.0",
         "rimraf": "^3.0.2",
         "ts-node": "^10.1.0",

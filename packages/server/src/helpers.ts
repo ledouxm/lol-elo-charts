@@ -1,7 +1,9 @@
-import { ObjectLiteral } from "@pastable/typings";
 import http from "http";
 import { URL } from "url";
+
+import { ObjectLiteral } from "@pastable/typings";
 import WebSocket from "ws";
+
 import { User } from "./entities/User";
 import { AppWebsocket, GameHooks, GameRoom, GameRoomConfig, Room, RoomHooks, SimpleRoom, WsClient } from "./types";
 

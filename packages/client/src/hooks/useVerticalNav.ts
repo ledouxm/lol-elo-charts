@@ -1,5 +1,6 @@
 import { usePrevious } from "@chakra-ui/react";
 import { KeyboardEventHandler, MutableRefObject, useEffect, useRef, useState } from "react";
+
 import { useArrayCursor } from "./useArrayCursor";
 
 export type UseVerticalNavProps = {

@@ -1,7 +1,8 @@
 import { getRoomMeta } from "@/helpers";
 import { GameHooks, GameRoom } from "@/types";
 import { sendMsg } from "@/ws-helpers";
-import { makeInitialHexagonsMap, Hexagon } from "./hexagons";
+
+import { Hexagon, makeInitialHexagonsMap } from "./hexagons";
 
 export interface PlatformerMeta extends Map<string, any> {}
 export interface PlatformerState extends Map<string, number[][]> {}

@@ -1,4 +1,3 @@
-import { TextInput } from "@/components/TextInput";
 import {
     Button,
     FormLabel,
@@ -11,6 +10,9 @@ import {
     ModalOverlay,
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
+
+import { TextInput } from "@/components/TextInput";
+
 import { JsonEditor } from "./JsonEditor";
 
 export function SendCustomEventModal({ isOpen, onClose, onSubmit }) {

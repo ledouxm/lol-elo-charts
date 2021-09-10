@@ -1,10 +1,11 @@
+import { Button, Input, Stack } from "@chakra-ui/react";
+import { useForm } from "react-hook-form";
+import { useHistory } from "react-router-dom";
+
 import { errorToast, successToast } from "@/functions/toasts";
 import { useMyPresence } from "@/socket/usePresence";
 import { useSocketClient } from "@/socket/useSocketClient";
 import { useSocketEventEmitter } from "@/socket/useSocketConnection";
-import { Button, Input, Stack } from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
-import { useHistory } from "react-router-dom";
 
 export const CreateOrJoinLobbyForm = () => {
     const { register, handleSubmit, getValues, setValue } = useForm({

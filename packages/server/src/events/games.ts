@@ -1,4 +1,5 @@
 import { isDefined } from "@pastable/core";
+
 import { platformerHooks } from "../games/platformer";
 import {
     GameId,
