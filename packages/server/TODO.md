@@ -13,4 +13,3 @@
 -   presence/rooms -> get current list of own joined rooms
 -   presence.get meta for multiple clients, return array
 -   uniformiser les réponses errors ws
--   organize imports prettier corov2
