@@ -18,3 +18,4 @@ export const persistAccessToken = (token: string) => {
     sessionStorage.setItem("wss/token", token);
     api.defaults.headers.authorization = token;
 };
+export const removeAccessToken = () => sessionStorage.removeItem("wss/token");

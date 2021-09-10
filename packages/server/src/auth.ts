@@ -32,13 +32,13 @@ export const getWsAuthState = async (ws: WebSocket, req: http.IncomingMessage) =
     } catch (error) {
         // cheap rate-limiting
         await wait(2000);
-        ws.close();
+        ws.close(4003, "token invalid"); // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
         return { isValid: false };
     }
 
     // cheap rate-limiting
     await wait(2000);
-    ws.close();
+    ws.close(4001, "missing token"); // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
     return { isValid: false };
 };
 

@@ -9,7 +9,7 @@ import { RiWifiOffLine } from "react-icons/ri";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter, Link, Route, Switch, useHistory } from "react-router-dom";
 
-import { getAccessToken } from "@/api";
+import { getAccessToken, removeAccessToken } from "@/api";
 import { AppHome } from "@/components/AppHome";
 
 import { api } from "./api";
@@ -64,6 +64,11 @@ const SyncWrapper = ({ children }) => {
         // emit("sub#presence");
         emit("sub#rooms");
         // emit("sub#games");
+    });
+    useSocketEvent<CloseEvent>(WsEvent.Close, (closeEvent) => {
+        if (closeEvent.wasClean && closeEvent.code === 4003) {
+            removeAccessToken();
+        }
     });
 
     const params = useMemo(() => removeUndefineds({ ...getLocalPresence(), token: getAccessToken() }), []);

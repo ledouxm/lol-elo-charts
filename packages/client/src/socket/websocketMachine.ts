@@ -66,7 +66,7 @@ export const createWebSocketMachine = () =>
                 }),
                 incrementRetries: assign({ retries: (ctx) => ctx.retries + 1 }),
                 resetRetries: assign({
-                    loop: (ctx) => (ctx.retries > 0 ? ctx.loop + 1 : ctx.loop),
+                    loop: (ctx, event) => (event.type === "OPENED" ? 0 : ctx.retries > 0 ? ctx.loop + 1 : ctx.loop),
                     retries: (_ctx) => 0,
                 }),
                 setSocket: assign({ socket: (_ctx, event) => (event as OpenedEvent).socket }),
@@ -129,7 +129,7 @@ const websocketService: InvokeCreator<WebSocketMachineContext, WebSocketMachineE
 
             socket.onmessage = (event) => onMessage({ event, ctx });
             socket.onclose = (event) => {
-                // console.log("WebSocket close", event);
+                console.log("WebSocket close", event);
                 send({ type: "CLOSE", event });
                 ctx.emitter.dispatch(WsEvent.Close, event);
             };
