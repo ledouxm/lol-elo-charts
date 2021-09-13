@@ -25,9 +25,9 @@ export const canSetField = (ws: AppWebsocket, roomName: Room["name"], fieldPath:
 export const makeWsClient = (id: AppWebsocket["id"], initialState: ObjectLiteral, user?: User): WsClient => ({
     user,
     id: user?.id || id,
-    state: new Map(Object.entries(initialState || {})),
+    state: new Map(Object.entries(initialState || {})) as any,
     meta: new Map(Object.entries({})),
-    internal: new Map(Object.entries({ timers: new Map() })),
+    internal: new Map(Object.entries({ timers: new Map() })) as any,
     sessions: new Set(),
     rooms: new Set(),
     roles: new Set(user?.roles || []),
