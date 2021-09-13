@@ -1,12 +1,13 @@
 import { Box, DarkMode } from "@chakra-ui/react";
 import { useClickAway } from "@pastable/core";
-import { MutableRefObject, createContext, useRef, FormEvent } from "react";
+import { FormEvent, MutableRefObject, createContext, useRef } from "react";
 
 import { RelativePortal, RelativePortalProps } from "@/components/RelativePortal";
+import { AnyState } from "@/functions/xstate";
+
+import { ChatCommandName } from "./ChatCommand";
 import { ChatCommandSuggestions } from "./ChatCommandSuggestions";
 import { ChatUsernameSuggestions } from "./ChatUsernameSuggestions";
-import { AnyState } from "@/functions/xstate";
-import { ChatCommandName } from "./ChatCommand";
 
 export const ChatSuggestionsContext = createContext<ChatSuggestionsContextProps>(null);
 

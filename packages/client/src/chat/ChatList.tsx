@@ -1,9 +1,11 @@
-import { IconAction } from "@/components/IconAction";
 import { Box } from "@chakra-ui/react";
 import { last } from "@pastable/core";
 import { useEffect, useRef, useState } from "react";
 import { BsArrowDown } from "react-icons/bs";
 import { useVirtual } from "react-virtual";
+
+import { IconAction } from "@/components/IconAction";
+
 import { ChatMessage, ChatMessageProps, ChatMessageSkeleton } from "./ChatMessage";
 import { ChatMessageData } from "./types";
 

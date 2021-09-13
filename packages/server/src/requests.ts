@@ -1,7 +1,8 @@
 import { isDev } from "@pastable/utils";
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 
 import { makeDebug } from "@/utils";
+
 import { getUserByTokenOrFail } from "./auth";
 import { User } from "./entities/User";
 

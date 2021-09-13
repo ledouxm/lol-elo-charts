@@ -1,9 +1,10 @@
+import { chakra, useEventListener } from "@chakra-ui/react";
+import { useEffect, useRef } from "react";
+
 import { throttle } from "@/functions/utils";
 import { useLocalPresence, useMyPresence, useOtherPresences, usePresenceList } from "@/socket/usePresence";
 import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
 import { Player } from "@/types";
-import { chakra, useEventListener } from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
 
 const emptyPositionTxt = "Move your cursor to broadcast its position to other people in the room.";
 interface PlayerMeta extends Pick<Player, "id"> {

@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, Switch, SwitchProps, forwardRef, FormControlProps } from "@chakra-ui/react";
+import { FormControl, FormControlProps, FormLabel, Switch, SwitchProps, forwardRef } from "@chakra-ui/react";
 import React from "react";
 
 export const SwitchInput = forwardRef(

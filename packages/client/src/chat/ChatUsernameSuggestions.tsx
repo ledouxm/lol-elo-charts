@@ -1,14 +1,16 @@
-import { useMyPresence } from "@/socket/usePresence";
-import { LobbyRoomInterface, useRoomContext } from "@/room/LobbyRoom";
-import { Player } from "@/types";
 import { KeyboardEvent, MouseEvent, useContext, useMemo } from "react";
+
+import { LobbyRoomInterface, useRoomContext } from "@/room/LobbyRoom";
+import { useMyPresence } from "@/socket/usePresence";
+import { Player } from "@/types";
+
 import { ChatCommandName } from "./ChatCommand";
 import {
     ChatSuggestionListItem,
     ChatSuggestionsList,
-    useChatSuggestions,
     UseChatSuggestionsFilterFnProps,
     UseChatSuggestionsProps,
+    useChatSuggestions,
 } from "./ChatSuggestions";
 import { ChatSuggestionsContext } from "./ChatSuggestionsProvider";
 

@@ -1,12 +1,14 @@
-import { EventCallback } from "@/functions/EventEmitter";
-import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
-import { LobbyRoomState } from "@/room/LobbyRoom";
-import { AvailableRoom, Player, Room } from "@/types";
 import { useConst } from "@chakra-ui/react";
-import { AnyFunction, hash, ObjectLiteral, pick, set } from "@pastable/core";
+import { AnyFunction, ObjectLiteral, hash, pick, set } from "@pastable/core";
 import { atom, useAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import { useEffect, useRef } from "react";
+
+import { EventCallback } from "@/functions/EventEmitter";
+import { LobbyRoomState } from "@/room/LobbyRoom";
+import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
+import { AvailableRoom, Player, Room } from "@/types";
+
 import { presencesMapAtom, useMyPresence, usePresenceIsSynced } from "./usePresence";
 import { makeSpecificRoomClient, useSocketClient } from "./useSocketClient";
 

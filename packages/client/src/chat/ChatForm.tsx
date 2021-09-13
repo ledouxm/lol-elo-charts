@@ -1,8 +1,10 @@
-import { TextInput } from "@/components/TextInput";
 import { Button, Stack } from "@chakra-ui/react";
 import { WithOnSubmit } from "@pastable/core";
 import { useMachine } from "@xstate/react";
 import { ChangeEvent, FormEvent, MutableRefObject, useRef } from "react";
+
+import { TextInput } from "@/components/TextInput";
+
 import { getChatFormMachine } from "./chatFormMachine";
 import { ChatSuggestionsProvider } from "./ChatSuggestionsProvider";
 

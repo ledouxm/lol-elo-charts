@@ -1,19 +1,21 @@
-import { Chat } from "@/chat/Chat";
-import { PlayerList } from "@/components/PlayerList";
-import { errorToast } from "@/functions/toasts";
-import { useGameRoomRef } from "@/socket/useGameRoomState";
-import { useMyPresence } from "@/socket/usePresence";
-import { useRoomState, UseRoomStateReturn } from "@/socket/useRoomState";
-import { useRoutePath } from "@/hooks/useRoutePath";
-import { useSocketClient } from "@/socket/useSocketClient";
-import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
-import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
-import { Player, Room } from "@/types";
 import { Box, Button, Flex, Select, SimpleGrid, Stack } from "@chakra-ui/react";
 import { findBy, getRandomString } from "@pastable/core";
 import { atomWithStorage } from "jotai/utils";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Route, Switch, useHistory, useParams } from "react-router-dom";
+
+import { Chat } from "@/chat/Chat";
+import { PlayerList } from "@/components/PlayerList";
+import { errorToast } from "@/functions/toasts";
+import { useRoutePath } from "@/hooks/useRoutePath";
+import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
+import { useGameRoomRef } from "@/socket/useGameRoomState";
+import { useMyPresence } from "@/socket/usePresence";
+import { UseRoomStateReturn, useRoomState } from "@/socket/useRoomState";
+import { useSocketClient } from "@/socket/useSocketClient";
+import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
+import { Player, Room } from "@/types";
+
 import { Game, GameList } from "./GameList";
 
 export const roomNameAtom = atomWithStorage("platformer/room", "");

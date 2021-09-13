@@ -1,5 +1,6 @@
 import { ObjectLiteral } from "@pastable/typings";
 import WebSocket from "ws";
+
 import { User } from "./entities/User";
 
 export type GlobalSubscription = "presence" | "rooms" | "games";

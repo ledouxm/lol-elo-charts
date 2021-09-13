@@ -1,8 +1,10 @@
-import { getRandomString, wait } from "@pastable/core";
 import { createHash } from "crypto";
 import http from "http";
+
+import { getRandomString, wait } from "@pastable/core";
 import jwt from "jsonwebtoken";
 import WebSocket from "ws";
+
 import { getEm } from "./db";
 import { User } from "./entities/User";
 import { makeUrl } from "./helpers";

@@ -1,20 +1,22 @@
-import { getSaturedColor, isColorDark } from "@/functions/utils";
-import { usePresenceList, useMyPresence } from "@/socket/usePresence";
-import { Player } from "@/types";
 import {
     Box,
     BoxProps,
     Center,
-    chakra,
     CloseButton,
     Stack,
     Tooltip,
+    chakra,
     useColorModeValue,
     useDisclosure,
 } from "@chakra-ui/react";
-import { atomWithToggleAndStorage, WithChildren } from "@pastable/core";
+import { WithChildren, atomWithToggleAndStorage } from "@pastable/core";
 import { useAtomValue } from "jotai/utils";
 import { AiOutlineUnorderedList } from "react-icons/ai";
+
+import { getSaturedColor, isColorDark } from "@/functions/utils";
+import { useMyPresence, usePresenceList } from "@/socket/usePresence";
+import { Player } from "@/types";
+
 import { IconAction } from "./IconAction";
 
 export const isPlayerListShownAtom = atomWithToggleAndStorage("platformer/isPlayerListShown");

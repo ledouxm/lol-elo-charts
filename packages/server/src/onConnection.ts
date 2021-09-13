@@ -1,6 +1,8 @@
-import { getRandomString, ObjectLiteral } from "@pastable/core";
 import { IncomingMessage } from "http";
+
+import { ObjectLiteral, getRandomString } from "@pastable/core";
 import WebSocket from "ws";
+
 import { getWsAuthState } from "./auth";
 import { User } from "./entities/User";
 import { handleGamesEvent } from "./events/games";
@@ -8,15 +10,15 @@ import { handlePresenceEvents } from "./events/presence";
 import { handleRolesEvent } from "./events/roles";
 import { handleRoomsEvent } from "./events/rooms";
 import {
-    getClients,
     getClientState,
+    getClients,
     getEventParam,
     getRoomClients,
     getRoomState,
     makeUrl,
     makeWsClient,
 } from "./helpers";
-import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsEventPayload, WsClient } from "./types";
+import { AppWebsocket, GameRoom, GlobalSubscription, Room, SimpleRoom, WsClient, WsEventPayload } from "./types";
 import { getRandomColor } from "./utils";
 import { decode, sendMsg } from "./ws-helpers";
 

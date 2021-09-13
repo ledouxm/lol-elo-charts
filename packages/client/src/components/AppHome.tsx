@@ -1,8 +1,10 @@
-import { useSocketEvent } from "@/socket/useSocketConnection";
-import { CreateOrJoinLobbyForm } from "@/room/CreateOrJoinLobbyForm";
-import { Room } from "@/types";
 import { Stack } from "@chakra-ui/react";
 import { Route, Switch, useHistory } from "react-router-dom";
+
+import { CreateOrJoinLobbyForm } from "@/room/CreateOrJoinLobbyForm";
+import { useSocketEvent } from "@/socket/useSocketConnection";
+import { Room } from "@/types";
+
 import { LobbyRoom } from "../room/LobbyRoom";
 import { PresenceList } from "./PlayerList";
 

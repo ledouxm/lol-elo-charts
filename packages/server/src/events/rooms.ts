@@ -1,5 +1,7 @@
-import { lobbyHooks } from "@/rooms/lobby";
 import { isDefined, set } from "@pastable/core";
+
+import { lobbyHooks } from "@/rooms/lobby";
+
 import {
     getEventParam,
     getEventSpecificParam,

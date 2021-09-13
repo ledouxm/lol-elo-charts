@@ -1,10 +1,12 @@
-import { useGameRoomState } from "@/socket/useGameRoomState";
-import { useMyPresence } from "@/socket/usePresence";
-import { Player } from "@/types";
 import { Triplet } from "@react-three/cannon";
 import { useFrame } from "@react-three/fiber";
 import { useContext, useRef } from "react";
 import { Mesh, Vector3 } from "three";
+
+import { useGameRoomState } from "@/socket/useGameRoomState";
+import { useMyPresence } from "@/socket/usePresence";
+import { Player } from "@/types";
+
 import { sliceColor } from "./character/Character";
 import { PlatformerContext } from "./PlatformerCanvas";
 

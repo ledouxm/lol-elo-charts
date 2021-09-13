@@ -1,12 +1,14 @@
-import { getRandomColor } from "@/functions/utils";
-import { useGameRoomRef } from "@/socket/useGameRoomState";
-import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
 import { Triplet, useCylinder } from "@react-three/cannon";
 import { MeshProps, useFrame } from "@react-three/fiber";
 import { atom } from "jotai";
 import { useAtomValue } from "jotai/utils";
 import { useContext, useEffect, useMemo, useRef } from "react";
 import { Color, MeshStandardMaterial, Vector3 } from "three";
+
+import { getRandomColor } from "@/functions/utils";
+import { useGameRoomRef } from "@/socket/useGameRoomState";
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
+
 import { Pit } from "../components/Background";
 import { sliceColor } from "./character/Character";
 import { PlatformerContext } from "./PlatformerCanvas";
