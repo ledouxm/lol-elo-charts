@@ -1,18 +1,21 @@
-import { Chat } from "@/chat/Chat";
-import { errorToast } from "@/functions/toasts";
-import { useGameRoomRef } from "@/hooks/useGameRoomState";
-import { useMyPresence } from "@/hooks/usePresence";
-import { useRoomState, UseRoomStateReturn } from "@/hooks/useRoomState";
-import { useRoutePath } from "@/hooks/useRoutePath";
-import { useSocketClient } from "@/hooks/useSocketClient";
-import { useSocketEvent, useSocketEventEmitter } from "@/hooks/useSocketConnection";
-import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
-import { Player, Room } from "@/types";
 import { Box, Button, Flex, Select, SimpleGrid, Stack } from "@chakra-ui/react";
 import { findBy, getRandomString } from "@pastable/core";
 import { atomWithStorage } from "jotai/utils";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Route, Switch, useHistory, useParams } from "react-router-dom";
+
+import { Chat } from "@/chat/Chat";
+import { PlayerList } from "@/components/PlayerList";
+import { errorToast } from "@/functions/toasts";
+import { useRoutePath } from "@/hooks/useRoutePath";
+import { PlatformerCanvas } from "@/platformer/features/PlatformerCanvas";
+import { useGameRoomRef } from "@/socket/useGameRoomState";
+import { useMyPresence } from "@/socket/usePresence";
+import { UseRoomStateReturn, useRoomState } from "@/socket/useRoomState";
+import { useSocketClient } from "@/socket/useSocketClient";
+import { useSocketEvent, useSocketEventEmitter } from "@/socket/useSocketConnection";
+import { Player, Room } from "@/types";
+
 import { Game, GameList } from "./GameList";
 
 export const roomNameAtom = atomWithStorage("platformer/room", "");
@@ -58,6 +61,7 @@ export const LobbyRoom = () => {
     const emitter = useSocketEventEmitter();
     const path = useRoutePath();
 
+    // TODO extract that out of this component since lobby (SimpleRoom) will not always need to create a GameRoom ?
     // Create game with the one selected & random name + update this room.state.game
     const makeGame = () => {
         const gameRoomName = getRandomString();
@@ -128,6 +132,7 @@ export const LobbyRoom = () => {
                     <Route path={path + "/"} children={<GameList onClick={voteForGame} />} />
                 </Switch>
             </RoomContext.Provider>
+            <PlayerList list={room.clients} />
         </Stack>
     );
 };

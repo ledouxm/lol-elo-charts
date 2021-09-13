@@ -1,13 +1,12 @@
-import { getWebsocketURL, WsEvent } from "@/functions/ws";
-import { emit, wsMachineAtom, wsStatusAtom } from "@/machines/websocketMachine";
-import { AnyFunction, isDev, ObjectLiteral, useEvent } from "@pastable/core";
+import { AnyFunction, ObjectLiteral, isDev, useEvent } from "@pastable/core";
 import { useAtom } from "jotai";
+import { atom } from "jotai";
+import { useAtomValue } from "jotai/utils";
 import { useEffect } from "react";
 
-import { atom } from "jotai";
-
 import { makeEventEmitterHook } from "@/functions/makeEventEmitterHook";
-import { useAtomValue } from "jotai/utils";
+import { emit, wsMachineAtom, wsStatusAtom } from "@/socket/websocketMachine";
+import { WsEvent, getWebsocketURL } from "@/socket/ws";
 
 const wsEmitterAtom = atom((get) => get(wsMachineAtom).context.emitter);
 export const useSocketEventEmitter = () => useAtomValue(wsEmitterAtom);
@@ -29,21 +28,30 @@ export type EventPayload = string | { type: string; data?: any };
 export const useSocketStatus = () => useAtomValue(wsStatusAtom);
 
 const withLogs = false && isDev();
+const makeUrl = (params: ObjectLiteral) => getWebsocketURL() + "?" + new URLSearchParams(params).toString();
+
 export const useSocketConnection = (params?: ObjectLiteral) => {
     const [current, send] = useAtom(wsMachineAtom);
-    const connectToWebsocket = () => {
-        const url = getWebsocketURL() + "?" + new URLSearchParams({ auth: "chainbreak", ...params }).toString();
-        send({ type: "OPEN", url });
-    };
+    const connectToWebsocket = (type: any = "OPEN") => send({ type, url: makeUrl(params) });
 
     // Open websocket
-    useEffect(connectToWebsocket, []);
+    useEffect(() => {
+        if (!Object.keys(params || {}).length) return;
 
-    // Try to reconnect if ws is closed when focusing window
-    useOnFocus(() => current.matches("closed") && connectToWebsocket());
+        if (current.matches("closed")) {
+            connectToWebsocket();
+        } else {
+            connectToWebsocket("SET_URL");
+        }
+    }, [params]);
+
+    // Try to reconnect if ws is closed when focusing window (and that is not the first time we try to connect)
+    useOnFocus(() => current.matches("closed") && current.context.socket && connectToWebsocket());
 
     // Debug
     useSocketEvent(WsEvent.Any, (payload: { event: string; data: unknown }) => withLogs && console.log(payload));
+
+    return current;
 };
 
 const useOnFocus = (callback: AnyFunction) => {

@@ -1,7 +1,8 @@
 import { usePlane } from "@react-three/cannon";
 import { useLoader } from "@react-three/fiber";
-import textureImg from "/assets/texture.jpg";
 import * as THREE from "three";
+
+import textureImg from "/assets/texture.jpg";
 
 export const Ground = () => {
     const texture = useLoader(THREE.TextureLoader, textureImg);

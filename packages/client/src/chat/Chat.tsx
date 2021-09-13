@@ -1,15 +1,17 @@
-import { IconAction } from "@/components/IconAction";
-import { errorToast } from "@/functions/toasts";
-import { makeId } from "@/functions/utils";
-import { useMyPresence } from "@/hooks/usePresence";
-import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
-import { useRoomContext } from "@/room/LobbyRoom";
 import { Flex, Stack } from "@chakra-ui/react";
 import { useSelection } from "@pastable/core";
 import { atom } from "jotai";
 import { useAtomValue } from "jotai/utils";
 import { useMemo, useRef, useState } from "react";
 import { AiOutlineStop } from "react-icons/ai";
+
+import { IconAction } from "@/components/IconAction";
+import { errorToast } from "@/functions/toasts";
+import { makeId } from "@/functions/utils";
+import { useRoomContext } from "@/room/LobbyRoom";
+import { useMyPresence } from "@/socket/usePresence";
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
+
 import { ChatFilterList } from "./ChatFilterList";
 import { ChatForm, ChatFormValues } from "./ChatForm";
 import { ChatList } from "./ChatList";

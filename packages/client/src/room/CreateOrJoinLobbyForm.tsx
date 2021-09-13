@@ -1,12 +1,13 @@
-import { errorToast, successToast } from "@/functions/toasts";
-import { useMyPresence } from "@/hooks/usePresence";
-import { useSocketClient } from "@/hooks/useSocketClient";
-import { useSocketEventEmitter } from "@/hooks/useSocketConnection";
 import { Button, Input, Stack } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 
-export const CreateOrJoinGameForm = () => {
+import { errorToast, successToast } from "@/functions/toasts";
+import { useMyPresence } from "@/socket/usePresence";
+import { useSocketClient } from "@/socket/useSocketClient";
+import { useSocketEventEmitter } from "@/socket/useSocketConnection";
+
+export const CreateOrJoinLobbyForm = () => {
     const { register, handleSubmit, getValues, setValue } = useForm({
         defaultValues: { gameId: "oui", type: "create" },
     });
@@ -20,9 +21,9 @@ export const CreateOrJoinGameForm = () => {
     const createGame = ({ gameId }: { gameId: string }) => {
         client.rooms.create(gameId, { initialState: { admin: me.id }, type: "lobby" });
 
-        const off = emitter.on("rooms/exists", (name: string) => {
-            errorToast({ title: `Room ${name} already exists` });
-        });
+        const off = emitter.once("rooms/exists", (name: string) =>
+            errorToast({ title: `Room ${name} already exists` })
+        );
 
         emitter.once("rooms/state#" + gameId, () => {
             router.push("/app/lobby/" + gameId);
@@ -34,7 +35,7 @@ export const CreateOrJoinGameForm = () => {
     const joinGame = ({ gameId }: { gameId: string }) => {
         client.rooms.join(gameId);
 
-        const off = emitter.on("rooms/notFound", (name) => errorToast({ title: `Room ${name} not found` }));
+        const off = emitter.once("rooms/notFound", (name) => errorToast({ title: `Room ${name} not found` }));
         emitter.once("rooms/state#" + gameId, () => {
             router.push("/app/lobby/" + gameId);
             successToast({ title: `Room ${gameId} joined` });
@@ -46,18 +47,14 @@ export const CreateOrJoinGameForm = () => {
         getValues("type") === "join" ? joinGame(values) : createGame(values);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack>
-                <Input type="text" {...register("gameId", { required: true })} />
-                <Stack direction="row">
-                    <Button type="submit" onClick={() => setType("create")}>
-                        Create room
-                    </Button>
-                    <Button type="submit" onClick={() => setType("join")}>
-                        Join room
-                    </Button>
-                </Stack>
-            </Stack>
-        </form>
+        <Stack as="form" direction="row" onSubmit={handleSubmit(onSubmit)}>
+            <Input type="text" {...register("gameId", { required: true })} />
+            <Button type="submit" onClick={() => setType("create")}>
+                Create room
+            </Button>
+            <Button type="submit" onClick={() => setType("join")}>
+                Join room
+            </Button>
+        </Stack>
     );
 };

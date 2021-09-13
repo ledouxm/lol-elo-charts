@@ -1,21 +1,21 @@
-import { getEventParam, getEventSpecificParam } from "../helpers";
+import { isDev } from "@pastable/utils";
+
+import { getClientMeta, getClientState, getEventParam, getEventSpecificParam } from "../helpers";
 import { EventHandlerRef, GlobalSubscription, WsEventPayload } from "../types";
 import { sendMsg } from "../ws-helpers";
 
 export function handlePresenceEvents({
+    opts,
     event,
     payload,
     ws,
-    user,
-    rooms,
-    games,
+    client,
+    clients,
     globalSubscriptions,
     sendPresenceList,
     getPresenceMetaList,
     broadcastPresenceList,
-    getPresenceList,
     sendGamesList,
-    broadcastEvent,
     sendRoomsList,
 }: EventHandlerRef) {
     // ex: [sub.rooms]
@@ -28,15 +28,21 @@ export function handlePresenceEvents({
 
         sub.add(ws);
 
-        const timers = ws.internal.get("timers") as Map<GlobalSubscription, NodeJS.Timer>;
-        if (type === "presence") {
-            timers.set(type, setInterval(sendPresenceList, 10 * 1000));
-            return sendPresenceList();
-        }
+        const timers = ws.client.internal.get("timers");
 
         if (type === "rooms") {
             timers.set(type, setInterval(sendRoomsList, 10 * 1000));
             return sendRoomsList();
+        }
+
+        // Only allow sub'ing to global presence/games in dev mode
+        if (!isDev()) {
+            return;
+        }
+
+        if (type === "presence") {
+            timers.set(type, setInterval(sendPresenceList, 10 * 1000));
+            return sendPresenceList();
         }
 
         if (type === "games") {
@@ -55,7 +61,7 @@ export function handlePresenceEvents({
 
         sub.delete(ws);
 
-        const timers = ws.internal.get("timers") as Map<GlobalSubscription, NodeJS.Timer>;
+        const timers = ws.client.internal.get("timers");
         clearInterval(timers.get(type));
         timers.delete(type);
     }
@@ -64,26 +70,32 @@ export function handlePresenceEvents({
     if (event.startsWith("presence.update")) {
         if (!payload) return;
         const type = getEventParam(event);
-        const map = type === "meta" ? ws.meta : ws.state;
+        const map = type === "meta" ? ws.client.meta : ws.client.state;
 
-        Object.entries(payload).map(([key, value]) => map.set(key, value));
+        Object.entries(payload).map(([key, value]) => (map as Map<any, any>).set(key, value));
 
         if (type === "meta") {
-            const listEvent = ["presence/list#meta", getPresenceMetaList()] as WsEventPayload;
+            const listEvent = ["presence/list:meta", getPresenceMetaList()] as WsEventPayload;
             globalSubscriptions.get("presence").forEach((client) => client !== ws && sendMsg(client, listEvent));
-            user.rooms.forEach((room) => broadcastEvent(room, listEvent[0], listEvent[1]));
+
+            // Same as below
+            client.rooms.forEach((room) => {
+                room.clients.forEach((client) => {
+                    if (globalSubscriptions.get("presence").has(client)) return;
+                    sendMsg(client, ["rooms/presence#" + room.name, Array.from(room.clients).map(getClientMeta)]);
+                });
+            });
         } else {
             broadcastPresenceList();
-            const list = getPresenceList();
 
             // Notify everyone that has a common room with the user who updated its presence
             // Except the ones that were already notified since they are sub'd to the global presence
-            user.rooms.forEach((room) =>
+            client.rooms.forEach((room) => {
                 room.clients.forEach((client) => {
                     if (globalSubscriptions.get("presence").has(client)) return;
-                    sendMsg(client, ["presence/list", list]);
-                })
-            );
+                    sendMsg(client, ["rooms/presence#" + room.name, Array.from(room.clients).map(getClientState)]);
+                });
+            });
         }
 
         return;
@@ -93,22 +105,25 @@ export function handlePresenceEvents({
         return sendPresenceList();
     }
 
-    // ex: [roles.add:games#abc123, admin]
-    if (event.startsWith("roles.")) {
-        const name = getEventParam(event);
-        if (!name) return;
+    // ex: [presence.get#user123]
+    // ex: [presence.get:meta#user123]
+    if (event.startsWith("presence.get")) {
+        const clientId = getEventParam(event);
+        if (!clientId) return;
 
-        const type = getEventSpecificParam(event, name);
-        if (!type) return;
+        const type = getEventSpecificParam(event, clientId) || "state";
+        if (!Boolean(["state", "meta"].includes(type))) return sendMsg(ws, ["presence/get.invalid", clientId], opts);
 
-        const room = type === "rooms" ? rooms.get(name) : games.get(name);
-        if (!room) return sendMsg(ws, [type + "/notFound", name]);
+        const foundClient = clients.get(clientId);
+        if (!foundClient) return sendMsg(ws, ["presence/notFound", clientId], opts);
 
-        const canSet = ws.roles.has("admin") || ws.roles.has(`${type}.${room.name}.admin`);
-        if (!canSet) return sendMsg(ws, [type + "/forbidden", name]);
+        const foundSession = Array.from(foundClient.sessions)[0];
+        if (!foundSession) sendMsg(ws, ["presence/offline", clientId], opts);
 
-        const isAdd = event.startsWith("roles.add");
-        if (isAdd) ws.roles.add(`${type}.${room.name}.${payload}`);
-        else ws.roles.delete(`${type}.${room.name}.${payload}`);
+        sendMsg(ws, [
+            `presence/${type}#` + clientId,
+            type === "state" ? getClientState(foundSession) : getClientMeta(foundSession),
+        ]);
+        return;
     }
 }

@@ -27,4 +27,4 @@ export class User {
 
 export const formatUser = (user: User) => pick(user, ["id", "username", "email", "roles", "color"]);
 
-export type UserRole = "admin";
+export type UserRole = "global.admin";

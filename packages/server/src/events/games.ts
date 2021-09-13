@@ -1,4 +1,5 @@
 import { isDefined } from "@pastable/core";
+
 import { platformerHooks } from "../games/platformer";
 import {
     GameId,
@@ -8,7 +9,7 @@ import {
     getRoomClients,
     getRoomMeta,
     getRoomState,
-    isUserInSet,
+    isIdInSet,
     makeGameRoom,
 } from "../helpers";
 import { EventHandlerRef, GameHooks } from "../types";
@@ -19,7 +20,7 @@ export function handleGamesEvent({
     payload,
     ws,
     opts,
-    user,
+    client,
     games,
     broadcastSub,
     getGameRoomListEvent,
@@ -45,7 +46,7 @@ export function handleGamesEvent({
         gameRoom.clients.add(ws);
 
         games.set(name, gameRoom);
-        user.rooms.add(gameRoom);
+        client.rooms.add(gameRoom);
         gameRoom.hooks?.["games.create"]?.({ ws, game: gameRoom });
 
         // Game ticks
@@ -80,13 +81,13 @@ export function handleGamesEvent({
 
         const gameRoom = games.get(name);
         if (!gameRoom) return sendMsg(ws, ["games/notFound", name], opts);
-        if (isUserInSet(gameRoom.clients, ws.id)) return sendMsg(ws, ["games/alreadyIn", name], opts);
+        if (isIdInSet(gameRoom.clients, ws.id)) return sendMsg(ws, ["games/alreadyIn", name], opts);
 
         const canJoin = gameRoom.hooks?.["games.before.join"]?.({ ws, game: gameRoom });
         if (isDefined(canJoin) && !canJoin) return sendMsg(ws, ["games/forbidden", name]);
 
         gameRoom.clients.add(ws);
-        user.rooms.add(gameRoom);
+        client.rooms.add(gameRoom);
         gameRoom.hooks?.["games.join"]?.({ ws, game: gameRoom });
 
         gameRoom.clients.forEach((client) => sendMsg(client, ["games/clients#" + name, getRoomClients(gameRoom)]));
@@ -157,16 +158,16 @@ export function handleGamesEvent({
         const game = games.get(name);
         if (!game) return sendMsg(ws, ["games/notFound", name], opts);
 
-        const client = Array.from(game.clients).find((client) => client.id === payload);
-        if (!client) return sendMsg(ws, ["clients/notFound", name], opts);
+        const foundWs = Array.from(game.clients).find((client) => client.id === payload);
+        if (!foundWs) return sendMsg(ws, ["clients/notFound", name], opts);
 
         const canKick = game.hooks?.["games.before.join"]?.({ ws, game });
         if (isDefined(canKick) && !canKick) return sendMsg(ws, ["games/forbidden", name]);
 
-        game.clients.delete(client);
-        client.user.rooms.delete(game);
+        game.clients.delete(foundWs);
+        foundWs.client.rooms.delete(game);
 
-        sendMsg(client, ["games/leave#" + name], opts);
+        sendMsg(foundWs, ["games/leave#" + name], opts);
 
         game.clients.forEach((client) => sendMsg(client, ["games/clients#" + name, getRoomClients(game)]));
 

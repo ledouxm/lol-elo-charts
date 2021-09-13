@@ -1,11 +1,13 @@
-import { getRandomColor } from "@/functions/utils";
-import { useLocalPresence } from "@/hooks/usePresence";
-import { useSocketEmit } from "@/hooks/useSocketConnection";
 import { roundTo } from "@pastable/core";
 import { Triplet, useBox } from "@react-three/cannon";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useContext, useEffect, useRef } from "react";
 import * as THREE from "three";
+
+import { getRandomColor } from "@/functions/utils";
+import { useLocalPresence } from "@/socket/usePresence";
+import { useSocketEmit } from "@/socket/useSocketConnection";
+
 import { keyDownRef, keyPressedRef } from "../../hooks/useInputsRef";
 import { useMouseMovements } from "../../hooks/useMouseMovement";
 import { startNewGame } from "../Hexagon";

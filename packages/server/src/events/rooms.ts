@@ -1,7 +1,17 @@
-import { lobbyHooks } from "@/rooms/lobby";
 import { isDefined, set } from "@pastable/core";
-import { getEventParam, getEventSpecificParam, getRoomFullState, isUserInSet, makeRoom } from "../helpers";
-import { AppWebsocket, EventHandlerRef, RoomHooks } from "../types";
+
+import { lobbyHooks } from "@/rooms/lobby";
+
+import {
+    getEventParam,
+    getEventSpecificParam,
+    getRoomClients,
+    getRoomState,
+    isGlobalAdmin,
+    isIdInSet,
+    makeRoom,
+} from "../helpers";
+import { AppWebsocket, EventHandlerRef, RoomHooks, WsEventPayload } from "../types";
 import { sendMsg } from "../ws-helpers";
 
 export function handleRoomsEvent({
@@ -9,7 +19,7 @@ export function handleRoomsEvent({
     payload,
     ws,
     opts,
-    user,
+    client,
     rooms,
     broadcastEvent,
     broadcastSub,
@@ -28,7 +38,7 @@ export function handleRoomsEvent({
         const name = getEventParam(event);
         if (!name) return sendMsg(ws, ["rooms/missingName", name], opts);
 
-        const roomId = getEventSpecificParam(event, name);
+        const roomId = getEventSpecificParam(event, name) || "lobby";
         if (!roomId) return sendMsg(ws, ["rooms/missingRoomId", { name, roomId }], opts);
         if (rooms.get(name)) return sendMsg(ws, ["rooms/exists", name], opts);
 
@@ -36,16 +46,23 @@ export function handleRoomsEvent({
 
         room.clients.add(ws);
         rooms.set(name, room);
-        user.rooms.add(room);
+        client.rooms.add(room);
 
         room.hooks?.["rooms.create"]?.({ room, ws });
 
-        const sendFullState = (client: AppWebsocket) =>
-            sendMsg(client, ["rooms/state#" + name, getRoomFullState(room)]);
-        const fullStateRefreshInterval = setInterval(
-            () => room.clients.forEach((client) => sendFullState(client)),
-            room.config.updateRate
-        );
+        const sendFullState = (client: AppWebsocket) => sendMsg(client, ["rooms/state#" + name, getRoomState(room)]);
+        const sendPresenceList = (client: AppWebsocket) =>
+            sendMsg(client, ["rooms/presence#" + name, getRoomClients(room)]);
+        const fullStateRefreshInterval = setInterval(() => {
+            room.clients.forEach((client) => {
+                sendPresenceList(client);
+                sendFullState(client);
+            });
+            room.watchers.forEach((client) => {
+                sendPresenceList(client);
+                sendFullState(client);
+            });
+        }, room.config.updateRate);
         const timers = room.internal.get("timers") as Map<string, NodeJS.Timer>;
         timers.set("fullState", fullStateRefreshInterval);
 
@@ -63,15 +80,45 @@ export function handleRoomsEvent({
 
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
-        if (isUserInSet(room.clients, ws.id)) return sendMsg(ws, ["rooms/alreadyIn", name], opts);
+        if (isIdInSet(room.clients, ws.id)) return sendMsg(ws, ["rooms/alreadyIn", name], opts);
 
         const canJoin = room.hooks?.["rooms.before.join"]?.({ room, ws });
         if (isDefined(canJoin) && !canJoin) return sendMsg(ws, ["rooms/forbidden", name]);
 
         room.clients.add(ws);
-        user.rooms.add(room);
+        client.rooms.add(room);
         onJoinRoom(room);
         room.hooks?.["rooms.join"]?.({ room, ws });
+
+        return;
+    }
+
+    // ex: [rooms.watch#abc123]
+    if (event.startsWith("rooms.watch")) {
+        const name = getEventParam(event);
+        if (!name) return;
+
+        const room = rooms.get(name);
+        if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
+        if (room.watchers.has(ws)) return sendMsg(ws, ["rooms/alreadyWatching", name], opts);
+
+        room.watchers.add(ws);
+        sendMsg(ws, ["rooms/presence#" + name, getRoomClients(room)]);
+        sendMsg(ws, ["rooms/state#" + name, getRoomState(room)]);
+
+        return;
+    }
+
+    // ex: [rooms.unwatch#abc123]
+    if (event.startsWith("rooms.unwatch")) {
+        const name = getEventParam(event);
+        if (!name) return;
+
+        const room = rooms.get(name);
+        if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
+        if (!room.watchers.has(ws)) return sendMsg(ws, ["rooms/notWatching", name], opts);
+
+        room.watchers.delete(ws);
 
         return;
     }
@@ -83,10 +130,13 @@ export function handleRoomsEvent({
 
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
-        if (!room.clients.has(ws)) return sendMsg(ws, ["rooms/update.empty", name], opts);
+
+        const isAdmin = isGlobalAdmin(ws);
+        // Only admins can update a room without being in it
+        if (!isAdmin && !room.clients.has(ws)) return sendMsg(ws, ["rooms/update.empty", name], opts);
 
         const field = getEventSpecificParam(event, name);
-        const canUpdate = room.hooks?.["rooms.before.update"]?.({ room, ws, field }, payload);
+        const canUpdate = isAdmin || room.hooks?.["rooms.before.update"]?.({ room, ws, field }, payload);
         if (isDefined(canUpdate) && !canUpdate) return sendMsg(ws, ["rooms/forbidden", name]);
 
         if (field) {
@@ -130,6 +180,11 @@ export function handleRoomsEvent({
         room.hooks?.["rooms.update"]?.({ room, ws, event, field, broadcastEvent });
 
         broadcastEvent(room, event, payload);
+
+        // Watchers are not in the room as participants but still want to receive updates
+        const sendFullState = (client: AppWebsocket) => sendMsg(client, ["rooms/state#" + name, getRoomState(room)]);
+        room.watchers.forEach(sendFullState);
+
         return;
     }
 
@@ -141,7 +196,8 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
 
-        sendMsg(ws, ["rooms/state#" + name, getRoomFullState(room)]);
+        sendMsg(ws, ["rooms/presence#" + name, getRoomClients(room)]);
+        sendMsg(ws, ["rooms/state#" + name, getRoomState(room)]);
         return;
     }
 
@@ -154,11 +210,14 @@ export function handleRoomsEvent({
         if (!room) return sendMsg(ws, ["games/notFound", name], opts);
 
         room.clients.delete(ws);
-        user.rooms.delete(room);
+        client.rooms.delete(room);
 
         room.hooks?.["rooms.leave"]?.({ room, ws });
 
         sendMsg(ws, ["rooms/leave#" + name], opts);
+        const presenceEvent = ["rooms/presence#" + room.name, getRoomClients(room)] as WsEventPayload;
+        room.clients.forEach((client) => sendMsg(client, presenceEvent));
+        room.watchers.forEach((client) => sendMsg(client, presenceEvent));
         broadcastSub("rooms", getRoomListEvent());
         return;
     }
@@ -171,20 +230,21 @@ export function handleRoomsEvent({
         const room = rooms.get(name);
         if (!room) return sendMsg(ws, ["games/notFound", name], opts);
 
-        // TODO check permissions
-        const client = Array.from(room.clients).find((client) => client.id === payload);
-        if (!client) return sendMsg(ws, ["clients/notFound", name], opts);
+        const foundWs = Array.from(room.clients).find((client) => client.id === payload);
+        if (!foundWs) return sendMsg(ws, ["clients/notFound", name], opts);
 
         const canKick = room.hooks?.["rooms.before.kick"]?.({ room, ws });
         if (isDefined(canKick) && !canKick) return sendMsg(ws, ["rooms/forbidden", name]);
 
-        room.clients.delete(client);
-        client.user.rooms.delete(room);
+        room.clients.delete(foundWs);
+        foundWs.client.rooms.delete(room);
 
         room.hooks?.["rooms.kick"]?.({ room, ws });
 
-        sendMsg(client, ["rooms/leave#" + name], opts);
-        // TODO prévenir les autres joueurs de la room
+        sendMsg(foundWs, ["rooms/leave#" + name], opts);
+        const presenceEvent = ["rooms/presence#" + room.name, getRoomClients(room)] as WsEventPayload;
+        room.clients.forEach((client) => sendMsg(client, presenceEvent));
+        room.watchers.forEach((client) => sendMsg(client, presenceEvent));
         broadcastSub("rooms", getRoomListEvent());
         return;
     }
@@ -236,6 +296,17 @@ export function handleRoomsEvent({
         if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
 
         room.clients.forEach((client) => ws !== client && sendMsg(client, payload as any, opts));
+        return;
+    }
+
+    if (event.startsWith("rooms.any")) {
+        const name = getEventParam(event);
+        if (!name) return;
+
+        const room = rooms.get(name);
+        if (!room) return sendMsg(ws, ["rooms/notFound", name], opts);
+
+        room.hooks?.[event]?.({ room, ws });
         return;
     }
 }

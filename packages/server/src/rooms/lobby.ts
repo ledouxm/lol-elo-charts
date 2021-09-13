@@ -1,8 +1,9 @@
-import { getRoomState } from "@/helpers";
+import { omit, pickOne } from "@pastable/core";
+
+import { canSetField, getRoomState, isGlobalAdmin, isRoomAdmin } from "@/helpers";
 import { GameRoom, MapObject, RoomHooks, SimpleRoom } from "@/types";
 import { getMostOcurrence } from "@/utils";
 import { sendMsg } from "@/ws-helpers";
-import { omit, pickOne } from "@pastable/core";
 
 export interface LobbyState
     extends MapObject<{
@@ -17,22 +18,22 @@ export interface LobbyHooks extends RoomHooks<LobbyGameRoom> {}
 
 export const lobbyHooks: LobbyHooks = {
     "rooms.create": ({ ws, room }) => {
-        ws.roles.add(`rooms.${room.name}.admin`);
+        ws.client.roles.add(`rooms.${room.name}.admin`);
         room.state.set("mode", "democracy");
     },
     "rooms.join": ({ ws, room }) => {
-        if (ws.roles.has(`rooms.${room.name}.admin`)) return;
+        if (isRoomAdmin(ws, room.name)) return;
 
         // Allow anyone joining to vote
-        ws.roles.add(`rooms.${room.name}.set#votes.${ws.id}`);
+        ws.client.roles.add(`rooms.${room.name}.set#votes.${ws.id}`);
     },
     "rooms.before.update": ({ ws, room, field }, update) => {
         // Check permissions before updating room.state
-        const isAdmin = ws.roles.has("admin") || ws.roles.has(`rooms.${room.name}.admin`);
+        const isAdmin = isGlobalAdmin(ws) || isRoomAdmin(ws, room.name);
         if (isAdmin) return true;
 
         if (field) {
-            return ws.roles.has(`rooms.${room.name}.set#${field}`);
+            return canSetField(ws, room.name, field);
         }
 
         return false;
@@ -58,11 +59,11 @@ export const lobbyHooks: LobbyHooks = {
     },
     "rooms.leave": ({ ws, room }) => {
         // Pass admin role to a random room.client
-        if (ws.roles.has(`rooms.${room.name}.admin`)) {
-            const client = pickOne(Array.from(room.clients));
-            if (client) {
-                client.roles.add(`rooms.${room.name}.admin`);
-                room.state.set("admin", client.id);
+        if (isRoomAdmin(ws, room.name)) {
+            const foundWs = pickOne(Array.from(room.clients));
+            if (foundWs) {
+                foundWs.client.roles.add(`rooms.${room.name}.admin`);
+                room.state.set("admin", foundWs.id);
             }
         }
         if (!room.clients.size) return;

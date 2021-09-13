@@ -1,22 +1,27 @@
+import { ObjectLiteral } from "@pastable/typings";
 import WebSocket from "ws";
+
 import { User } from "./entities/User";
 
 export type GlobalSubscription = "presence" | "rooms" | "games";
 
-export interface WsUser {
+export interface WsClient {
     id: User["id"];
     user?: User;
-    clients: Set<AppWebsocket>;
+    state: MapObject<{ id: User["id"]; username: User["username"]; color: string }>;
+    meta: MapObject<ObjectLiteral>;
+    sessions: Set<AppWebsocket>;
+    internal: MapObject<{ timers: Map<GlobalSubscription, NodeJS.Timer> }>;
     rooms: Set<Room | GameRoom>;
     roles: Set<string>;
 }
 
 export type WsEventPayload<Data = any> = [event: string, data?: Data];
 
-// TODO statemachine events
 export interface BaseRoom<State = Map<any, any>> {
     name: string;
     clients: Set<AppWebsocket>;
+    watchers: Set<AppWebsocket>;
     state: State;
     internal: Map<any, any>;
     type: "simple" | "game";
@@ -52,7 +57,8 @@ export type RoomEvents =
     | "rooms.before.delete"
     | "rooms.delete"
     | "rooms.relay"
-    | "rooms.broadcast";
+    | "rooms.broadcast"
+    | `rooms.any.${string}`;
 
 export interface RoomContext<T = any> extends Partial<Pick<EventHandlerRef, "broadcastEvent">> {
     ws: AppWebsocket;
@@ -103,13 +109,10 @@ export interface GameRoomConfig {
 }
 
 export type AppWebsocket = WebSocket & {
-    id?: string;
-    state: Map<any, any>;
-    meta: Map<any, any>;
-    internal: Map<any, any>;
-    roles: Set<string>;
-    isAlive?: boolean;
-    user: WsUser;
+    id: string;
+    sessionId: string;
+    isAlive: boolean;
+    client: WsClient;
 };
 
 interface WsEventObject {
@@ -121,8 +124,9 @@ export interface EventHandlerRef extends WsEventObject {
     opts: {
         binary: boolean;
     };
-    user: WsUser;
+    client: WsClient;
     globalSubscriptions: Map<GlobalSubscription, Set<AppWebsocket>>;
+    clients: Map<AppWebsocket["id"], WsClient>;
     rooms: Map<string, SimpleRoom>;
     games: Map<string, GameRoom>;
 

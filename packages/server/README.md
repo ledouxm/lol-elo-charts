@@ -72,3 +72,22 @@ ws.onConnection -> MikroORM.RequestContext -> getWsAuthState
 -   `User["id"]` = est toujours préfixé par "u-"
 -   les guests en revanche ont le prefix "g-"
 -   que ce soit pour user/guest, on renvoie un access token via jwt
+
+## Namings
+
+-   client = user|guest
+-   session = tab open
+-   user = registered user
+-   guest = unregistered user
+
+## Roles/Permissions
+
+-   users have `global roles`, litteraly prefixed with `global.`, persisted in db
+-   `/roles/add` / `/roles/delete` are used to update global roles
+-   those persisted global roles are injected into the AppWebsocket onConnection: `ws.roles = new Set(user.roles)`
+-   then the client can have session roles, which are not persisted to the db but only lives in the current server state
+-   `handleRolesEvent` with `roles.add` / `roles.delete` events are used to update session roles
+-   only `global.admin` can update session roles (or retrieve them with `roles.get`)
+-   only `global.admin` can update a room state without being in its clients (ex: from the `RoomMonitor`)
+-   session roles are used by lobby rooms to check if a user can perform certain actions using before hooks
+-   to allow a client to update a specific field in the room state, you can add a role like that `rooms.${roomName}.set#votes.g-qRC7BxxbjzdK` where `votes.g-qRC7BxxbjzdK` is a nested path in the state

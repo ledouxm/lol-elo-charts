@@ -1,5 +1,6 @@
 import { Stack, Tag, TagLabel } from "@chakra-ui/react";
 import { WithChildren } from "@pastable/core";
+
 import { ChatType } from "./ChatMessage";
 
 export const ChatFilterList = (props: { active: any; onClick: (type: ChatType) => void }) => {

@@ -1,9 +1,10 @@
-import { useGameRoomState } from "@/hooks/useGameRoomState";
-import { usePresenceIsSynced } from "@/hooks/usePresence";
-import { useSocketEvent } from "@/hooks/useSocketConnection";
-import { Hexagon, hexagonsAtom } from "@/platformer/features/Hexagon";
 import { useUpdateAtom } from "jotai/utils";
 import { useEffect } from "react";
+
+import { Hexagon, hexagonsAtom } from "@/platformer/features/Hexagon";
+import { useGameRoomState } from "@/socket/useGameRoomState";
+import { usePresenceIsSynced } from "@/socket/usePresence";
+import { useSocketEvent } from "@/socket/useSocketConnection";
 
 export const useLobbyEvents = () => {};
 // export const gameName = "bbbbbb";

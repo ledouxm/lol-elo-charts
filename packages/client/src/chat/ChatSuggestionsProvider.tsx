@@ -1,18 +1,20 @@
-import { Box } from "@chakra-ui/react";
+import { Box, DarkMode } from "@chakra-ui/react";
 import { useClickAway } from "@pastable/core";
-import { MutableRefObject, createContext, useRef } from "react";
+import { FormEvent, MutableRefObject, createContext, useRef } from "react";
 
 import { RelativePortal, RelativePortalProps } from "@/components/RelativePortal";
+import { AnyState } from "@/functions/xstate";
+
+import { ChatCommandName } from "./ChatCommand";
 import { ChatCommandSuggestions } from "./ChatCommandSuggestions";
 import { ChatUsernameSuggestions } from "./ChatUsernameSuggestions";
-import { AnyState } from "@/functions/xstate";
-import { ChatCommandName } from "./ChatCommand";
 
 export const ChatSuggestionsContext = createContext<ChatSuggestionsContextProps>(null);
 
 interface ChatSuggestionsContextProps {
     state: AnyState;
     value: string;
+    onSubmit: (e: FormEvent) => void;
     setValue: (value: string) => void;
     openSuggestions: () => void;
     closeSuggestions: () => void;
@@ -49,18 +51,23 @@ export const ChatSuggestionsProvider = (props: ChatSuggestionsContextProps) => {
         <RelativePortal {...{ referenceElement: inputElement, options: popperOptions }}>
             {shouldShowSuggestions && (
                 <ChatSuggestionsContext.Provider value={props}>
-                    <Box w="100%" bgColor="#1f1f1e" ref={resultListRef}>
-                        {canShowCommandList && <ChatCommandSuggestions resultListRef={resultListRef} />}
-                        {value.startsWith(`/${ChatCommandName.Whisper} `) && (
-                            <ChatUsernameSuggestions
-                                resultListRef={resultListRef}
-                                commandName={ChatCommandName.Whisper}
-                            />
-                        )}
-                        {value.startsWith(`/${ChatCommandName.Kick} `) && (
-                            <ChatUsernameSuggestions resultListRef={resultListRef} commandName={ChatCommandName.Kick} />
-                        )}
-                    </Box>
+                    <DarkMode>
+                        <Box w="100%" bgColor="#1f1f1e" ref={resultListRef}>
+                            {canShowCommandList && <ChatCommandSuggestions resultListRef={resultListRef} />}
+                            {value.startsWith(`/${ChatCommandName.Whisper} `) && (
+                                <ChatUsernameSuggestions
+                                    resultListRef={resultListRef}
+                                    commandName={ChatCommandName.Whisper}
+                                />
+                            )}
+                            {value.startsWith(`/${ChatCommandName.Kick} `) && (
+                                <ChatUsernameSuggestions
+                                    resultListRef={resultListRef}
+                                    commandName={ChatCommandName.Kick}
+                                />
+                            )}
+                        </Box>
+                    </DarkMode>
                 </ChatSuggestionsContext.Provider>
             )}
         </RelativePortal>

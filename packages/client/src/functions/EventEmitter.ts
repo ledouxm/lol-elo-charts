@@ -4,11 +4,22 @@ export class EventEmitter {
         this.withDebug && console.log("[EventEmitter]", ...args);
     }
     private listeners = new Map<string, Set<EventCallback>>();
+    private namedListeners = new Map<string, Map<string, EventCallback>>();
 
-    on<Data = unknown, Event = unknown>(event: Event, callback: (data: Data) => void) {
+    on<Data = unknown, Event = unknown>(event: Event, callback: (data: Data) => void, name?: string) {
         this.debug("on", event);
         const evt = event as unknown as string;
-        this.listeners.set(evt, (this.listeners.get(evt) || new Set()).add(callback as any));
+
+        if (name) {
+            if (!this.namedListeners.has(evt)) this.namedListeners.set(evt, new Map());
+            if (!this.namedListeners.get(evt).has(name)) {
+                this.namedListeners.get(evt).set(name, callback);
+            }
+            return () => this.off(event, callback, name);
+        }
+
+        if (!this.listeners.has(evt)) this.listeners.set(evt, new Set());
+        this.listeners.get(evt).add(callback as any);
 
         return () => this.off(event, callback);
     }
@@ -23,16 +34,24 @@ export class EventEmitter {
         });
     }
 
-    off<Data = unknown, Event = unknown>(event: Event, callback?: (data: Data) => void) {
+    off<Data = unknown, Event = unknown>(event: Event, callback?: (data: Data) => void, name?: string) {
         this.debug("off", event);
         const evt = event as unknown as string;
+
+        if (name) {
+            if (callback) {
+                if (!this.namedListeners.has(evt)) this.namedListeners.set(evt, new Map());
+                return this.namedListeners.get(evt).delete(name);
+            }
+
+            return this.namedListeners.delete(evt);
+        }
 
         // Precisely remove a listener on an event
         if (callback) {
             const cbs = this.listeners.get(evt) || new Set();
             cbs.delete(callback as any);
-            this.listeners.set(evt, cbs);
-            return;
+            return this.listeners.set(evt, cbs);
         }
 
         // Or just remove all of them
@@ -42,6 +61,7 @@ export class EventEmitter {
     removeAllListeners() {
         this.debug("removeAllListeners");
         this.listeners.clear();
+        this.namedListeners.clear();
     }
 
     /** Dispatch event to listeners & execute each callback */
@@ -51,19 +71,30 @@ export class EventEmitter {
         const listeners: EventCallback[] = Array.from(this.listeners.get(evt) || new Set());
         listeners.forEach((cb) => cb(data, evt));
 
+        const namedListeners: EventCallback[] = Array.from(
+            (this.namedListeners.get(evt) || new Map()).values() || new Set()
+        );
+        namedListeners.forEach((cb) => cb(data, evt));
+
+        const namedEntries = Array.from(this.namedListeners.entries()).map(([key, map]) => [
+            key,
+            Array.from(map.values()),
+        ]) as Array<[string, Array<EventCallback>]>;
+
         // Call wildcards listeners
         // ex: event = "rooms/*", will be called if event is "rooms/join" or "rooms/create", etc
         // ex: "*/update", "rooms/update:votes.*#*"", "rooms/*", "rooms/join"
         Array.from(this.listeners.entries())
+            .concat(namedEntries as any)
             .filter(([key]) => key !== evt && wildcardToRegExp(key).test(evt))
-            .forEach(([key, listeners]) => {
-                const cbs = Array.from(listeners).filter(Boolean);
+            .forEach(([key, handlers]) => {
+                const cbs = Array.from(handlers).filter(Boolean);
                 cbs.forEach((cb) => cb(data, evt, ...(evt.match(wildcardToRegExp(key)) || []).slice(1)));
             });
     }
 }
 
-export type EventCallback<Data = unknown> = (data: Data, event: string, wildcard?: string) => void;
+export type EventCallback<Data = unknown> = (data: Data, event: string, ...wildcardParams: string[]) => void;
 
 // key.endsWith("*") && evt.startsWith(key.replace("*", ""))
 

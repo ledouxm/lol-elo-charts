@@ -1,8 +1,10 @@
-import { getRandomString, wait } from "@pastable/core";
 import { createHash } from "crypto";
 import http from "http";
+
+import { getRandomString, wait } from "@pastable/core";
 import jwt from "jsonwebtoken";
 import WebSocket from "ws";
+
 import { getEm } from "./db";
 import { User } from "./entities/User";
 import { makeUrl } from "./helpers";
@@ -11,15 +13,16 @@ import { HTTPError } from "./requests";
 /** Authorize WS connection only if access token is valid */
 export const getWsAuthState = async (ws: WebSocket, req: http.IncomingMessage) => {
     const url = makeUrl(req);
+    const id = url.searchParams.get("id");
     const name = url.searchParams.get("username");
     const token = url.searchParams.get("token");
 
     try {
         if (token) {
-            const decoded = getDecodedAccessToken(token);
+            const decoded = getDecodedAccessTokenOrFail(token);
 
             if (decoded.type === "guest") {
-                return { isValid: true, id: "g-" + getRandomString(), name };
+                return { isValid: true, id: id || "g-" + getRandomString(), name };
             }
 
             const em = getEm();
@@ -31,13 +34,13 @@ export const getWsAuthState = async (ws: WebSocket, req: http.IncomingMessage) =
     } catch (error) {
         // cheap rate-limiting
         await wait(2000);
-        ws.close();
+        ws.close(4003, "token invalid"); // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
         return { isValid: false };
     }
 
     // cheap rate-limiting
     await wait(2000);
-    ws.close();
+    ws.close(4001, "missing token"); // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
     return { isValid: false };
 };
 
@@ -64,10 +67,30 @@ export const persistUser = async (name: User["username"], password: string) => {
     return user;
 };
 
+export const getUserByTokenOrFail = async (token: string): Promise<User> => {
+    const decoded = getDecodedAccessToken(token);
+    if (!decoded) throw new HTTPError("Token expiré", 401);
+
+    const user = await getEm().findOne(User, { id: decoded.id });
+    if (!user) throw new HTTPError("Utilisateur non trouvé", 401);
+
+    return user;
+};
+export const getUserById = (id: User["id"]) => getEm().findOne(User, { id });
+
 export const makeAccessToken = (user: User) =>
     jwt.sign({ type: "user", id: user.id, name: user.username }, getJwtSecret());
 export const makeGuestAccessToken = (name: string) => jwt.sign({ type: "guest", name }, getJwtSecret());
-export const getDecodedAccessToken = (token: string) => jwt.verify(token, getJwtSecret()) as DecodedToken;
+export const getDecodedAccessTokenOrFail = (token: string) => jwt.verify(token, getJwtSecret()) as DecodedToken;
+export const getDecodedAccessToken = (token: string): DecodedToken | null => {
+    let decoded;
+    try {
+        decoded = jwt.verify(token, getJwtSecret());
+        return decoded;
+    } catch (error) {
+        return null;
+    }
+};
 
 interface DecodedToken {
     id?: string;

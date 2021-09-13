@@ -1,9 +1,10 @@
 import { Box, BoxProps, Stack } from "@chakra-ui/react";
-import { on, callAll } from "@pastable/core";
+import { callAll, on } from "@pastable/core";
 import { MutableRefObject, ReactNode, useContext, useEffect, useMemo } from "react";
 
 import { SmallText } from "@/components/Text";
 import { UseVerticalNavProps, useVerticalNav } from "@/hooks/useVerticalNav";
+
 import { ChatSuggestionsContext } from "./ChatSuggestionsProvider";
 
 export type UseChatSuggestionsFilterFnProps<T = any> = { value: string; item: T; index: number; array: T[] };

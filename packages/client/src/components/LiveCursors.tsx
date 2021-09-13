@@ -1,9 +1,10 @@
-import { throttle } from "@/functions/utils";
-import { useLocalPresence, useMyPresence, useOtherPresences, usePresenceList } from "@/hooks/usePresence";
-import { useSocketEmit, useSocketEvent } from "@/hooks/useSocketConnection";
-import { Player } from "@/types";
 import { chakra, useEventListener } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
+
+import { throttle } from "@/functions/utils";
+import { useLocalPresence, useMyPresence, useOtherPresences, usePresenceList } from "@/socket/usePresence";
+import { useSocketEmit, useSocketEvent } from "@/socket/useSocketConnection";
+import { Player } from "@/types";
 
 const emptyPositionTxt = "Move your cursor to broadcast its position to other people in the room.";
 interface PlayerMeta extends Pick<Player, "id"> {
@@ -95,7 +96,7 @@ export function LiveCursorsWithRefs() {
     const setRef = (node, index) => (cursorsRef.current[index] = node);
 
     /** On others presence meta update, set their cursor positions accordingly */
-    useSocketEvent<Array<PlayerMeta>>("presence/list#meta", (updated) => {
+    useSocketEvent<Array<PlayerMeta>>("presence/list:meta", (updated) => {
         updated.forEach((updatedMeta, index) => {
             if (!cursorsRef.current[index] || !updatedMeta.cursor) return;
 

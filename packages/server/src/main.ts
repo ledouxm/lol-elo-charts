@@ -1,4 +1,5 @@
 import "./envVars";
+
 import { makeApp, makeWsApp } from "./app";
 
 const port = Number(process.env.HTTP_PORT) || 1337;

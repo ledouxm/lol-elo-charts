@@ -4,7 +4,7 @@ import { atomWithMachine } from "jotai/xstate";
 import { InvokeCreator, assign, createMachine } from "xstate";
 
 import { EventEmitter } from "@/functions/EventEmitter";
-import { SocketReadyState, WsEvent, decode, encode } from "@/functions/ws";
+import { SocketReadyState, WsEvent, decode, encode } from "@/socket/ws";
 
 // TODO: queue, send BaseSocketEvent when needed
 
@@ -20,6 +20,7 @@ export const createWebSocketMachine = () =>
                 emitter: new EventEmitter(),
                 error: null,
                 retries: 0,
+                loop: 0,
                 options: defaultOptions,
             },
             states: {
@@ -50,6 +51,7 @@ export const createWebSocketMachine = () =>
                 },
             },
             on: {
+                SET_URL: { actions: "setUrlAndOptions" },
                 CLOSE: [
                     { target: "retrying", cond: "canRetry" },
                     { target: "closed", actions: "closeWebSocket" },
@@ -63,7 +65,10 @@ export const createWebSocketMachine = () =>
                     options: (ctx, event) => (event as OpenEvent).options || ctx.options,
                 }),
                 incrementRetries: assign({ retries: (ctx) => ctx.retries + 1 }),
-                resetRetries: assign({ retries: (_ctx) => 0 }),
+                resetRetries: assign({
+                    loop: (ctx, event) => (event.type === "OPENED" ? 0 : ctx.retries > 0 ? ctx.loop + 1 : ctx.loop),
+                    retries: (_ctx) => 0,
+                }),
                 setSocket: assign({ socket: (_ctx, event) => (event as OpenedEvent).socket }),
                 closeWebSocket: (ctx, _event) => close(ctx.socket),
                 disconnect: (ctx: WebSocketMachineContext, event) => {
@@ -124,7 +129,7 @@ const websocketService: InvokeCreator<WebSocketMachineContext, WebSocketMachineE
 
             socket.onmessage = (event) => onMessage({ event, ctx });
             socket.onclose = (event) => {
-                // console.log("WebSocket close", event);
+                console.log("WebSocket close", event);
                 send({ type: "CLOSE", event });
                 ctx.emitter.dispatch(WsEvent.Close, event);
             };
@@ -189,6 +194,7 @@ interface WebSocketMachineContext {
     /** Connection error */
     error: string | null;
     options: WebSocketConnectOptions;
+    loop: number;
     retries: number;
     onOpen?: (event: Event) => void;
     onClose?: (event: CloseEvent) => void;
@@ -212,8 +218,9 @@ const defaultOptions: Partial<WebSocketConnectOptions> = {
 };
 
 type OpenEvent = { type: "OPEN"; url: string; options?: WebSocketConnectOptions };
+type SetUrlEvent = { type: "SET_URL"; url: string; options?: WebSocketConnectOptions };
 type EmitEvent = { type: "EMIT"; event: string; data: any };
 type DisconnectEvent = { type: "DISCONNECT"; code?: number; reason?: string };
 type CloseWsEvent = { type: "CLOSE"; event: CloseEvent };
 type OpenedEvent = { type: "OPENED"; event: Event; socket: WebSocket };
-type WebSocketMachineEvent = OpenEvent | EmitEvent | DisconnectEvent | CloseWsEvent | OpenedEvent;
+type WebSocketMachineEvent = OpenEvent | SetUrlEvent | EmitEvent | DisconnectEvent | CloseWsEvent | OpenedEvent;

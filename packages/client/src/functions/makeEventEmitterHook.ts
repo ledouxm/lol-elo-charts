@@ -7,7 +7,7 @@ import { EventCallback, EventEmitter } from "@/functions/EventEmitter";
 
 /** Returns a hook that will de-duplicate event listeners using the instance of EventEmitter retrieved from the passed atom */
 export function makeEventEmitterHook(emitterAtom: Atom<EventEmitter>) {
-    return function <Data = unknown, Event = unknown>(event: Event, callback: EventCallback<Data>, isOnce?: boolean) {
+    return function <Data = unknown, Event = unknown>(event: Event, callback: EventCallback<Data>, name?: string) {
         const emitter = useAtomValue(emitterAtom);
         const callbackRef = useRef<typeof callback>();
 
@@ -25,7 +25,7 @@ export function makeEventEmitterHook(emitterAtom: Atom<EventEmitter>) {
                 callbackRef.current = callback;
 
                 if (callbackRef.current!) {
-                    offRef.current = emitter[isOnce ? "once" : "on"](event, safeCallbackRef.current);
+                    offRef.current = emitter.on(event, safeCallbackRef.current, name);
                 }
             }
 

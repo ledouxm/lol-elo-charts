@@ -1,8 +1,9 @@
 import { Stack } from "@chakra-ui/react";
+import { WithChildren, WithOnClick } from "@pastable/core";
 
 import { SmallText, TinyText } from "@/components/Text";
+
 import { ChatSuggestionListItem } from "./ChatSuggestions";
-import { WithChildren, WithOnClick } from "@pastable/core";
 
 export enum ChatCommandName {
     Whisper = "w",
@@ -13,6 +14,7 @@ export enum ChatCommandName {
     Kick = "kick",
 }
 
+// TODO permissions = hide kick command if roles doenst allow it
 export const commandList: ChatCommandData[] = [
     {
         command: ChatCommandName.Whisper,

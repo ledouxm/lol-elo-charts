@@ -13,12 +13,19 @@ const filterFn = ({ value, item }: UseChatSuggestionsFilterFnProps<ChatCommandDa
     item.command.startsWith(value.slice(1).toLowerCase());
 
 export const ChatCommandSuggestions = ({ resultListRef }: Pick<UseChatSuggestionsProps, "resultListRef">) => {
-    const { setValue, focusInput } = useContext(ChatSuggestionsContext);
+    const { setValue, focusInput, onSubmit } = useContext(ChatSuggestionsContext);
 
     const selectCommand = (index: number, event: KeyboardEvent | MouseEvent) => {
         if (!suggestions[index]) return;
 
-        setValue(`/${suggestions[index].command}${suggestions[index].param ? " " : ""}`);
+        // On selecting a command without param, execute it instantly
+        if (!suggestions[index].param) {
+            setValue(`/${suggestions[index].command}`);
+            return onSubmit(event);
+        }
+
+        // Prefill input with selected command
+        setValue(`/${suggestions[index].command} `);
         event.type === "click" && focusInput();
     };
     const suggestions = useChatSuggestions({
