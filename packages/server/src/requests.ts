@@ -1,11 +1,10 @@
-import { isDev } from "@pastable/utils";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import { makeDebug } from "@/utils";
 
-import { getUserByTokenOrFail } from "./auth";
 import { User } from "./entities/User";
 
+export const isDev = () => process.env.NODE_ENV === "development";
 const debug = makeDebug("requests");
 
 export const handleRequest =
@@ -22,7 +21,7 @@ export const handleAuthenticatedRequest =
             return handleError(new HTTPError("Unauthenticated user", 401), request, response);
 
         try {
-            const user = await getUserByTokenOrFail(request.headers.authorization);
+            const user = { oui: "oui" };
 
             const params = { ...mergeParams(request), access_token: request.headers.authorization, user };
             return handleAction(action, params, request, response);
