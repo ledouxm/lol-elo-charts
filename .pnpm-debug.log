@@ -3,12 +3,12 @@
     "selected": 1
   },
   "1 error pnpm": {
-    "code": "ERR_PNPM_NO_PKG_MANIFEST",
+    "code": "ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND",
     "err": {
       "name": "pnpm",
-      "message": "No package.json found in /home/martin/dev/monorepo-with-ci",
-      "code": "ERR_PNPM_NO_PKG_MANIFEST",
-      "stack": "pnpm: No package.json found in /home/martin/dev/monorepo-with-ci\n    at handler (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:120573:17)\n    at async /home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175391:21\n    at async run (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175365:34)\n    at async runPnpm (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175583:5)\n    at async /home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175575:7"
+      "message": "No package.json (or package.yaml, or package.json5) was found in \"/home/martin/dev/monorepo-with-ci\".",
+      "code": "ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND",
+      "stack": "pnpm: No package.json (or package.yaml, or package.json5) was found in \"/home/martin/dev/monorepo-with-ci\".\n    at readProjectManifest (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:19655:13)\n    at async Object.readProjectManifestOnly (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:19659:28)\n    at async readProjectManifestOnly (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:43649:24)\n    at async Object.handler (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:170931:24)\n    at async /home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175391:21\n    at async run (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175365:34)\n    at async runPnpm (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175583:5)\n    at async /home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175575:7"
     }
   }
 }

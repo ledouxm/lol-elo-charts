@@ -26,6 +26,7 @@ COPY ./packages/server/src /app/src
 COPY ./packages/server/package.json /app
 COPY ./packages/server/tsconfig.json /app
 COPY ./packages/server/tsconfig.build.json /app
+COPY ./packages/server/mikro-orm.config.js /app
 
 # https://github.com/prisma/prisma/issues/8783
 
