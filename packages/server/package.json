@@ -6,10 +6,9 @@
         "dev": "nodemon",
         "env": "pnpm yenv print env.yaml development -f -s",
         "env:prod": "pnpm yenv print env.prod.yaml production -f -s",
-        "prebuild": "rimraf dist && rimraf temp",
-        "build": "pnpm prebuild && ttsc -b tsconfig.build.json --force",
+        "build": "pnpm tsc && pnpm tsc-alias",
         "start": "pnpm mikro-orm migration:up && NODE_ENV=production node dist/main.js",
-        "migration:create": "pnpm prebuild && pnpm mikro-orm migration:create",
+        "migration:create": "pnpm mikro-orm migration:create",
         "migration:up": "pnpm mikro-orm migration:up",
         "prettier": "prettier --write \"./{src,tests}/**/*\""
     },
@@ -40,9 +39,9 @@
         "prettier-plugin-sorted": "^2.0.0",
         "rimraf": "^3.0.2",
         "ts-node": "^10.1.0",
+        "tsc-alias": "^1.7.0",
         "tsconfig-paths": "^3.10.1",
-        "ttypescript": "^1.5.12",
-        "typescript": "^4.3.5"
+        "typescript": "^4.7.4"
     },
     "engines": {
         "node": "^16.x"
