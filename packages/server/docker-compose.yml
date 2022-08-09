@@ -4,13 +4,8 @@ services:
     server:
         image: "ghcr.io/ledouxm/monorepo-with-ci:main"
         ports:
-            - "8080:8080"
+            - "8090:8080"
         environment:
-            HTTP_PORT: 8080
-            POSTGRES_DB: platformer
-            POSTGRES_HOST: postgresql
-            POSTGRES_USER: postgres
-            POSTGRES_PORT: 5432
             POSTGRES_PASSWORD: password
 
     postgresql:
@@ -18,9 +13,6 @@ services:
         ports:
             - "5432:5432"
         environment:
-            POSTGRES_DB: platformer
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: password
             POSTGRES_HOST_AUTH_METHOD: trust
             POSTGRES_MULTIPLE_DATABASES: test
         volumes:
