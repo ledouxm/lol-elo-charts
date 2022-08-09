@@ -1,6 +1,17 @@
 version: "3.4"
 services:
     # https://hub.docker.com/_/postgres
+    server:
+        image: "ghcr.io/ledouxm/monorepo-with-ci:main"
+        ports:
+            - "8080:8080"
+        environment:
+            PORT: 8080
+            POSTGRES_DB: platformer
+            POSTGRES_HOST: postgresql
+            POSTGRES_USER: postgres
+            POSTGRES_PORT: 5432
+            POSTGRES_PASSWORD: password
 
     postgresql:
         image: postgres:12.5
@@ -18,25 +29,6 @@ services:
 
             # When data volume is empty, start every scripts in folder in A-Z order
             - ./packages/server/docker/postgres/:/docker-entrypoint-initdb.d/
-
-    # redis:
-    #     hostname: redis
-    #     image: redis
-    #     ports:
-    #         - "6379:6379"
-
-    # DevTools
-
-    # redis-commander:
-    #     hostname: redis-commander
-    #     image: rediscommander/redis-commander:latest
-    #     depends_on:
-    #         - redis
-    #     environment:
-    #         - REDIS_HOST=redis
-    #         - REDIS_PORT=6379
-    #     ports:
-    #         - "8083:8081"
 
     adminer:
         image: adminer
