@@ -24,7 +24,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules /app/node_modules
 COPY ./packages/server/src /app/src
 COPY ./packages/server/package.json /app
-COPY ./packages/server/env.yaml /app
 COPY ./packages/server/tsconfig.json /app
 COPY ./packages/server/tsconfig.build.json /app
 COPY ./packages/server/mikro-orm.config.js /app
