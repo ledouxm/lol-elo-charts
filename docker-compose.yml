@@ -36,6 +36,9 @@ services:
         networks:
             - backend-with-cli-network
 
+volumes:
+    postgresql:
+
 networks:
     backend-with-cli-network:
         driver: bridge
