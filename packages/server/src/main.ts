@@ -7,7 +7,7 @@ const port = Number(process.env.HTTP_PORT) || 1337;
 const start = async () => {
     const app = await makeApp();
     try {
-        const address = await app.listen(port);
+        const address = await app.listen({ port });
         console.log(`server listening on ${address}`);
     } catch (err) {
         app.log.error(err);
