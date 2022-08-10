@@ -2,7 +2,7 @@ version: "3.4"
 services:
     # https://hub.docker.com/_/postgres
     server:
-        image: "ghcr.io/ledouxm/monorepo-with-ci:main"
+        image: "ghcr.io/ledouxm/backend-with-ci:main"
         ports:
             - "${HTTP_PORT}:8080"
         environment:
@@ -37,8 +37,6 @@ services:
         image: adminer
         ports:
             - "8081:8080"
-        environment:
-            DATABASE_URL: postgres://postgres@postgresql:5432/platformer
         depends_on:
             - postgresql
 

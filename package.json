@@ -1,5 +1,5 @@
 {
-    "name": "@platformer/server",
+    "name": "backend-with-ci",
     "scripts": {
         "lint": "ts-node -r tsconfig-paths/register ./src/main.ts",
         "dev-start": "pnpm esno -r tsconfig-paths/register ./src/main.ts",

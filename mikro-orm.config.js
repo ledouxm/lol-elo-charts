@@ -2,7 +2,7 @@ const { TsMorphMetadataProvider } = require("@mikro-orm/reflection");
 
 module.exports = {
     type: "postgresql",
-    dbName: process.env.POSTGRES_DB || "platformer",
+    dbName: process.env.POSTGRES_DB || "backend-with-ci",
     host: process.env.POSTGRES_HOST || "127.0.0.1",
     user: process.env.POSTGRES_USER || "postgres",
     port: Number(process.env.POSTGRES_PORT) || 5432,
