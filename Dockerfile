@@ -35,6 +35,8 @@ FROM with-pnpm
 WORKDIR /app
 COPY --from=build /app ./
 
+EXPOSE 8080
+
 ENV HTTP_PORT=8080
-CMD NODE_ENV=production pnpm start
+CMD NODE_ENV=production HTTP_PORT=8080 pnpm start
 
