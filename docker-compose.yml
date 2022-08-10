@@ -17,6 +17,7 @@ services:
             - postgresql
         networks:
             - nginx-network
+            - backend-with-ci-network
 
     postgresql:
         image: postgres:12.5
@@ -32,12 +33,14 @@ services:
             # When data volume is empty, start every scripts in folder in A-Z order
             - ./packages/server/docker/postgres/:/docker-entrypoint-initdb.d/
         networks:
-            - nginx-network
+            - backend-with-ci-network
 
 volumes:
     postgresql:
 
 networks:
+    backend-with-ci-network:
+        driver: bridge
     nginx-network:
         external: true
         name: nginx-network
