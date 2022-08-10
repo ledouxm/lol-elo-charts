@@ -4,7 +4,7 @@ services:
     server:
         image: "ghcr.io/ledouxm/backend-with-ci:main"
         ports:
-            - "8080:8080"
+            - "8080"
         environment:
             HTTP_PORT: 8080
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
