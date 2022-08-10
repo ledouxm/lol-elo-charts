@@ -16,6 +16,8 @@ services:
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
         depends_on:
             - postgresql
+        networks:
+            - nginx-network
 
     postgresql:
         image: postgres:12.5
@@ -30,6 +32,13 @@ services:
 
             # When data volume is empty, start every scripts in folder in A-Z order
             - ./packages/server/docker/postgres/:/docker-entrypoint-initdb.d/
+        networks:
+            - nginx-network
 
 volumes:
     postgresql:
+
+networks:
+    nginx-network:
+        external: true
+        name: nginx-network
