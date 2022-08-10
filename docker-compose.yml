@@ -14,6 +14,7 @@ services:
             VIRTUAL_HOST: ${VIRTUAL_HOST}
             VIRTUAL_PORT: ${VIRTUAL_PORT}
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
+        network_mode: bridge
         depends_on:
             - postgresql
 
