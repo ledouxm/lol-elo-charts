@@ -7,7 +7,7 @@ const port = Number(process.env.HTTP_PORT) || 1337;
 const start = async () => {
     try {
         const app = express();
-        app.use("*", (_, res) => res.send("ok"));
+        app.use("*", (_, res) => res.send("ok2"));
         app.listen(port, () => {
             console.log(`server listening on ${port}`);
         });
