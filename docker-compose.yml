@@ -10,7 +10,6 @@ services:
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_HOST: ${POSTGRES_HOST}
-            POSTGRES_PORT: ${POSTGRES_PORT}
 
             VIRTUAL_HOST: ${VIRTUAL_HOST}
             VIRTUAL_PORT: ${VIRTUAL_PORT}
@@ -18,8 +17,6 @@ services:
 
     postgresql:
         image: postgres:12.5
-        ports:
-            - "${POSTGRES_PORT}:5432"
         environment:
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
