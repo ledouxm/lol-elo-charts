@@ -1,5 +1,3 @@
-import { FastifyReply, FastifyRequest } from "fastify";
-
 import { makeDebug } from "@/utils";
 
 import { User } from "./entities/User";
@@ -9,14 +7,14 @@ const debug = makeDebug("requests");
 
 export const handleRequest =
     <T = any>(action: Action<T>) =>
-    async (request: FastifyRequest, response: FastifyReply) => {
+    async (request: any, response: any) => {
         const params = mergeParams(request) as T;
         return handleAction(action, params, request, response);
     };
 
 export const handleAuthenticatedRequest =
     <T = any>(action: Action<WithAccessToken & { user: User } & T>) =>
-    async (request: FastifyRequest, response: FastifyReply) => {
+    async (request: any, response: any) => {
         if (!request.headers.authorization)
             return handleError(new HTTPError("Unauthenticated user", 401), request, response);
 
@@ -30,14 +28,10 @@ export const handleAuthenticatedRequest =
         }
     };
 
-export type Action<Params, Return = any> = (
-    params: Params,
-    request: FastifyRequest,
-    response: FastifyReply
-) => Return | Promise<Return>;
+export type Action<Params, Return = any> = (params: Params, request: any, response: any) => Return | Promise<Return>;
 
 /** Merge parameters from POST and GET query */
-const mergeParams = (request: FastifyRequest) => {
+const mergeParams = (request: any) => {
     const { query, body, params } = request as any;
     return { ...query, ...body, ...params };
 };
@@ -46,7 +40,7 @@ const mergeParams = (request: FastifyRequest) => {
  * If execution of action function throws an error, its handled with a
  * response reflecting error type
  */
-const handleAction = async <T = any>(action: Action<T>, params: T, request: FastifyRequest, response: FastifyReply) => {
+const handleAction = async <T = any>(action: Action<T>, params: T, request: any, response: any) => {
     try {
         const result = await action(params, request, response);
         return response.status(200).send(result);
@@ -63,7 +57,7 @@ const handleAction = async <T = any>(action: Action<T>, params: T, request: Fast
     }
 };
 
-const handleError = (error: HTTPError, req: FastifyRequest, res: FastifyReply) =>
+const handleError = (error: HTTPError, req: any, res: any) =>
     handleAction(
         () => {
             throw error;
