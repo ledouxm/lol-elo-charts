@@ -5,7 +5,7 @@ import { makeOrm } from "./db";
 import { routes } from "./routes";
 
 export const makeApp = async () => {
-    const app = fastify({ logger: false });
+    const app = fastify({ logger: true });
     const orm = await makeOrm();
 
     app.register(require("@fastify/cors"));
