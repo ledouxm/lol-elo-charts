@@ -4,7 +4,7 @@ services:
     server:
         image: "ghcr.io/ledouxm/backend-with-ci:main"
         ports:
-            - "${HTTP_PORT}:8080"
+            - "${VIRTUAL_PORT}:${HTTP_PORT}"
         environment:
             HTTP_PORT: ${HTTP_PORT}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -12,7 +12,7 @@ services:
             POSTGRES_HOST: ${POSTGRES_HOST}
 
             VIRTUAL_HOST: ${VIRTUAL_HOST}
-            VIRTUAL_PORT: ${HTTP_PORT}
+            VIRTUAL_PORT: ${VIRTUAL_PORT}
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
 
     postgresql:
