@@ -12,9 +12,9 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_HOST: ${POSTGRES_HOST}
 
-            VIRTUAL_HOST: ${NGINX_HOST}
+            VIRTUAL_HOST: ${VIRTUAL_HOST}
             VIRTUAL_PORT: ${HTTP_PORT}
-            LETSENCRYPT_HOST: ${NGINX_HOST}
+            LETSENCRYPT_HOST: ${VIRTUAL_HOST}
 
     postgresql:
         image: postgres:12.5
@@ -32,13 +32,6 @@ services:
 
             # When data volume is empty, start every scripts in folder in A-Z order
             - ./packages/server/docker/postgres/:/docker-entrypoint-initdb.d/
-
-    adminer:
-        image: adminer
-        ports:
-            - "8081:8080"
-        depends_on:
-            - postgresql
 
 volumes:
     postgresql:
