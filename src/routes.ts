@@ -1,10 +1,4 @@
-import { FastifyPluginCallback } from "fastify";
+import { Router } from "express";
 
-
-export const routes: FastifyPluginCallback = (app, _options, done) => {
-    app.get("/", async () => ({ hello: "world" }));
-    app.get("/status", async () => "ok");
-
-
-    done();
-};
+export const router: Router = Router();
+router.get("/", async (_, res) => res.send({ hello: "world" }));

@@ -1,16 +1,15 @@
 import { RequestContext } from "@mikro-orm/core";
-import fastify from "fastify";
+import express from "express";
 
 import { makeOrm } from "./db";
-import { routes } from "./routes";
+import { router } from "./routes";
 
-export const makeApp = async () => {
-    const app = fastify({ logger: true });
+export const makeApp: any = async () => {
+    const app = express();
     const orm = await makeOrm();
 
-    app.register(require("@fastify/cors"));
-    app.addHook("preHandler", (_req, _reply, done) => RequestContext.create(orm.em, done));
-    app.register(routes);
+    app.use((_req, _res, done) => RequestContext.create(orm.em, done));
+    app.use("/", router);
 
     return app;
 };
