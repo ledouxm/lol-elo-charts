@@ -1,8 +1,8 @@
 import { MikroORM, Options, RequestContext } from "@mikro-orm/core";
 import { EntityManager } from "@mikro-orm/postgresql";
 import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
+import { HTTPError } from "./httpUtils/errors";
 
-import { HTTPError } from "./requests";
 import { makeDebug } from "./utils";
 
 const debug = makeDebug("orm");
