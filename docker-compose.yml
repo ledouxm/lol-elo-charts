@@ -14,6 +14,8 @@ services:
             VIRTUAL_HOST: ${VIRTUAL_HOST}
             VIRTUAL_PORT: ${VIRTUAL_PORT}
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
+        depends_on:
+            - postgresql
 
     postgresql:
         image: postgres:12.5
