@@ -17,7 +17,6 @@ services:
         depends_on:
             - postgresql
         networks:
-            - backend-with-cli-network
             - nginx-network
 
     postgresql:
@@ -34,15 +33,12 @@ services:
             # When data volume is empty, start every scripts in folder in A-Z order
             - ./packages/server/docker/postgres/:/docker-entrypoint-initdb.d/
         networks:
-            - backend-with-cli-network
+            - nginx-network
 
 volumes:
     postgresql:
 
 networks:
-    backend-with-cli-network:
-        driver: bridge
-        name: backend-with-cli-network
     nginx-network:
         external: true
         name: nginx-network
