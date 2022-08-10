@@ -3,6 +3,8 @@ services:
     # https://hub.docker.com/_/postgres
     server:
         image: "ghcr.io/ledouxm/backend-with-ci:main"
+        ports:
+            - "${VIRTUAL_PORT}:${VIRTUAL_PORT}"
         environment:
             HTTP_PORT: ${VIRTUAL_PORT}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
