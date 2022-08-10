@@ -36,7 +36,8 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
 
-            - name: deploy to portainer
-              uses: fjogeleit/http-request-action@master
-              with:
-                  url: ${{ secrets.PORTAINER_WEBHOOK }}
+            # TODO: custom webhook app on chainbreak.dev ?
+            # - name: deploy to portainer
+            #   uses: fjogeleit/http-request-action@master
+            #   with:
+            #       url: ${{ secrets.PORTAINER_WEBHOOK }}
