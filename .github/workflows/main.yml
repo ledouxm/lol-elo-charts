@@ -36,8 +36,13 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
 
-            # TODO: custom webhook app on chainbreak.dev ?
-            # - name: deploy to portainer
-            #   uses: fjogeleit/http-request-action@master
-            #   with:
-            #       url: ${{ secrets.PORTAINER_WEBHOOK }}
+            - name: deploy with watchtower
+              uses: fjogeleit/http-request-action@master
+              with:
+                  url: ${{ secrets.PORTAINER_WEBHOOK }}
+
+            - name: deploy with watchtower
+              uses: fjogeleit/http-request-action@master
+              with:
+                  method: "POST"
+                  url: ${{ secrets.WATCHTOWER_WEBHOOK }}?access_token=${{ secrets.WATCHTOWER_ACCESS_TOKEN }}
