@@ -10,7 +10,7 @@ The node app container is setup to be started only when `COMPOSE_PROFILES=produc
 
 ## Containers setup
 
-In the docker-compose.yml file, make sure to have
+In the **docker-compose.yml** file, make sure to have
 
 ```yaml
 networks:
@@ -37,5 +37,23 @@ networks:
 
 -   Go to https://portainer.chainbreak.dev > Stacks > Add
 -   Fill all the required informations, **including the Authentication** part, so portainer can pull the docker image from ghcr.io
--   Copy/Paste the content of your local .env file, and set `VIRTUAL_HOST=your_desired_name.chainbreak.dev` and `COMPOSE_PROFILES=production`
+-   Copy/Paste the content of your local **.env** file, and set `VIRTUAL_HOST=your_desired_name.chainbreak.dev` and `COMPOSE_PROFILES=production`
 -   You're good to go
+
+# Github actions
+
+## Env variables
+
+You have to put 3 github secret variables (Github repo page > Settings > Secrets) :
+
+-   PORTAINER_WEBHOOK (You can find it in Portainer > Stack > Automatic updates)
+-   WATCHTOWER_ACCESS_TOKEN (The `ACCESS_TOKEN` env variable of `watchtower` container)
+-   WATCHTOWER_WEBHOOK (https://`watchtower.chainbre.dev`/webhook/`container_name`)
+
+## Process
+
+The action will :
+
+-   Build and push the docker image on ghcr.io (github packages) with the label `:main`
+-   Send an HTTP POST request to PORTAINER_WEBHOOK, which will check if the **docker-compose.yml** file has changed
+-   Send an HTTP POST request to WATCHTOWER_WEBHOOK, which will pull the latest image of `container_name`
