@@ -39,6 +39,7 @@ jobs:
             - name: deploy with portainer
               uses: fjogeleit/http-request-action@master
               with:
+                  method: "POST"
                   url: ${{ secrets.PORTAINER_WEBHOOK }}
 
             - name: deploy with watchtower
