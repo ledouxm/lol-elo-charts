@@ -19,7 +19,7 @@ networks:
         name: nginx-network
 ```
 
-and, on the container that need to be reachable :
+and, on the container that needs to be reachable :
 
 ```yaml
 ports:
