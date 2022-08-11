@@ -4,8 +4,6 @@
         "lint": "ts-node -r tsconfig-paths/register ./src/main.ts",
         "dev-start": "pnpm esno -r tsconfig-paths/register ./src/main.ts",
         "dev": "nodemon",
-        "env": "pnpm yenv print env.yaml development -f -s",
-        "env:prod": "pnpm yenv print env.prod.yaml production -f -s",
         "build": "pnpm tsc && pnpm tsc-alias",
         "start": "pnpm mikro-orm migration:up && NODE_ENV=production node dist/main.js",
         "migration:create": "pnpm mikro-orm migration:create",
