@@ -36,7 +36,7 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
 
-            - name: deploy with watchtower
+            - name: deploy with portainer
               uses: fjogeleit/http-request-action@master
               with:
                   url: ${{ secrets.PORTAINER_WEBHOOK }}
@@ -46,3 +46,4 @@ jobs:
               with:
                   method: "POST"
                   url: ${{ secrets.WATCHTOWER_WEBHOOK }}?access_token=${{ secrets.WATCHTOWER_ACCESS_TOKEN }}
+                  timeout: 60000
