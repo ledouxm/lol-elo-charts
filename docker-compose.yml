@@ -22,6 +22,8 @@ services:
 
     postgresql:
         image: postgres:12.5
+        ports:
+            - "${POSTGRES_PORT}:5432"
         environment:
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -31,8 +33,16 @@ services:
             # Persist data between up/down
             - postgresql:/var/lib/postgresql/data:delegated
 
-            # When data volume is empty, start every scripts in folder in A-Z order
-            - ./packages/server/docker/postgres/:/docker-entrypoint-initdb.d/
+        networks:
+            - backend-with-ci-network
+
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - 8081:8080
+        profiles:
+            - development
         networks:
             - backend-with-ci-network
 

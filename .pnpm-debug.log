@@ -3,12 +3,20 @@
     "selected": 1
   },
   "1 error pnpm": {
-    "code": "ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND",
+    "code": "ELIFECYCLE",
+    "errno": "ENOENT",
+    "syscall": "spawn",
+    "file": "sh",
+    "pkgid": "backend-with-ci@",
+    "stage": "dev",
+    "script": "nodemon",
+    "pkgname": "backend-with-ci",
     "err": {
       "name": "pnpm",
-      "message": "No package.json (or package.yaml, or package.json5) was found in \"/home/martin/dev/monorepo-with-ci\".",
-      "code": "ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND",
-      "stack": "pnpm: No package.json (or package.yaml, or package.json5) was found in \"/home/martin/dev/monorepo-with-ci\".\n    at readProjectManifest (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:19655:13)\n    at async Object.readProjectManifestOnly (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:19659:28)\n    at async readProjectManifestOnly (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:43649:24)\n    at async Object.handler (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:170931:24)\n    at async /home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175391:21\n    at async run (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175365:34)\n    at async runPnpm (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175583:5)\n    at async /home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:175575:7"
+      "message": "backend-with-ci@ dev: `nodemon`\nspawn ENOENT",
+      "code": "ELIFECYCLE",
+      "stack": "pnpm: backend-with-ci@ dev: `nodemon`\nspawn ENOENT\n    at ChildProcess.<anonymous> (/home/martin/.nvm/versions/node/v16.13.2/lib/node_modules/pnpm/dist/pnpm.cjs:93294:22)\n    at ChildProcess.emit (node:events:390:28)\n    at maybeClose (node:internal/child_process:1064:16)\n    at Process.ChildProcess._handle.onexit (node:internal/child_process:301:5)"
     }
-  }
+  },
+  "2 warn pnpm:global": " Local package.json exists, but node_modules missing, did you mean to install?"
 }

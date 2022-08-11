@@ -1,4 +1,5 @@
 The deployment requires chainbreak.dev docker to have a network called nginx-network.
+`docker network create nginx-network --attachable --driver bridge`
 
 # docker-compose.yml
 
