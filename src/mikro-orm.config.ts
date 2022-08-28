@@ -1,13 +1,16 @@
-const { TsMorphMetadataProvider } = require("@mikro-orm/reflection");
+import "./envVars";
+import { Options } from "@mikro-orm/core";
+import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
 
-module.exports = {
+export default {
     type: "postgresql",
     dbName: process.env.POSTGRES_DB || "backend-with-ci",
     host: process.env.POSTGRES_HOST || "127.0.0.1",
     user: process.env.POSTGRES_USER || "postgres",
     port: Number(process.env.POSTGRES_PORT) || 5432,
     password: process.env.POSTGRES_PASSWORD || "",
-    entities: ["./dist/entities"],
-    entitiesTs: ["./src/entities"],
+    entities: ["./dist/entities/*.js"],
+    entitiesTs: ["./src/entities/*.ts"],
+    migrations: { path: "./dist/migrations", pathTs: "./src/migrations" },
     metadataProvider: TsMorphMetadataProvider,
-};
+} as Options;

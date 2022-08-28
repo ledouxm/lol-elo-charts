@@ -24,8 +24,6 @@ COPY --from=deps /app/node_modules /app/node_modules
 COPY ./src /app/src
 COPY ./package.json /app
 COPY ./tsconfig.json /app
-COPY ./tsconfig.build.json /app
-COPY ./mikro-orm.config.js /app
 
 RUN pnpm build
 

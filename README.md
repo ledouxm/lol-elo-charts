@@ -1,6 +1,23 @@
 The deployment requires chainbreak.dev docker to have a network called nginx-network.
 `docker network create nginx-network --attachable --driver bridge`
 
+# Dockerfile
+
+The output folder looks like this:
+
+```
+/app
+    /node_modules
+    /dist
+        .js files
+    /src
+        .ts files
+    package.json
+    tsconfig.json
+```
+
+The package.json start script is started from the /app folder, every path has to be specified from here (such as entities/migrations path in **mikro-orm.config.ts**)
+
 # docker-compose.yml
 
 The file contains variable fields such as `${POSTGRES_PASSWORD}` which will be filled by portainer stack env variables, or locally using `docker-compose --env-file ./.env up -d`

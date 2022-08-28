@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "./envVars";
 import { makeApp } from "./app";
 const port = Number(process.env.HTTP_PORT) || 1337;
 

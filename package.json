@@ -5,7 +5,7 @@
         "dev-start": "pnpm esno -r tsconfig-paths/register ./src/main.ts",
         "dev": "nodemon",
         "build": "pnpm tsc && pnpm tsc-alias",
-        "start": "pnpm mikro-orm migration:up && NODE_ENV=production node dist/main.js",
+        "start": "NODE_ENV=production node dist/main.js",
         "migration:create": "pnpm mikro-orm migration:create",
         "migration:up": "pnpm mikro-orm migration:up",
         "prettier": "prettier --write \"./{src,tests}/**/*\""
@@ -47,7 +47,7 @@
     "mikro-orm": {
         "useTsNode": true,
         "configPaths": [
-            "./src/mikro-orm.config.js",
+            "./src/mikro-orm.config.ts",
             "./dist/mikro-orm.config.js"
         ]
     },
