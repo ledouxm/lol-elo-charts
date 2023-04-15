@@ -1,25 +1,6 @@
-import { getNextIndex, getRandomIntIn, pickOne } from "@pastable/core";
 import { debug } from "debug";
 
 export const makeDebug = (suffix: string) => debug("backend-with-ci").extend(suffix);
-
-const hexLetters = "0123456789ABCDEF".toLowerCase();
-const hexLettersArray = hexLetters.split("");
-
-export const getRandomColor = () =>
-    rainbow(getRandomIntIn(1000) % 999) + pickOne(hexLettersArray.slice(2, 6)) + pickOne(hexLettersArray.slice());
-
-const getNextHexChar = (char: string, step = 3) =>
-    hexLettersArray[getNextIndex(hexLetters.indexOf(char), hexLettersArray.length, false, step)];
-export const getSaturedColor = (hexColor: string) => {
-    const chars = hexColor.split("");
-    chars[5] = getNextHexChar(chars[5]);
-    chars[6] = getNextHexChar(chars[6]);
-    chars[7] = getNextHexChar(chars[7], 2);
-    chars[8] = getNextHexChar(chars[8], 2);
-
-    return chars.join("");
-};
 
 export function rainbow(step: number, numOfSteps = 1000) {
     // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.

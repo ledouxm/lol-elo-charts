@@ -4,9 +4,9 @@ import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
 
 export default {
     type: "postgresql",
-    dbName: process.env.POSTGRES_DB || "backend-with-ci",
-    host: process.env.POSTGRES_HOST || "127.0.0.1",
-    user: process.env.POSTGRES_USER || "postgres",
+    dbName: process.env.POSTGRES_DB,
+    host: process.env.POSTGRES_HOST,
+    user: process.env.POSTGRES_USER,
     port: Number(process.env.POSTGRES_PORT) || 5432,
     password: process.env.POSTGRES_PASSWORD || "",
     entities: ["./dist/entities/*.js"],

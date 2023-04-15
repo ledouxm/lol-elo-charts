@@ -1,5 +1,5 @@
 {
-    "name": "backend-with-ci",
+    "name": "lol-charts",
     "scripts": {
         "lint": "ts-node -r tsconfig-paths/register ./src/main.ts",
         "dev-start": "pnpm esno -r tsconfig-paths/register ./src/main.ts",
@@ -19,10 +19,12 @@
         "debug": "^4.3.2",
         "dotenv": "^16.0.1",
         "express": "^4.18.1",
+        "galeforce": "^0.6.1",
         "jsonwebtoken": "^8.5.1",
         "middie": "^5.3.0",
         "pastable": "^2.0.11",
-        "reflect-metadata": "^0.1.13"
+        "reflect-metadata": "^0.1.13",
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
         "@mikro-orm/cli": "^5.3.1",
@@ -30,6 +32,7 @@
         "@types/express": "^4.17.13",
         "@types/jsonwebtoken": "^8.5.4",
         "@types/node": "^16.4.1",
+        "@types/uuid": "^9.0.1",
         "@zerollup/ts-transform-paths": "^1.7.18",
         "esno": "^0.8.0",
         "nodemon": "^2.0.12",

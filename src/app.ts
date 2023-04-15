@@ -2,11 +2,14 @@ import { RequestContext } from "@mikro-orm/core";
 import express from "express";
 
 import { makeOrm } from "./db";
-import { router } from "./routes";
+import { router, startCheckLoop } from "./routes";
 
 export const makeApp: any = async () => {
     const app = express();
+    app.use(express.json());
     const orm = await makeOrm();
+
+    startCheckLoop();
 
     app.use((_req, _res, done) => RequestContext.create(orm.em, done));
     app.use("/", router);
