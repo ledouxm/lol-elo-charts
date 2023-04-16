@@ -45,6 +45,7 @@ services:
         ports:
             - "8080"
         networks:
+            - nginx-network
             - lol-charts-network
 
 volumes:
