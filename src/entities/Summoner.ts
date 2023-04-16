@@ -42,3 +42,21 @@ export class Rank {
     @Property()
     createdAt: Date = new Date();
 }
+
+@Entity()
+export class Apex {
+    @PrimaryKey()
+    id: string = v4();
+
+    @Property()
+    master: number;
+
+    @Property()
+    grandmaster: number;
+
+    @Property()
+    challenger: number;
+
+    @Property()
+    createdAt: Date = new Date();
+}

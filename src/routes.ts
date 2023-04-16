@@ -2,7 +2,7 @@ import { Router } from "express";
 import { handleRequest } from "./httpUtils/requests";
 import { getEm, getOrm } from "./db";
 import Galeforce from "galeforce";
-import { Rank, Summoner } from "./entities/Summoner";
+import { Apex, Rank, Summoner } from "./entities/Summoner";
 
 const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
@@ -22,6 +22,16 @@ router.get(
             { populate: withRank ? ["ranks"] : [], orderBy: withRank ? { ranks: { createdAt: "asc" } } : undefined }
         );
         return summoners;
+    })
+);
+
+router.get(
+    "/apex",
+    handleRequest(async () => {
+        const em = getEm();
+        const apex = await em.find(Apex, {}, { orderBy: { createdAt: "desc" } });
+
+        return apex;
     })
 );
 
@@ -49,15 +59,52 @@ router.post(
     })
 );
 
-export const startCheckLoop = () => {
-    checkElo();
-    setInterval(checkElo, 1000 * 60 * 15);
+const getApex = async () => {
+    const masters = await galeforce.lol.league
+        .league()
+        .queue(galeforce.queue.lol.RANKED_SOLO)
+        .tier(galeforce.tier.MASTER)
+        .region(galeforce.region.lol.EUROPE_WEST)
+        .exec();
+    const grandmasters = await galeforce.lol.league
+        .league()
+        .queue(galeforce.queue.lol.RANKED_SOLO)
+        .tier(galeforce.tier.GRANDMASTER)
+        .region(galeforce.region.lol.EUROPE_WEST)
+        .exec();
+    const challengers = await galeforce.lol.league
+        .league()
+        .queue(galeforce.queue.lol.RANKED_SOLO)
+        .tier(galeforce.tier.CHALLENGER)
+        .region(galeforce.region.lol.EUROPE_WEST)
+        .exec();
+
+    const getMaxLp = (league: Galeforce.dto.LeagueListDTO) => {
+        return Math.max(...league.entries.map((e) => e.leaguePoints));
+    };
+
+    return { master: getMaxLp(masters), grandmaster: getMaxLp(grandmasters), challenger: getMaxLp(challengers) };
 };
 
-const checkElo = async () => {
+export const getAndSaveApex = async () => {
+    console.log("retrieving apex at ", new Date().toISOString());
+    const em = getOrm().em.fork();
+    const apex = await getApex();
+
+    const apexEntity = em.create(Apex, apex);
+
+    return em.persistAndFlush(apexEntity);
+};
+
+export const checkElo = async () => {
     const em = getOrm().em.fork();
     const summoners = await em.find(Summoner, {});
-    console.log("checking elo for summoners: ", summoners.map((s) => s.currentName).join(", "));
+    console.log(
+        "checking elo for summoners: ",
+        summoners.map((s) => s.currentName).join(", "),
+        " at ",
+        new Date().toISOString()
+    );
 
     for (const summoner of summoners) {
         const summonerData = await galeforce.lol

@@ -37,6 +37,9 @@ dependencies:
   middie:
     specifier: ^5.3.0
     version: 5.4.0
+  node-cron:
+    specifier: ^3.0.2
+    version: 3.0.2
   pastable:
     specifier: ^2.0.11
     version: 2.0.11(react@17.0.2)(xstate@4.37.1)
@@ -66,6 +69,9 @@ devDependencies:
   '@types/node':
     specifier: ^16.4.1
     version: 16.11.47
+  '@types/node-cron':
+    specifier: ^3.0.7
+    version: 3.0.7
   '@types/uuid':
     specifier: ^9.0.1
     version: 9.0.1
@@ -713,6 +719,10 @@ packages:
 
   /@types/ms@0.7.31:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
+    dev: true
+
+  /@types/node-cron@3.0.7:
+    resolution: {integrity: sha512-9PuLtBboc/+JJ7FshmJWv769gDonTpItN0Ol5TMwclpSQNjVyB2SRxSKBcTtbSysSL5R7Oea06kTTFNciCoYwA==}
     dev: true
 
   /@types/node@16.11.47:
@@ -1991,6 +2001,13 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /node-cron@3.0.2:
+    resolution: {integrity: sha512-iP8l0yGlNpE0e6q1o185yOApANRe47UPbLf4YxfbiNHt/RU5eBcGB/e0oudruheSf+LQeDMezqC5BVAb5wwRcQ==}
+    engines: {node: '>=6.0.0'}
+    dependencies:
+      uuid: 8.3.2
+    dev: false
+
   /node-releases@2.0.6:
     resolution: {integrity: sha512-PiVXnNuFm5+iYkLBNeq5211hvO38y63T0i2KKh2KnUs3RpzJ+JtODFjkD8yjLwnDkTYF1eKXheUwdssR+NRZdg==}
     dev: false
@@ -2828,6 +2845,11 @@ packages:
   /utils-merge@1.0.1:
     resolution: {integrity: sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=}
     engines: {node: '>= 0.4.0'}
+    dev: false
+
+  /uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
     dev: false
 
   /uuid@9.0.0:
