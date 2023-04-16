@@ -9,7 +9,9 @@ import { router, startCheckLoop } from "./routes";
 export const makeApp: any = async () => {
     const app = express();
     app.use(express.json());
+    console.log("CORS");
     app.use(cors());
+
     const orm = await makeOrm();
 
     startCheckLoop();
