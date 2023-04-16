@@ -38,11 +38,12 @@ services:
 
     adminer:
         image: adminer
+        environment:
+            VIRTUAL_HOST: ${ADMINER_VIRTUAL_HOST}
+            LETSENCRYPT_HOST: ${ADMINER_VIRTUAL_HOST}
         restart: always
         ports:
-            - 8081:8080
-        profiles:
-            - development
+            - "8080"
         networks:
             - lol-charts-network
 

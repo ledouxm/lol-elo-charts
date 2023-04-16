@@ -71,6 +71,7 @@ const checkElo = async () => {
             .entries()
             .summonerId(summoner.summonerId)
             .region(galeforce.region.lol.EUROPE_WEST)
+            .queue(galeforce.queue.lol.RANKED_SOLO)
             .exec();
 
         const rank = em.create(Rank, {
