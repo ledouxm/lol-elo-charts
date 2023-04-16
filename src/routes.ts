@@ -16,7 +16,11 @@ router.get(
     "/summoners",
     handleRequest(async ({ withRank }) => {
         const em = getEm();
-        const summoners = await em.find(Summoner, {}, { populate: withRank ? ["ranks"] : [] });
+        const summoners = await em.find(
+            Summoner,
+            {},
+            { populate: withRank ? ["ranks"] : [], orderBy: withRank ? { ranks: { createdAt: "asc" } } : undefined }
+        );
         return summoners;
     })
 );
