@@ -125,12 +125,13 @@ export const checkElo = async () => {
             .exec();
 
         const elo = elos.find((e) => e.queueType === "RANKED_SOLO_5x5");
+        if (!elo) continue;
 
         const rank = em.create(Rank, {
             summoner: summoner,
-            tier: elo[0].tier,
-            leaguePoints: elo[0].leaguePoints,
-            rank: elo[0].rank,
+            tier: elo.tier,
+            leaguePoints: elo.leaguePoints,
+            rank: elo.rank,
         });
 
         em.persist(rank);
