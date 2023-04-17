@@ -51,6 +51,7 @@ const handleAction = async <T = any>(action: Action<T>, params: T, request: Requ
         const result = await action(params, request, response);
         return response.status(200).json(result);
     } catch (error) {
+        console.log(error);
         if (error instanceof HTTPError) return response.status(error.code).json(error.response);
 
         return response.status(500).json({ error: "Unexpected error" });

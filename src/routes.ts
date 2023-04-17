@@ -14,13 +14,12 @@ router.get(
 
 router.get(
     "/summoners",
-    handleRequest(async ({ withRank }) => {
+    handleRequest(async ({ withRank, after }) => {
         const em = getEm();
-        const summoners = await em.find(
-            Summoner,
-            {},
-            { populate: withRank ? ["ranks"] : [], orderBy: withRank ? { ranks: { createdAt: "asc" } } : undefined }
-        );
+        const summoners = await em.find(Summoner, after ? { ranks: { createdAt: { $gt: new Date(after) } } } : {}, {
+            populate: withRank ? ["ranks"] : [],
+            orderBy: withRank ? { ranks: { createdAt: "asc" } } : undefined,
+        });
         return summoners;
     })
 );
@@ -118,12 +117,14 @@ export const checkElo = async () => {
             em.persist(summoner);
         }
 
-        const elo = await galeforce.lol.league
+        const elos = await galeforce.lol.league
             .entries()
             .summonerId(summoner.summonerId)
             .region(galeforce.region.lol.EUROPE_WEST)
             .queue(galeforce.queue.lol.RANKED_SOLO)
             .exec();
+
+        const elo = elos.find((e) => e.queueType === "RANKED_SOLO_5x5");
 
         const rank = em.create(Rank, {
             summoner: summoner,
