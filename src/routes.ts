@@ -26,9 +26,11 @@ router.get(
 
 router.get(
     "/apex",
-    handleRequest(async () => {
+    handleRequest(async ({ after }) => {
         const em = getEm();
-        const apex = await em.find(Apex, {}, { orderBy: { createdAt: "desc" } });
+        const apex = await em.find(Apex, after ? { createdAt: { $gt: new Date(after) } } : {}, {
+            orderBy: { createdAt: "desc" },
+        });
 
         return apex;
     })
@@ -106,35 +108,39 @@ export const checkElo = async () => {
     );
 
     for (const summoner of summoners) {
-        const summonerData = await galeforce.lol
-            .summoner()
-            .region(galeforce.region.lol.EUROPE_WEST)
-            .name(summoner.currentName)
-            .exec();
+        try {
+            const summonerData = await galeforce.lol
+                .summoner()
+                .region(galeforce.region.lol.EUROPE_WEST)
+                .puuid(summoner.puuid)
+                .exec();
 
-        if (summonerData.name !== summoner.currentName) {
-            summoner.currentName = summonerData.name;
-            em.persist(summoner);
+            if (summonerData.name !== summoner.currentName) {
+                summoner.currentName = summonerData.name;
+                em.persist(summoner);
+            }
+
+            const elos = await galeforce.lol.league
+                .entries()
+                .summonerId(summoner.summonerId)
+                .region(galeforce.region.lol.EUROPE_WEST)
+                .queue(galeforce.queue.lol.RANKED_SOLO)
+                .exec();
+
+            const elo = elos.find((e) => e.queueType === "RANKED_SOLO_5x5");
+            if (!elo) continue;
+
+            const rank = em.create(Rank, {
+                summoner: summoner,
+                tier: elo.tier,
+                leaguePoints: elo.leaguePoints,
+                rank: elo.rank,
+            });
+
+            em.persist(rank);
+        } catch (e) {
+            console.log(e);
         }
-
-        const elos = await galeforce.lol.league
-            .entries()
-            .summonerId(summoner.summonerId)
-            .region(galeforce.region.lol.EUROPE_WEST)
-            .queue(galeforce.queue.lol.RANKED_SOLO)
-            .exec();
-
-        const elo = elos.find((e) => e.queueType === "RANKED_SOLO_5x5");
-        if (!elo) continue;
-
-        const rank = em.create(Rank, {
-            summoner: summoner,
-            tier: elo.tier,
-            leaguePoints: elo.leaguePoints,
-            rank: elo.rank,
-        });
-
-        em.persist(rank);
     }
 
     await em.flush();
