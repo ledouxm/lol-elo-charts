@@ -13,6 +13,7 @@ services:
             VIRTUAL_HOST: ${VIRTUAL_HOST}
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
             BOT_TOKEN: ${BOT_TOKEN}
+            CRON_DELAY_SEC: ${CRON_DELAY_SEC}
         depends_on:
             - postgresql
         networks:
