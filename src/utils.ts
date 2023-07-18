@@ -1,4 +1,5 @@
 import { debug } from "debug";
+import { InsertRank } from "./db/schema";
 
 export const makeDebug = (suffix: string) => debug("backend-with-ci").extend(suffix);
 
@@ -66,4 +67,49 @@ export const getMostOcurrence = (arr: Array<string>) => {
         }
     }
     return max;
+};
+
+export type MinimalRank = Pick<InsertRank, "tier" | "division" | "leaguePoints">;
+
+const tiers = ["IRON", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
+const ranks = ["IV", "III", "II", "I"];
+export const getRankDifference = (oldRank: MinimalRank, newRank: MinimalRank) => {
+    const sameTier = oldRank.tier === newRank.tier;
+    const sameRank = oldRank.division === newRank.division;
+
+    const hasRankPromoted =
+        ranks.findIndex((rank) => rank === oldRank.division) < ranks.findIndex((rank) => rank === newRank.division);
+
+    if (!sameTier || !sameRank) {
+        const hasTierPromoted =
+            tiers.findIndex((tier) => tier === oldRank.tier) < tiers.findIndex((tier) => tier === newRank.tier);
+        const hasPromoted = hasTierPromoted || (hasRankPromoted && sameTier);
+
+        return {
+            type: hasPromoted ? "PROMOTION" : "DEMOTION",
+            from: formatRank(oldRank),
+            to: formatRank(newRank),
+            content: `${hasPromoted ? "PROMOTED" : "DEMOTED"} TO ${newRank.tier} ${newRank.division}`,
+        };
+    }
+
+    const lpDifference = oldRank.leaguePoints - newRank.leaguePoints;
+    const hasLost = lpDifference > 0;
+    return {
+        type: hasLost ? "LOSS" : "WIN",
+        from: formatRank(oldRank),
+        to: formatRank(newRank),
+        content: `${hasLost ? "LOST" : "GAINED"} ${Math.abs(lpDifference)} LP`,
+    };
+};
+
+export const formatRank = (ranking: MinimalRank) =>
+    `${ranking.tier}${ranking.division !== "NA" ? ` ${ranking.division}` : ""} - ${ranking.leaguePoints} LP`;
+
+export const areRanksEqual = (oldRank: MinimalRank, newRank: MinimalRank) => {
+    return (
+        oldRank.tier === newRank.tier &&
+        oldRank.division === newRank.division &&
+        oldRank.leaguePoints === newRank.leaguePoints
+    );
 };

@@ -1,64 +1,67 @@
-import { Router } from "express";
-import { handleRequest } from "./httpUtils/requests";
-import { getEm, getOrm } from "./db";
+import { EmbedBuilder } from "@discordjs/builders";
+import { InferModel, and, desc, eq } from "drizzle-orm";
 import Galeforce from "galeforce";
-import { Apex, Rank, Summoner } from "./entities/Summoner";
+import { db } from "./db/db";
+import { InsertRank, apex, rank, summoner } from "./db/schema";
+import { sendToChannelId } from "./discord";
+import { getProfileIconUrl } from "./icons";
+import { MinimalRank, areRanksEqual, formatRank, getRankDifference } from "./utils";
 
 const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
-export const router: Router = Router();
-router.get(
-    "/",
-    handleRequest(() => ({ hello: "world" }))
-);
+export const addSummoner = async (name: string, channelId: string) => {
+    try {
+        const riotSummoner = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name(name).exec();
 
-router.get(
-    "/summoners",
-    handleRequest(async ({ withRank, after }) => {
-        const em = getEm();
-        const summoners = await em.find(Summoner, after ? { ranks: { createdAt: { $gt: new Date(after) } } } : {}, {
-            populate: withRank ? ["ranks"] : [],
-            orderBy: withRank ? { ranks: { createdAt: "asc" } } : undefined,
-        });
-        return summoners;
-    })
-);
+        const identifier = { puuid: summoner.puuid, channelId };
 
-router.get(
-    "/apex",
-    handleRequest(async ({ after }) => {
-        const em = getEm();
-        const apex = await em.find(Apex, after ? { createdAt: { $gt: new Date(after) } } : {}, {
-            orderBy: { createdAt: "desc" },
-        });
+        const existing = (await db.select().from(summoner).where(eq(summoner.puuid, riotSummoner.puuid)))?.[0];
+        if (existing) {
+            await db
+                .update(summoner)
+                .set({ isActive: true, currentName: riotSummoner.name })
+                .where(eq(summoner.puuid, riotSummoner.puuid));
 
-        return apex;
-    })
-);
-
-router.post(
-    "/summoners",
-    handleRequest(async ({ name }) => {
-        try {
-            const summoner = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name(name).exec();
-
-            const em = getEm();
-
-            const summonerEntity = em.create(Summoner, {
-                puuid: summoner.puuid,
-                summonerId: summoner.id,
-                currentName: summoner.name,
-            });
-
-            await em.persistAndFlush(summonerEntity);
-
-            return summonerEntity;
-        } catch (e) {
-            console.log(e);
-            throw e;
+            return identifier;
         }
-    })
-);
+
+        await db.insert(summoner).values({
+            puuid: riotSummoner.puuid,
+            id: riotSummoner.id,
+            channelId,
+            icon: riotSummoner.profileIconId,
+            currentName: riotSummoner.name,
+        });
+
+        return identifier;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+};
+
+export const removeSummoner = async (name: string, channelId: string) => {
+    try {
+        const existing = (
+            await db
+                .select()
+                .from(summoner)
+                .where(and(eq(summoner.currentName, name), eq(summoner.channelId, channelId)))
+        )?.[0];
+
+        if (!existing) throw new Error("Summoner not found");
+
+        await db
+            .update(summoner)
+            .set({ isActive: false })
+            .where(and(eq(summoner.currentName, name), eq(summoner.channelId, channelId)));
+
+        return "ok";
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+};
 
 const getApex = async () => {
     const masters = await galeforce.lol.league
@@ -89,17 +92,14 @@ const getApex = async () => {
 
 export const getAndSaveApex = async () => {
     console.log("retrieving apex at ", new Date().toISOString());
-    const em = getOrm().em.fork();
-    const apex = await getApex();
+    const riotApex = await getApex();
 
-    const apexEntity = em.create(Apex, apex);
-
-    return em.persistAndFlush(apexEntity);
+    return db.insert(apex).values(riotApex);
 };
 
 export const checkElo = async () => {
-    const em = getOrm().em.fork();
-    const summoners = await em.find(Summoner, {});
+    const summoners = await db.select().from(summoner).where(eq(summoner.isActive, true));
+
     console.log(
         "checking elo for summoners: ",
         summoners.map((s) => s.currentName).join(", "),
@@ -107,22 +107,21 @@ export const checkElo = async () => {
         new Date().toISOString()
     );
 
-    for (const summoner of summoners) {
+    for (const summ of summoners) {
         try {
             const summonerData = await galeforce.lol
                 .summoner()
                 .region(galeforce.region.lol.EUROPE_WEST)
-                .puuid(summoner.puuid)
+                .puuid(summ.puuid)
                 .exec();
 
-            if (summonerData.name !== summoner.currentName) {
-                summoner.currentName = summonerData.name;
-                em.persist(summoner);
+            if (summonerData.name !== summ.currentName) {
+                await db.update(summoner).set({ currentName: summonerData.name }).where(eq(summoner.puuid, summ.puuid));
             }
 
             const elos = await galeforce.lol.league
                 .entries()
-                .summonerId(summoner.summonerId)
+                .summonerId(summ.id)
                 .region(galeforce.region.lol.EUROPE_WEST)
                 .queue(galeforce.queue.lol.RANKED_SOLO)
                 .exec();
@@ -130,18 +129,80 @@ export const checkElo = async () => {
             const elo = elos.find((e) => e.queueType === "RANKED_SOLO_5x5");
             if (!elo) continue;
 
-            const rank = em.create(Rank, {
-                summoner: summoner,
-                tier: elo.tier,
+            const newRank = {
+                tier: elo.tier as InsertRank["tier"],
+                division: elo.rank as InsertRank["division"],
                 leaguePoints: elo.leaguePoints,
-                rank: elo.rank,
+            };
+
+            const lastRanks = await db
+                .select()
+                .from(rank)
+                .where(eq(rank.summonerId, summ.puuid))
+                .orderBy(desc(rank.createdAt))
+                .limit(1);
+
+            const lastRank = lastRanks?.[0] as InsertRank;
+
+            await db.insert(rank).values({
+                summonerId: summ.puuid!,
+                ...newRank,
             });
 
-            em.persist(rank);
+            await db
+                .update(summoner)
+                .set({ icon: summonerData.profileIconId, currentName: summonerData.name, checkedAt: new Date() })
+                .where(eq(summoner.puuid, summ.puuid));
+            console.log(newRank, lastRank && areRanksEqual(lastRank, newRank));
+            if (lastRank && areRanksEqual(lastRank, newRank)) continue;
+
+            const embedBuilder = await getMessageContent(lastRank, newRank, summ);
+            console.log(embedBuilder);
+            sendToChannelId(summ.channelId, embedBuilder);
         } catch (e) {
             console.log(e);
         }
     }
+};
 
-    await em.flush();
+const winColor = 0x00ff26;
+const lossColor = 0xff0000;
+
+const winEmoji = ":chart_with_upwards_trend:";
+const lossEmoji = ":chart_with_downwards_trend:";
+
+const getMessageContent = async (
+    lastRank: MinimalRank,
+    rank: MinimalRank,
+    summ: InferModel<typeof summoner, "select">
+) => {
+    const profileIcon = await getProfileIconUrl(summ.icon);
+    if (!lastRank) {
+        return new EmbedBuilder()
+            .setColor(0xfbfaa6)
+            .setTitle(`${summ.currentName}`)
+            .setFields([
+                {
+                    name: `Is now ${formatRank(rank)}`,
+                    value: " ",
+                },
+            ])
+            .setThumbnail(profileIcon);
+    }
+    const rankDifference = getRankDifference(lastRank, rank);
+
+    const isLoss = ["DEMOTION", "LOSS"].includes(rankDifference.type);
+
+    const embed = new EmbedBuilder()
+        .setColor(isLoss ? lossColor : winColor)
+        .setTitle(summ.currentName)
+        .setThumbnail(profileIcon)
+        .setFields([
+            {
+                name: (isLoss ? lossEmoji : winEmoji) + " " + rankDifference.content,
+                value: `${rankDifference.from} :arrow_right: ${rankDifference.to}`,
+            },
+        ]);
+
+    return embed;
 };

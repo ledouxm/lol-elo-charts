@@ -1,17 +1,28 @@
 import "./envVars";
-import { makeApp } from "./app";
-const port = Number(process.env.HTTP_PORT) || 1337;
+import "./discord";
+import { initDb } from "./db/db";
+import { startDiscordBot } from "./discord";
+import { checkElo, getAndSaveApex } from "./routes";
+import cron from "node-cron";
+import cronstrue from "cronstrue";
 
 const start = async () => {
     try {
-        const app = await makeApp();
-        app.listen(port, () => {
-            console.log(`server listening on port ${port}`);
-        });
+        await initDb();
+        await startDiscordBot();
+        startCronJobs();
     } catch (err) {
         console.log(err);
         process.exit(1);
     }
+};
+
+const startCronJobs = () => {
+    const eloDelay = `*/${process.env.CRON_DELAY_SEC || 5} * * * *`;
+    console.log("checking elo", cronstrue.toString(eloDelay));
+    cron.schedule(eloDelay, () => checkElo());
+    console.log("getting apex", cronstrue.toString("0 0 * * *"));
+    cron.schedule("0 0 * * *", () => getAndSaveApex());
 };
 
 start();

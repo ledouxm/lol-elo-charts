@@ -5,14 +5,14 @@ services:
         ports:
             - "8080"
         environment:
-            HTTP_PORT: 8080
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_HOST: ${POSTGRES_HOST}
+            POSTGRES_PORT: ${POSTGRES_PORT}
+            POSTGRES_USER: ${POSTGRES_USER}
             RG_API_KEY: ${RG_API_KEY}
             VIRTUAL_HOST: ${VIRTUAL_HOST}
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
-            VITE_BACKEND_URL: ${VITE_BACKEND_URL}
         depends_on:
             - postgresql
         networks:
@@ -27,6 +27,7 @@ services:
             - "${POSTGRES_PORT}:5432"
         environment:
             POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_HOST_AUTH_METHOD: trust
             POSTGRES_MULTIPLE_DATABASES: test

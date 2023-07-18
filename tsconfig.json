@@ -1,13 +1,14 @@
 {
     "compilerOptions": {
         "outDir": "./dist",
-        "module": "commonjs",
+        "module": "CommonJS",
         "lib": ["es6", "DOM"],
-        "target": "es2016",
+        "target": "ESNext",
         "declaration": true,
         "removeComments": true,
         "noImplicitAny": false,
         "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "sourceMap": true,
         "esModuleInterop": true,
         "strict": true,
@@ -15,10 +16,6 @@
         "strictNullChecks": false,
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
-        "baseUrl": "./src",
-        "paths": {
-            "@/*": ["./*"]
-        }
+        "baseUrl": ".",
     },
-    "include": ["src"]
 }
