@@ -22,6 +22,7 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules /app/node_modules
 COPY ./src /app/src
+COPY ./drizzle /app/drizzle
 COPY ./package.json /app
 COPY ./tsconfig.json /app
 
