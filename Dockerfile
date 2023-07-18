@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # install pnpm
-FROM node:16-slim AS with-pnpm
+FROM nikolaik/python-nodejs:latest AS with-pnpm
 
 RUN npm i -g pnpm
 RUN apt-get update
