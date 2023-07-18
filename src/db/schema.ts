@@ -1,5 +1,5 @@
 import { InferModel, relations } from "drizzle-orm";
-import { serial, text, timestamp, pgTable, pgEnum, varchar, boolean, integer } from "drizzle-orm/pg-core";
+import { serial, text, timestamp, pgTable, pgEnum, varchar, boolean, integer, primaryKey } from "drizzle-orm/pg-core";
 
 export const divisionEnum = pgEnum("division", ["IV", "III", "II", "I", "NA"]);
 export const tierEnum = pgEnum("tier", [
@@ -13,15 +13,23 @@ export const tierEnum = pgEnum("tier", [
     "CHALLENGER",
 ]);
 
-export const summoner = pgTable("summoner", {
-    puuid: varchar("puuid", { length: 100 }).primaryKey(),
-    currentName: text("name"),
-    id: varchar("id", { length: 100 }),
-    icon: integer("icon"),
-    isActive: boolean("is_active").default(true),
-    checkedAt: timestamp("checked_at"),
-    channelId: varchar("channel_id", { length: 100 }).notNull(),
-});
+export const summoner = pgTable(
+    "summoner",
+    {
+        puuid: varchar("puuid", { length: 100 }),
+        currentName: text("name"),
+        id: varchar("id", { length: 100 }),
+        icon: integer("icon"),
+        isActive: boolean("is_active").default(true),
+        checkedAt: timestamp("checked_at"),
+        channelId: varchar("channel_id", { length: 100 }).notNull(),
+    },
+    (table) => {
+        return {
+            pk: primaryKey(table.puuid, table.channelId),
+        };
+    }
+);
 
 export const summonerRelations = relations(summoner, ({ many }) => {
     return { ranks: many(rank) };

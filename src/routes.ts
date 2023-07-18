@@ -15,7 +15,13 @@ export const addSummoner = async (name: string, channelId: string) => {
 
         const identifier = { puuid: summoner.puuid, channelId };
 
-        const existing = (await db.select().from(summoner).where(eq(summoner.puuid, riotSummoner.puuid)))?.[0];
+        const existing = (
+            await db
+                .select()
+                .from(summoner)
+                .where(and(eq(summoner.puuid, riotSummoner.puuid), eq(summoner.channelId, channelId)))
+                .limit(1)
+        )?.[0];
         if (existing) {
             await db
                 .update(summoner)
@@ -47,6 +53,7 @@ export const removeSummoner = async (name: string, channelId: string) => {
                 .select()
                 .from(summoner)
                 .where(and(eq(summoner.currentName, name), eq(summoner.channelId, channelId)))
+                .limit(1)
         )?.[0];
 
         if (!existing) throw new Error("Summoner not found");
