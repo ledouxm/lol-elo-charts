@@ -36,15 +36,24 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
 
-            - name: deploy with portainer
-              uses: fjogeleit/http-request-action@master
-              with:
-                  method: "POST"
-                  url: ${{ secrets.PORTAINER_WEBHOOK }}
+    deploy_portainer:
+        needs: [push_to_registry]
+        name: Push Docker image to Github Packages
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy with portainer
+            uses: fjogeleit/http-request-action@master
+            with:
+                method: "POST"
+                url: ${{ secrets.PORTAINER_WEBHOOK }}
 
-            - name: deploy with watchtower
-              uses: fjogeleit/http-request-action@master
-              with:
-                  method: "POST"
-                  url: ${{ secrets.WATCHTOWER_WEBHOOK }}?access_token=${{ secrets.WATCHTOWER_ACCESS_TOKEN }}
-                  timeout: 60000
+    deploy_watchtower:
+        needs: [push_to_registry]
+        name: Push Docker image to Github Packages
+        runs-on: ubuntu-latest
+          - name: Deploy with watchtower
+            uses: fjogeleit/http-request-action@master
+            with:
+                method: "POST"
+                url: ${{ secrets.WATCHTOWER_WEBHOOK }}?access_token=${{ secrets.WATCHTOWER_ACCESS_TOKEN }}
+                timeout: 60000

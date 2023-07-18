@@ -171,6 +171,9 @@ const lossColor = 0xff0000;
 const winEmoji = ":chart_with_upwards_trend:";
 const lossEmoji = ":chart_with_downwards_trend:";
 
+const winArrow = ":arrow_upper_right:";
+const lossArrow = ":arrow_lower_right:";
+
 const getMessageContent = async (
     lastRank: MinimalRank,
     rank: MinimalRank,
@@ -199,8 +202,8 @@ const getMessageContent = async (
         .setThumbnail(profileIcon)
         .setFields([
             {
-                name: (isLoss ? lossEmoji : winEmoji) + " " + rankDifference.content,
-                value: `${rankDifference.from} :arrow_right: ${rankDifference.to}`,
+                name: `${isLoss ? lossEmoji : winEmoji} ${rankDifference.content}`,
+                value: `${rankDifference.from} ${isLoss ? lossArrow : winArrow} ${rankDifference.to}`,
             },
         ]);
 
