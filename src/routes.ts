@@ -105,11 +105,21 @@ export const getAndSaveApex = async () => {
 };
 
 export const checkElo = async () => {
-    const summoners = await db.selectDistinctOn([summoner.puuid]).from(summoner).where(eq(summoner.isActive, true));
+    const allSummoners = await db.select().from(summoner).where(eq(summoner.isActive, true));
+    const summoners = allSummoners.reduce((acc, s) => {
+        const index = acc.findIndex((a) => a.puuid === s.puuid);
+        if (index !== -1) {
+            acc[index].channels.push(s.channelId);
+        } else acc.push({ ...s, channels: [s.channelId] });
+
+        return acc;
+    }, [] as (InferModel<typeof summoner, "select"> & { channels: string[] })[]);
 
     console.log(
         "checking elo for summoners: ",
-        summoners.map((s) => s.currentName).join(", "),
+        summoners
+            .map((s) => `${s.currentName} (${s.channels.length} channel${s.channels.length ? "s" : ""})`)
+            .join(", "),
         " at ",
         new Date().toISOString()
     );
@@ -162,9 +172,9 @@ export const checkElo = async () => {
                 summonerId: summ.puuid!,
                 ...newRank,
             });
-            const embedBuilder = await getMessageContent(lastRank, newRank, summ);
-            console.log(embedBuilder);
-            sendToChannelId(summ.channelId, embedBuilder);
+            const embedBuilder = await getMessageContent(lastRank, newRank, summ, elo);
+
+            summ.channels.forEach((c) => sendToChannelId(c, embedBuilder));
         } catch (e) {
             console.log(e);
         }
@@ -183,7 +193,8 @@ const lossArrow = ":arrow_lower_right:";
 const getMessageContent = async (
     lastRank: MinimalRank,
     rank: MinimalRank,
-    summ: InferModel<typeof summoner, "select">
+    summ: InferModel<typeof summoner, "select">,
+    elo: Galeforce.dto.LeagueEntryDTO
 ) => {
     const profileIcon = await getProfileIconUrl(summ.icon);
     if (!lastRank) {
@@ -210,6 +221,21 @@ const getMessageContent = async (
             {
                 name: `${isLoss ? lossEmoji : winEmoji} ${rankDifference.content}`,
                 value: `${rankDifference.from} ${isLoss ? lossArrow : winArrow} ${rankDifference.to}`,
+            },
+            {
+                name: "Wins",
+                value: elo.wins.toString(),
+                inline: true,
+            },
+            {
+                name: "Losses",
+                value: elo.losses.toString(),
+                inline: true,
+            },
+            {
+                name: "Winrate",
+                value: `${((elo.wins / (elo.wins + elo.losses)) * 100).toFixed(2)}%`,
+                inline: true,
             },
         ]);
 
