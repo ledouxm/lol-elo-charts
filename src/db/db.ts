@@ -5,6 +5,8 @@ import postgres from "postgres";
 const connectionString = `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`;
 if (!process.env.POSTGRES_HOST) throw new Error("POSTGRES_HOST not found in environment");
 
+console.log("connecting to", connectionString);
+
 const sql = postgres(connectionString, { max: 1 });
 export const db = drizzle(sql);
 
