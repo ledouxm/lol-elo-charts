@@ -32,7 +32,6 @@ services:
             POSTGRES_HOST_AUTH_METHOD: trust
             POSTGRES_MULTIPLE_DATABASES: test
         volumes:
-            # Persist data between up/down
             - postgresql:/var/lib/postgresql/data:delegated
 
         networks:
