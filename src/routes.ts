@@ -144,11 +144,6 @@ export const checkElo = async () => {
 
             const lastRank = lastRanks?.[0] as InsertRank;
 
-            await db.insert(rank).values({
-                summonerId: summ.puuid!,
-                ...newRank,
-            });
-
             await db
                 .update(summoner)
                 .set({ icon: summonerData.profileIconId, currentName: summonerData.name, checkedAt: new Date() })
@@ -156,6 +151,10 @@ export const checkElo = async () => {
             console.log(newRank, lastRank && areRanksEqual(lastRank, newRank));
             if (lastRank && areRanksEqual(lastRank, newRank)) continue;
 
+            await db.insert(rank).values({
+                summonerId: summ.puuid!,
+                ...newRank,
+            });
             const embedBuilder = await getMessageContent(lastRank, newRank, summ);
             console.log(embedBuilder);
             sendToChannelId(summ.channelId, embedBuilder);
@@ -186,7 +185,7 @@ const getMessageContent = async (
             .setTitle(`${summ.currentName}`)
             .setFields([
                 {
-                    name: `Is now ${formatRank(rank)}`,
+                    name: `is now ${formatRank(rank)}`,
                     value: " ",
                 },
             ])
