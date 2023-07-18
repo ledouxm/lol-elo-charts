@@ -15,7 +15,6 @@
         "@discordjs/rest": "^1.7.1",
         "@discordjs/ws": "^0.8.3",
         "@discordx/importer": "^1.2.2",
-        "@discordx/plugin-ytdl-player": "^2.0.2",
         "axios": "^1.4.0",
         "cors": "^2.8.5",
         "cronstrue": "^2.28.0",
