@@ -98,7 +98,7 @@ export const getAndSaveApex = async () => {
 };
 
 export const checkElo = async () => {
-    const summoners = await db.select().from(summoner).where(eq(summoner.isActive, true));
+    const summoners = await db.selectDistinctOn([summoner.puuid]).from(summoner).where(eq(summoner.isActive, true));
 
     console.log(
         "checking elo for summoners: ",
