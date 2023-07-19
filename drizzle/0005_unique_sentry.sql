@@ -1,0 +1,1 @@
+ALTER TABLE "gambler" ADD COLUMN "last_claim" timestamp DEFAULT now();

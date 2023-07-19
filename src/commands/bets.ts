@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "src/db/db";
 import { sendToChannelId } from "src/discord";
 import { bet, gambler, rank, summoner } from "../db/schema";
+import * as DateFns from "date-fns";
 
 @Discord()
 export class Bets {
@@ -32,6 +33,14 @@ export class Bets {
         win: boolean,
         interaction: CommandInteraction
     ) {
+        if (!process.env.ENABLE_BETS) {
+            return sendErrorToChannelId(
+                interaction.channelId,
+                "Bets are disabled, contact the owner of the bot to enable them",
+                interaction
+            );
+        }
+
         if (interaction.member.user.bot)
             return sendErrorToChannelId(interaction.channelId, "Bots can't bet", interaction);
 
@@ -111,6 +120,25 @@ export class Bets {
             );
 
         interaction.reply({ embeds: [embed] });
+    }
+
+    @Slash({ name: "claim", description: "Claim your daily points" })
+    async claim(interaction: CommandInteraction) {
+        const gamb = await getOrCreateGambler(interaction);
+        if (gamb.lastClaim && DateFns.differenceInHours(new Date(), gamb.lastClaim) < 24) {
+            return sendErrorToChannelId(
+                interaction.channelId,
+                "You already claimed your daily points, come back tomorrow",
+                interaction
+            );
+        }
+
+        await db
+            .update(gambler)
+            .set({ points: gamb.points + 500, lastClaim: new Date() })
+            .where(eq(gambler.id, gamb.id));
+
+        interaction.reply(`500 points claimed (${gamb.points + 500})`);
     }
 }
 

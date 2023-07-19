@@ -71,6 +71,7 @@ export const gambler = pgTable(
         avatar: varchar("avatar", { length: 40 }),
         createdAt: timestamp("created_at").defaultNow(),
         points: integer("points").default(500),
+        lastClaim: timestamp("last_claim").defaultNow(),
     },
     (table) => {
         return {
