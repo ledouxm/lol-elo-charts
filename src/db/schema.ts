@@ -25,6 +25,7 @@ export const summoner = pgTable(
         isActive: boolean("is_active").default(true),
         checkedAt: timestamp("checked_at"),
         channelId: varchar("channel_id", { length: 100 }).notNull(),
+        lastGameId: varchar("last_game_id", { length: 25 }),
     },
     (table) => {
         return {
@@ -34,7 +35,7 @@ export const summoner = pgTable(
 );
 
 export const summonerRelations = relations(summoner, ({ many }) => {
-    return { ranks: many(rank) };
+    return { ranks: many(rank), bets: many(bet) };
 });
 
 export const rank = pgTable("rank", {
@@ -60,3 +61,47 @@ export const apex = pgTable("apex", {
 });
 
 export type Apex = InferModel<typeof apex, "select">;
+
+export const gambler = pgTable(
+    "gambler",
+    {
+        id: varchar("id", { length: 25 }),
+        channelId: varchar("channel_id", { length: 100 }).notNull(),
+        name: text("name"),
+        avatar: varchar("avatar", { length: 40 }),
+        createdAt: timestamp("created_at").defaultNow(),
+        points: integer("points").default(500),
+    },
+    (table) => {
+        return {
+            pk: primaryKey(table.id, table.channelId),
+        };
+    }
+);
+
+export type Gambler = InferModel<typeof gambler, "select">;
+
+export const gamblerRelations = relations(gambler, ({ many }) => {
+    return { bets: many(bet) };
+});
+
+export const bet = pgTable("bet", {
+    id: serial("id").primaryKey(),
+    gamblerId: varchar("gambler_id", { length: 25 }).notNull(),
+    summonerId: varchar("summoner_id", { length: 100 }),
+    points: integer("points").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+    endedAt: timestamp("ended_at"),
+    matchId: varchar("match_id", { length: 25 }),
+    hasBetOnWin: boolean("has_bet_on_win"),
+    isWin: boolean("is_win"),
+});
+
+export type Bet = InferModel<typeof bet, "select">;
+
+export const betRelations = relations(bet, ({ one }) => {
+    return {
+        gambler: one(gambler, { fields: [bet.gamblerId], references: [gambler.id] }),
+        summoner: one(summoner, { fields: [bet.summonerId], references: [summoner.puuid] }),
+    };
+});

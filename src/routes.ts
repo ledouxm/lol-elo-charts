@@ -1,14 +1,14 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { InferModel, and, desc, eq, lt } from "drizzle-orm";
+import { InferModel, and, desc, eq, isNull, lt } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "./db/db";
-import { InsertRank, apex, rank, summoner } from "./db/schema";
+import { Gambler, InsertRank, apex, bet, gambler, rank, summoner } from "./db/schema";
 import { sendToChannelId } from "./discord";
 import { getProfileIconUrl } from "./icons";
 import { MinimalRank, areRanksEqual, formatRank, getRankDifference } from "./utils";
 import { makeTierLps } from "./lps";
 import { getArrow, getColor, getEmoji } from "./getColor";
-import { generate24hRecap } from "./generate24hRecap";
+import { generate24hRecaps } from "./generate24hRecap";
 
 const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
@@ -106,7 +106,18 @@ export const getAndSaveApex = async () => {
 
     await db.insert(apex).values(riotApex);
 
-    return generate24hRecap();
+    return generate24hRecaps();
+};
+
+export const giveEveryone500Points = async () => {
+    const gamblers = await db.select().from(gambler);
+
+    for (const g of gamblers) {
+        await db
+            .update(gambler)
+            .set({ points: g.points + 500 })
+            .where(eq(gambler.id, gambler.id));
+    }
 };
 
 export const getSummonersWithChannels = async () => {
@@ -183,7 +194,10 @@ export const checkElo = async () => {
                 summonerId: summ.puuid!,
                 ...newRank,
             });
-            const embedBuilder = await getMessageContent({ lastRank, rank: newRank, summ, elo });
+
+            const bets = await checkBetsAndGetLastGame(summ.puuid!);
+
+            const embedBuilder = await getMessageContent({ lastRank, rank: newRank, summ, elo, bets });
 
             summ.channels.forEach((c) => sendToChannelId(c, embedBuilder));
         } catch (e) {
@@ -192,16 +206,115 @@ export const checkElo = async () => {
     }
 };
 
+export const checkBetsAndGetLastGame = async (summonerId: string) => {
+    const activeBets = await db
+        .select()
+        .from(bet)
+        .where(and(eq(bet.summonerId, summonerId), isNull(bet.endedAt)))
+        .leftJoin(gambler, eq(bet.gamblerId, gambler.id));
+
+    if (!activeBets?.[0]) {
+        void console.log("no bets");
+        return [] as AchievedBet[];
+    }
+    console.log("Checking", activeBets.length, "bets");
+
+    const lastGameIds = await galeforce.lol.match.list().region(galeforce.region.riot.EUROPE).puuid(summonerId).exec();
+
+    const summ = (await db.select().from(summoner).where(eq(summoner.puuid, summonerId)).limit(1))?.[0];
+
+    if (!summ) throw new Error("Summoner not found");
+    const lastGame = await galeforce.lol.match
+        .match()
+        .region(galeforce.region.riot.EUROPE)
+        .matchId(lastGameIds[0])
+        .exec();
+
+    const newBets = [] as AchievedBet[];
+
+    for (const activeBet of activeBets) {
+        const newBet = await tryToResolveBet({ activeBet, summ, lastGameIds, lastGame });
+        if (newBet) newBets.push(newBet);
+    }
+
+    return newBets;
+};
+
+const tryToResolveBet = async ({
+    activeBet,
+    summ,
+    lastGameIds,
+    lastGame,
+}: {
+    activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler };
+    summ: InferModel<typeof summoner, "select">;
+    lastGameIds: string[];
+    lastGame?: Galeforce.dto.MatchDTO;
+}) => {
+    const hasOnlyOneNewGame = lastGameIds.findIndex((id) => id === summ.lastGameId) === 0;
+
+    const game = hasOnlyOneNewGame ? lastGame : await getGameMatchingBet(activeBet, summ);
+    if (!game) return;
+
+    const isWin = game.info.participants.find((p) => p.puuid === summ.puuid)?.win === activeBet.bet.hasBetOnWin;
+
+    if (isWin) {
+        await db
+            .update(gambler)
+            .set({ points: activeBet.gambler.points + activeBet.bet.points * 2 })
+            .where(eq(gambler.id, gambler.id));
+    }
+
+    await db
+        .update(bet)
+        .set({ endedAt: new Date(), isWin, matchId: game.metadata.matchId })
+        .where(eq(bet.id, activeBet.bet.id));
+
+    return db
+        .select()
+        .from(bet)
+        .where(eq(bet.id, activeBet.bet.id))
+        .limit(1)
+        .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
+        .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
+        .limit(1)?.[0];
+};
+
+type AchievedBet = {
+    bet: InferModel<typeof bet, "select">;
+    gambler: Gambler;
+    summoner: InferModel<typeof summoner, "select">;
+};
+
+const getGameMatchingBet = async (
+    activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler },
+    summ: InferModel<typeof summoner, "select">
+) => {
+    console.log("fetching game matching bet", activeBet.bet.id, "for", summ.currentName);
+    const lastGame = await galeforce.lol.match
+        .list()
+        .region(galeforce.region.riot.EUROPE)
+        .puuid(summ.puuid)
+        .query({ startTime: Math.round(activeBet.bet.createdAt.getTime() / 1000), count: 1, queue: 420 })
+        .exec();
+
+    console.log({ lastGame, time: activeBet.bet.createdAt.getTime() / 1000 });
+    if (!lastGame?.length) return null;
+    return galeforce.lol.match.match().region(galeforce.region.riot.EUROPE).matchId(lastGame[0]).exec();
+};
+
 const getMessageContent = async ({
     lastRank,
     rank,
     summ,
     elo,
+    bets,
 }: {
     lastRank: MinimalRank;
     rank: MinimalRank;
     summ: InferModel<typeof summoner, "select">;
     elo: Galeforce.dto.LeagueEntryDTO;
+    bets: AchievedBet[];
 }) => {
     const profileIcon = await getProfileIconUrl(summ.icon);
     if (!lastRank) {
@@ -244,7 +357,13 @@ const getMessageContent = async ({
                 value: `${((elo.wins / (elo.wins + elo.losses)) * 100).toFixed(2)}%`,
                 inline: true,
             },
+            ...bets.map(getAchievedBetFields),
         ]);
 
     return embed;
+};
+
+const getAchievedBetFields = (b: AchievedBet) => {
+    const name = `${b.gambler.name} won ${b.bet.points} points`;
+    return { name, value: " " };
 };

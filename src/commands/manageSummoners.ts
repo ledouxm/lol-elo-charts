@@ -5,6 +5,7 @@ import { db } from "../db/db";
 import { summoner } from "src/db/schema";
 import { eq } from "drizzle-orm";
 import { EmbedBuilder } from "@discordjs/builders";
+import { getOrCreateGambler } from "./bets";
 
 @Discord()
 export class ManageSummoner {
@@ -49,5 +50,19 @@ export class ManageSummoner {
             .setDescription(summoners.map((s) => s.currentName).join("\n"));
 
         interaction.reply({ embeds: [embed] });
+    }
+
+    @Slash({ name: "register", description: "Register yourself as gambler" })
+    async registerAsGamber(interaction: CommandInteraction) {
+        const gamb = await getOrCreateGambler(interaction);
+
+        interaction.reply("Test");
+    }
+
+    @Slash({ name: "test", description: "List all summoners being tracked" })
+    async test(interaction: CommandInteraction) {
+        console.log(interaction.member);
+
+        interaction.reply("Test");
     }
 }

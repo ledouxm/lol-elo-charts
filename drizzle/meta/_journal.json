@@ -15,6 +15,27 @@
       "when": 1689722366771,
       "tag": "0001_late_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1689734259569,
+      "tag": "0002_unknown_rhino",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1689741746642,
+      "tag": "0003_daffy_squirrel_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1689743351526,
+      "tag": "0004_spooky_red_shift",
+      "breakpoints": true
     }
   ]
 }

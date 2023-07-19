@@ -3,6 +3,7 @@ import type { Embed, EmbedBuilder, Interaction, Message, TextChannel } from "dis
 import { IntentsBitField } from "discord.js";
 import { Client, MetadataStorage } from "discordx";
 import "./commands/manageSummoners";
+import "./commands/bets";
 
 export const bot = new Client({
     // To use only guild command
@@ -57,10 +58,14 @@ export const startDiscordBot = async () => {
     await bot.login(process.env.BOT_TOKEN);
 };
 
-export const sendToChannelId = async (channelId: string, embed: EmbedBuilder | string) => {
+export const sendToChannelId = async (channelId: string, embed: EmbedBuilder | string, retry = true) => {
     const channel = bot.channels.cache.get(channelId);
     if (!channel) {
         console.log("Could not find channel", channelId);
+        if (retry) {
+            await bot.channels.fetch(channelId, { cache: true, force: true });
+            await sendToChannelId(channelId, embed, false);
+        }
         return;
     }
 

@@ -1,0 +1,1 @@
+ALTER TABLE "gambler" ADD COLUMN "channel_id" varchar(100) NOT NULL;

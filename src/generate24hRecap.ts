@@ -1,6 +1,6 @@
-import { and, desc, eq, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "./db/db";
-import { InsertRank, apex, rank } from "./db/schema";
+import { InsertRank, apex, bet, gambler, rank } from "./db/schema";
 import { formatRank } from "./utils";
 import { getTotalLpFromRank, makeTierData } from "./lps";
 import { getSummonersWithChannels } from "./routes";
@@ -8,50 +8,54 @@ import { getArrow } from "./getColor";
 import { EmbedBuilder } from "discord.js";
 import { groupBy } from "pastable";
 import { sendToChannelId } from "./discord";
+import * as DateFns from "date-fns";
 
-export const generate24hRecap = async () => {
+export const generate24hRecaps = async () => {
+    await generate24hRankRecap();
+};
+
+export const generate24hRankRecap = async () => {
     const summoners = await getSummonersWithChannels();
 
     const recap = [] as (RecapItem & { channelId: string })[];
 
     for (const summ of summoners) {
-        const todayAtMidnight = new Date();
-        todayAtMidnight.setHours(0, 0, 0, 0);
+        const startOfYesterday = DateFns.addHours(DateFns.startOfYesterday(), 2);
+        const endOfYesterday = DateFns.addHours(DateFns.endOfYesterday(), 2);
 
-        const yesterdayAtMidnight = new Date(todayAtMidnight);
-        yesterdayAtMidnight.setDate(yesterdayAtMidnight.getDate() - 1);
-
-        const yesterdayAtMidnightRank = await db
+        const startRanks = await db
             .select()
             .from(rank)
-            .where(and(lte(rank.createdAt, yesterdayAtMidnight), eq(rank.summonerId, summ.puuid)))
+            .where(and(lte(rank.createdAt, startOfYesterday), eq(rank.summonerId, summ.puuid)))
             .orderBy(desc(rank.createdAt))
             .limit(1);
 
-        const todayAtMidnightRank = await db
+        const endRanks = await db
             .select()
             .from(rank)
-            .where(and(lte(rank.createdAt, todayAtMidnight), eq(rank.summonerId, summ.puuid)))
+            .where(and(lte(rank.createdAt, endOfYesterday), eq(rank.summonerId, summ.puuid)))
             .orderBy(desc(rank.createdAt))
             .limit(1);
 
-        if (!todayAtMidnightRank?.[0] || !yesterdayAtMidnightRank?.[0]) continue;
+        if (!endRanks?.[0] || !startRanks?.[0]) continue;
 
         const lastApex = await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1);
 
-        const yesterdayRank = yesterdayAtMidnightRank?.[0] as InsertRank;
-        const todayRank = todayAtMidnightRank?.[0] as InsertRank;
+        const startRank = startRanks?.[0] as InsertRank;
+        const endRank = endRanks?.[0] as InsertRank;
 
-        const yesterdayLp = getTotalLpFromRank(yesterdayRank, makeTierData(lastApex?.[0]));
-        const todayLp = getTotalLpFromRank(todayRank, makeTierData(lastApex?.[0]));
+        const startLp = getTotalLpFromRank(startRank, makeTierData(lastApex?.[0]));
+        const endLp = getTotalLpFromRank(endRank, makeTierData(lastApex?.[0]));
 
-        const diff = todayLp - yesterdayLp;
+        const diff = endLp - startLp;
         const isLoss = diff < 0;
 
         recap.push({
             name: summ.currentName + ": " + (isLoss ? "-" : "+") + Math.abs(diff),
             diff,
-            description: `${formatRank(yesterdayRank)} ${getArrow(isLoss)} ${formatRank(todayRank)}`,
+            description: `${startRank.id}:${endRank.id} ${formatRank(startRank)} ${getArrow(isLoss)} ${formatRank(
+                endRank
+            )}`,
             channelId: summ.channelId,
         });
     }
@@ -65,6 +69,59 @@ export const generate24hRecap = async () => {
         const embed = await getRecapMessageEmbed(items);
         await sendToChannelId(channelId, embed);
     }
+};
+
+/**
+ * SELECT gambler_id, 
+       SUM(CASE WHEN is_win = TRUE THEN 1 ELSE 0 END) AS wins,
+       SUM(CASE WHEN is_win = FALSE THEN 1 ELSE 0 END) AS losses,
+       SUM(CASE WHEN is_win = TRUE THEN points ELSE -points END) AS earnings
+FROM bet
+GROUP BY gambler_id;
+ */
+
+export const generate24hBetsRecap = async () => {
+    const startOfYesterday = DateFns.addHours(DateFns.startOfYesterday(), 2);
+    const endOfYesterday = DateFns.addHours(DateFns.endOfYesterday(), 2);
+
+    const allEndedBets = (
+        await db
+            .select({
+                gamblerId: bet.gamblerId,
+                channelId: gambler.channelId,
+                wins: sql<number>`SUM(CASE WHEN is_win = TRUE THEN 1 ELSE 0 END)`,
+                losses: sql<number>`SUM(CASE WHEN is_win = FALSE THEN 1 ELSE 0 END)`,
+                result: sql<number>`SUM(CASE WHEN is_win = TRUE THEN bet.points ELSE -bet.points END)`,
+            })
+            .from(bet)
+            .leftJoin(gambler, eq(gambler.id, bet.gamblerId))
+            .where(and(lte(bet.createdAt, endOfYesterday), gte(bet.createdAt, startOfYesterday)))
+            .groupBy(bet.gamblerId, gambler.channelId)
+    ).sort((a, b) => b.result - a.result);
+
+    const groupedByChannelId = groupBy(allEndedBets, (b) => b.channelId);
+
+    for (const [channelId, bets] of Object.entries(groupedByChannelId)) {
+        const embed = await getBetsRecapMessageEmbed(bets);
+        await sendToChannelId(channelId, embed);
+    }
+};
+
+const getBetsRecapMessageEmbed = async (
+    bets: {
+        gamblerId: string;
+        wins: number;
+        losses: number;
+        result: number;
+    }[]
+) => {
+    const embed = new EmbedBuilder().setTitle("24h Bets Recap").setFields(
+        bets.map((b) => ({
+            name: b.gamblerId,
+            value: `Wins: ${b.wins}\nLosses: ${b.losses}\nResult: ${b.result}`,
+        }))
+    );
+    return embed;
 };
 
 const getRecapMessageEmbed = async (items: RecapItem[]) => {

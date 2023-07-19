@@ -2,9 +2,9 @@ import "./envVars";
 import "./discord";
 import { initDb } from "./db/db";
 import { startDiscordBot } from "./discord";
-import { checkElo, getAndSaveApex } from "./routes";
-import cron from "node-cron";
-import cronstrue from "cronstrue";
+import { checkBetsAndGetLastGame } from "./routes";
+import { generate24hBetsRecap, generate24hRecaps } from "./generate24hRecap";
+import { startCronJobs } from "./startCronJobs";
 
 const start = async () => {
     try {
@@ -15,15 +15,6 @@ const start = async () => {
         console.log(err);
         process.exit(1);
     }
-};
-
-const startCronJobs = () => {
-    const eloDelay = `*/${process.env.CRON_DELAY_SEC || 5} * * * *`;
-    console.log("checking elo", cronstrue.toString(eloDelay));
-    cron.schedule(eloDelay, () => checkElo());
-
-    console.log("getting apex and generating recaps", cronstrue.toString("0 0 * * *"));
-    cron.schedule("0 0 * * *", () => getAndSaveApex());
 };
 
 start();
