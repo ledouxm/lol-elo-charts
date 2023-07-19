@@ -21,7 +21,8 @@ const startCronJobs = () => {
     const eloDelay = `*/${process.env.CRON_DELAY_SEC || 5} * * * *`;
     console.log("checking elo", cronstrue.toString(eloDelay));
     cron.schedule(eloDelay, () => checkElo());
-    console.log("getting apex", cronstrue.toString("0 0 * * *"));
+
+    console.log("getting apex and generating recaps", cronstrue.toString("0 0 * * *"));
     cron.schedule("0 0 * * *", () => getAndSaveApex());
 };
 

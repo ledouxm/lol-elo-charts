@@ -1,11 +1,14 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { InferModel, and, desc, eq } from "drizzle-orm";
+import { InferModel, and, desc, eq, lt } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "./db/db";
 import { InsertRank, apex, rank, summoner } from "./db/schema";
 import { sendToChannelId } from "./discord";
 import { getProfileIconUrl } from "./icons";
 import { MinimalRank, areRanksEqual, formatRank, getRankDifference } from "./utils";
+import { makeTierLps } from "./lps";
+import { getArrow, getColor, getEmoji } from "./getColor";
+import { generate24hRecap } from "./generate24hRecap";
 
 const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
@@ -101,10 +104,12 @@ export const getAndSaveApex = async () => {
     console.log("retrieving apex at ", new Date().toISOString());
     const riotApex = await getApex();
 
-    return db.insert(apex).values(riotApex);
+    await db.insert(apex).values(riotApex);
+
+    return generate24hRecap();
 };
 
-export const checkElo = async () => {
+export const getSummonersWithChannels = async () => {
     const allSummoners = await db.select().from(summoner).where(eq(summoner.isActive, true));
     const summoners = allSummoners.reduce((acc, s) => {
         const index = acc.findIndex((a) => a.puuid === s.puuid);
@@ -114,6 +119,12 @@ export const checkElo = async () => {
 
         return acc;
     }, [] as (InferModel<typeof summoner, "select"> & { channels: string[] })[]);
+
+    return summoners;
+};
+
+export const checkElo = async () => {
+    const summoners = await getSummonersWithChannels();
 
     console.log(
         "checking elo for summoners: ",
@@ -172,7 +183,7 @@ export const checkElo = async () => {
                 summonerId: summ.puuid!,
                 ...newRank,
             });
-            const embedBuilder = await getMessageContent(lastRank, newRank, summ, elo);
+            const embedBuilder = await getMessageContent({ lastRank, rank: newRank, summ, elo });
 
             summ.channels.forEach((c) => sendToChannelId(c, embedBuilder));
         } catch (e) {
@@ -181,21 +192,17 @@ export const checkElo = async () => {
     }
 };
 
-const winColor = 0x00ff26;
-const lossColor = 0xff0000;
-
-const winEmoji = ":chart_with_upwards_trend:";
-const lossEmoji = ":chart_with_downwards_trend:";
-
-const winArrow = ":arrow_upper_right:";
-const lossArrow = ":arrow_lower_right:";
-
-const getMessageContent = async (
-    lastRank: MinimalRank,
-    rank: MinimalRank,
-    summ: InferModel<typeof summoner, "select">,
-    elo: Galeforce.dto.LeagueEntryDTO
-) => {
+const getMessageContent = async ({
+    lastRank,
+    rank,
+    summ,
+    elo,
+}: {
+    lastRank: MinimalRank;
+    rank: MinimalRank;
+    summ: InferModel<typeof summoner, "select">;
+    elo: Galeforce.dto.LeagueEntryDTO;
+}) => {
     const profileIcon = await getProfileIconUrl(summ.icon);
     if (!lastRank) {
         return new EmbedBuilder()
@@ -214,13 +221,13 @@ const getMessageContent = async (
     const isLoss = ["DEMOTION", "LOSS"].includes(rankDifference.type);
 
     const embed = new EmbedBuilder()
-        .setColor(isLoss ? lossColor : winColor)
+        .setColor(getColor(isLoss))
         .setTitle(summ.currentName)
         .setThumbnail(profileIcon)
         .setFields([
             {
-                name: `${isLoss ? lossEmoji : winEmoji} ${rankDifference.content}`,
-                value: `${rankDifference.from} ${isLoss ? lossArrow : winArrow} ${rankDifference.to}`,
+                name: `${getEmoji(isLoss)} ${rankDifference.content}`,
+                value: `${rankDifference.from} ${getArrow(isLoss)} ${rankDifference.to}`,
             },
             {
                 name: "Wins",

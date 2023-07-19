@@ -5,8 +5,10 @@ export const divisionEnum = pgEnum("division", ["IV", "III", "II", "I", "NA"]);
 export const tierEnum = pgEnum("tier", [
     "IRON",
     "SILVER",
+    "BRONZE",
     "GOLD",
     "PLATINUM",
+    "EMERALD",
     "DIAMOND",
     "MASTER",
     "GRANDMASTER",
@@ -56,3 +58,5 @@ export const apex = pgTable("apex", {
     challenger: integer("challenger"),
     createdAt: timestamp("created_at").defaultNow(),
 });
+
+export type Apex = InferModel<typeof apex, "select">;
