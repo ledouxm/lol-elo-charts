@@ -43,12 +43,13 @@ export class Bets {
                 interaction
             );
         }
-
+        console.log("bets are enabled");
         if (interaction.member.user.bot)
             return sendErrorToChannelId(interaction.channelId, "Bots can't bet", interaction);
 
+        console.log("not a bot");
         if (points < 1) return sendErrorToChannelId(interaction.channelId, "Tu te crois où ?", interaction);
-
+        console.log("points > 1");
         const currentGambler = await getOrCreateGambler(interaction);
 
         if (currentGambler.points < points)
@@ -57,6 +58,7 @@ export class Bets {
                 `You don't have enough points (current: ${currentGambler.points})`,
                 interaction
             );
+        console.log("enough points");
 
         const s = await db
             .select()
@@ -75,12 +77,14 @@ export class Bets {
                 interaction
             );
         }
+        console.log("summoner found");
 
         await interaction.deferReply();
+        console.log("deferred reply");
 
         const { summoner: currentSummoner } = s[0];
         const currentGame = await getSummonerCurrentGame(currentSummoner.id);
-
+        console.log("current game", !!currentGame);
         if (currentGame) {
             const shouldCreateBet = await sendBetConfirmation({ summ: currentSummoner, points, win, interaction });
             if (!shouldCreateBet) return interaction.editReply("Bet cancelled");
@@ -98,7 +102,9 @@ export class Bets {
             summonerId: currentSummoner.puuid,
         });
 
-        interaction.editReply(
+        console.log("bet created");
+
+        await interaction.editReply(
             `Bet placed by **${interaction.member.user.username}** on **${currentSummoner.currentName}** ${
                 win ? "winning" : "losing"
             } next game`
@@ -218,7 +224,6 @@ export const sendBetConfirmation = async ({
             } ${win ? "winning" : "losing"} next game ?`
         )
         .setColor(0x00ff00);
-
     const message = await interaction.channel.send({ embeds: [embed] });
     // const message = await interaction.reply({ embeds: [embed], fetchReply: true });
     await Promise.all([message.react("✅"), message.react("❌")]);
