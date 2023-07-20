@@ -1,7 +1,7 @@
 version: "3.4"
 services:
     server:
-        image: "ghcr.io/ledouxm/lol-elo-charts:main"
+        image: "ghcr.io/ledouxm/lol-elo-charts:${BRANCH}"
         ports:
             - "8080"
         environment:
