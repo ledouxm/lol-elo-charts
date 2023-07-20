@@ -14,6 +14,7 @@ services:
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
             BOT_TOKEN: ${BOT_TOKEN}
             CRON_DELAY_SEC: ${CRON_DELAY_SEC}
+            ENABLE_BETS: ${ENABLE_BETS}
         depends_on:
             - postgresql
         networks:
