@@ -1,4 +1,4 @@
-name: Publish Docker image and deploy prod
+name: PREPROD - Publish Docker image and deploy
 
 on:
     push:
