@@ -61,7 +61,7 @@ const getAchievedBetString = (b: AchievedBet) => {
     const { currentName } = summoner;
 
     const icon = isWin ? "✅" : "❌";
-    return `${icon} ${gambler.name} : ${points} points on ${currentName} ${
+    return `${icon} **${gambler.name}** : ${isWin ? "+" : "-"}${points} points on **${currentName}** ${
         isWin ? "winning" : "losing"
     } (${formatDistanceToNow(new Date(match.info.gameEndTimestamp), { addSuffix: true })})`;
 };

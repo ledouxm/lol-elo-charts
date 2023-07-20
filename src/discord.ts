@@ -1,9 +1,8 @@
-import { dirname, importx } from "@discordx/importer";
-import type { Embed, EmbedBuilder, Interaction, Message, TextChannel } from "discord.js";
+import type { EmbedBuilder, Interaction, Message, TextChannel } from "discord.js";
 import { IntentsBitField } from "discord.js";
-import { Client, MetadataStorage } from "discordx";
-import "./commands/manageSummoners";
+import { Client } from "discordx";
 import "./commands/bets";
+import "./commands/manageSummoners";
 
 export const bot = new Client({
     // To use only guild command
@@ -36,7 +35,7 @@ bot.once("ready", async () => {
     //    ...bot.guilds.cache.map((g) => g.id)
     //  );
 
-    console.log("Bot started v2");
+    console.log("Bot started");
 });
 
 bot.on("interactionCreate", (interaction: Interaction) => {
@@ -48,10 +47,6 @@ bot.on("messageCreate", (message: Message) => {
 });
 
 export const startDiscordBot = async () => {
-    // The following syntax should be used in the commonjs environment
-    //
-    // await importx(__dirname + "/{events,commands}/**/*.{ts,js}");
-
     // The following syntax should be used in the ECMAScript environment
     // Let's start the bot
     if (!process.env.BOT_TOKEN) {
@@ -63,22 +58,26 @@ export const startDiscordBot = async () => {
 };
 
 export const sendToChannelId = async (channelId: string, embed: EmbedBuilder | string, retry = true) => {
-    const channel = bot.channels.cache.get(channelId);
-    if (!channel) {
-        console.log("Could not find channel", channelId);
-        if (retry) {
-            await bot.channels.fetch(channelId, { cache: true, force: true });
-            await sendToChannelId(channelId, embed, false);
+    try {
+        const channel = bot.channels.cache.get(channelId);
+        if (!channel) {
+            console.log("Could not find channel", channelId);
+            if (retry) {
+                await bot.channels.fetch(channelId, { cache: true, force: true });
+                await sendToChannelId(channelId, embed, false);
+            }
+            return;
         }
-        return;
+
+        console.log("Sending to channel", channelId, channel.type);
+
+        if (typeof embed === "string") {
+            await (channel as TextChannel).send(embed);
+            return;
+        }
+
+        await (channel as TextChannel).send({ embeds: [embed] });
+    } catch (e) {
+        console.log("Error sending to channel", channelId, e);
     }
-
-    console.log("Sending to channel", channelId, channel.type);
-
-    if (typeof embed === "string") {
-        await (channel as TextChannel).send(embed);
-        return;
-    }
-
-    await (channel as TextChannel).send({ embeds: [embed] });
 };

@@ -53,7 +53,7 @@ const tryToResolveBet = async ({
         await db
             .update(gambler)
             .set({ points: activeBet.gambler.points + activeBet.bet.points * 2 })
-            .where(eq(gambler.id, gambler.id));
+            .where(eq(gambler.id, activeBet.gambler.id));
     }
 
     // add endedAt isWin and matchId to bet

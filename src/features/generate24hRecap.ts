@@ -85,20 +85,9 @@ export const generate24hBetsRecap = async () => {
     const startOfYesterday = DateFns.addHours(DateFns.startOfYesterday(), 2);
     const endOfYesterday = DateFns.addHours(DateFns.endOfYesterday(), 2);
 
-    const allEndedBets = (
-        await db
-            .select({
-                gamblerId: bet.gamblerId,
-                channelId: gambler.channelId,
-                wins: sql<number>`SUM(CASE WHEN is_win = TRUE THEN 1 ELSE 0 END)`,
-                losses: sql<number>`SUM(CASE WHEN is_win = FALSE THEN 1 ELSE 0 END)`,
-                result: sql<number>`SUM(CASE WHEN is_win = TRUE THEN bet.points ELSE -bet.points END)`,
-            })
-            .from(bet)
-            .leftJoin(gambler, eq(gambler.id, bet.gamblerId))
-            .where(and(lte(bet.createdAt, endOfYesterday), gte(bet.createdAt, startOfYesterday)))
-            .groupBy(bet.gamblerId, gambler.channelId)
-    ).sort((a, b) => b.result - a.result);
+    const allEndedBets = (await getAllEndedBets({ startDate: startOfYesterday, endDate: endOfYesterday })).sort(
+        (a, b) => b.result - a.result
+    );
 
     const groupedByChannelId = groupBy(allEndedBets, (b) => b.channelId);
 
@@ -106,4 +95,22 @@ export const generate24hBetsRecap = async () => {
         const embed = getBetsRecapMessageEmbed(bets);
         await sendToChannelId(channelId, embed);
     }
+};
+
+export const getAllEndedBets = async ({ startDate, endDate }: { startDate?: Date; endDate?: Date }) => {
+    const query = db
+        .select({
+            gamblerId: bet.gamblerId,
+            channelId: gambler.channelId,
+            wins: sql<number>`SUM(CASE WHEN is_win = TRUE THEN 1 ELSE 0 END)`,
+            losses: sql<number>`SUM(CASE WHEN is_win = FALSE THEN 1 ELSE 0 END)`,
+            result: sql<number>`SUM(CASE WHEN is_win = TRUE THEN bet.points ELSE -bet.points END)`,
+        })
+        .from(bet)
+        .leftJoin(gambler, eq(gambler.id, bet.gamblerId))
+        .groupBy(bet.gamblerId, gambler.channelId);
+
+    if (startDate && endDate) query.where(and(lte(bet.createdAt, endDate), gte(bet.createdAt, startDate)));
+
+    return query;
 };

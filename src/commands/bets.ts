@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, MessageReaction, User } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { db } from "@/db/db";
 import { sendToChannelId } from "@/discord";
 import { Gambler, Summoner, bet, gambler, rank, summoner } from "../db/schema";
@@ -107,7 +107,7 @@ export class Bets {
         await interaction.editReply(
             `Bet placed by **${interaction.member.user.username}** on **${currentSummoner.currentName}** ${
                 win ? "winning" : "losing"
-            } next game`
+            } next game (${points} points)`
         );
     }
 
@@ -146,7 +146,60 @@ export class Bets {
 
         interaction.reply({ embeds: [embed] });
     }
+
+    @Slash({ name: "pointsleaderboard", description: "Points leaderboard" })
+    async pointsLeaderboard(interaction: CommandInteraction) {
+        console.log("points leaderboard");
+        const leaderboard = await getLeaderBoard(interaction.channelId);
+        console.log(leaderboard);
+
+        interaction.reply("ok");
+        // .limit(10);
+        // if (!leaderboard?.[0])
+        //     return sendErrorToChannelId(interaction.channelId, "No one has any points yet", interaction);
+        // const embed = new EmbedBuilder().setTitle("Points leaderboard").setDescription(
+        //     leaderboard.map((g) => `${g.name}: ${g.points}`).join("\n")
+        // );
+        // interaction.reply({ embeds: [embed] });
+    }
 }
+
+export const getLeaderBoard = async (channelId: string) => {
+    const wins = db
+        .select({
+            gamblerId: bet.gamblerId,
+            wins: sql<number>`SUM(CASE WHEN is_win = TRUE THEN 1 ELSE 0 END)`.as("wins"),
+        })
+        .from(bet)
+        .groupBy(bet.gamblerId)
+        .as("wins");
+
+    const losses = db
+        .select({
+            gamblerId: bet.gamblerId,
+            losses: sql<number>`SUM(CASE WHEN is_win = FALSE THEN 1 ELSE 0 END)`.as("losses"),
+        })
+        .from(bet)
+        .groupBy(bet.gamblerId)
+        .as("losses");
+
+    return db
+        .select({
+            id: gambler.id,
+            name: gambler.name,
+            points: gambler.points,
+            wins: wins.wins,
+            losses: losses.losses,
+        })
+        .from(gambler)
+        .orderBy(desc(gambler.points))
+        .leftJoin(wins, eq(wins.gamblerId, gambler.id))
+        .leftJoin(losses, eq(losses.gamblerId, gambler.id))
+        .where(eq(gambler.channelId, channelId));
+    // .leftJoin(bet, eq(bet.gamblerId, gambler.id))
+    // .leftJoin(summoner, eq(summoner.puuid, gambler.id));
+    // .where(eq(summoner.channelId, channelId));
+};
 
 export const getBetsByChannelIdGroupedBySummoner = async (channelId: string) => {
     const bets = await db
@@ -155,11 +208,9 @@ export const getBetsByChannelIdGroupedBySummoner = async (channelId: string) => 
         .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
         .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
         .where(and(eq(summoner.channelId, channelId), isNull(bet.endedAt)));
-    // .where(and(eq(summoner.channelId, channelId), eq(bet.endedAt, null)));
     const bySummoners = groupBy(bets, (b) => b.summoner.currentName);
 
     return bySummoners;
-    // .where(eq(summoner.channelId, interaction.channelId));
 };
 
 export const getOrCreateGambler = async (interaction: CommandInteraction) => {
