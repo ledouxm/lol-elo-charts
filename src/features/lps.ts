@@ -1,4 +1,4 @@
-import { Apex, InsertRank, divisionEnum, tierEnum } from "./db/schema";
+import { Apex, InsertRank, divisionEnum, tierEnum } from "../db/schema";
 
 export type TierData = Record<InsertRank["tier"], { nbDivision: number; lpMax: number }>;
 

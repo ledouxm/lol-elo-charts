@@ -1,4 +1,6 @@
-import { checkElo, getAndSaveApex, giveEveryone500Points } from "./routes";
+import { giveEveryone500Points } from "./features/summoner";
+import { getAndSaveApex } from "./features/apex";
+import { checkElo } from "./features/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
 

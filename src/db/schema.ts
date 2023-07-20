@@ -34,6 +34,8 @@ export const summoner = pgTable(
     }
 );
 
+export type Summoner = InferModel<typeof summoner, "select">;
+
 export const summonerRelations = relations(summoner, ({ many }) => {
     return { ranks: many(rank), bets: many(bet) };
 });

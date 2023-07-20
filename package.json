@@ -7,7 +7,8 @@
         "start": "cross-env NODE_ENV=production node dist/main.js",
         "migration:create": "drizzle-kit generate:pg",
         "migration:up": "pnpm mikro-orm migration:up",
-        "prettier": "prettier --write \"./{src,tests}/**/*\""
+        "prettier": "prettier --write \"./{src,tests}/**/*\"",
+        "test": "cross-env NODE_ENV=test vitest"
     },
     "dependencies": {
         "@discordjs/builders": "^1.6.3",
@@ -43,7 +44,9 @@
         "rimraf": "^3.0.2",
         "tsup": "^7.1.0",
         "typescript": "^4.7.4",
+        "vite": "^4.4.5",
         "vite-node": "^0.33.0",
+        "vite-tsconfig-paths": "^4.2.0",
         "vitest": "^0.33.0"
     },
     "engines": {

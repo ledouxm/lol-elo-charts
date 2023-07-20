@@ -11,7 +11,11 @@ export const bot = new Client({
     botId: "test",
 
     // Discord intents
-    intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages],
+    intents: [
+        IntentsBitField.Flags.Guilds,
+        IntentsBitField.Flags.GuildMessages,
+        IntentsBitField.Flags.GuildMessageReactions,
+    ],
 
     // Debug logs are disabled in silent mode
     silent: false,

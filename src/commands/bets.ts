@@ -1,10 +1,13 @@
-import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder } from "discord.js";
+import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, MessageReaction, User } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import { eq } from "drizzle-orm";
-import { db } from "src/db/db";
-import { sendToChannelId } from "src/discord";
-import { bet, gambler, rank, summoner } from "../db/schema";
+import { eq, and, isNull } from "drizzle-orm";
+import { db } from "@/db/db";
+import { sendToChannelId } from "@/discord";
+import { Gambler, Summoner, bet, gambler, rank, summoner } from "../db/schema";
 import * as DateFns from "date-fns";
+import { getMyBetsMessageEmbed } from "@/features/messages";
+import { getSummonerCurrentGame } from "@/features/summoner";
+import { groupBy } from "pastable";
 
 @Discord()
 export class Bets {
@@ -62,21 +65,26 @@ export class Bets {
             .leftJoin(rank, eq(rank.summonerId, summoner.puuid))
             .limit(1);
 
-        if (!s?.[0])
+        if (!s?.[0]) {
+            const summoners = await db.select().from(summoner).where(eq(summoner.channelId, interaction.channelId));
             return sendErrorToChannelId(
                 interaction.channelId,
-                "Summoner not found, you must add it using '/addsummoner <summoner name>' first",
+                `Summoner not found, you must add it using '/addsummoner <summoner name>' first\n**Available summoners:**\n${summoners
+                    .map((s) => s.currentName)
+                    .join("\n")}`,
                 interaction
             );
-
-        if (!s[0].rank)
-            return sendErrorToChannelId(
-                interaction.channelId,
-                "Summoner has no rank yet, wait for the next update",
-                interaction
-            );
+        }
 
         const { summoner: currentSummoner } = s[0];
+        const currentGame = await getSummonerCurrentGame(currentSummoner.id);
+
+        if (currentGame) {
+            await interaction.deferReply();
+            const shouldCreateBet = await sendBetConfirmation({ summ: currentSummoner, points, win, interaction });
+            console.log({ shouldCreateBet });
+            if (!shouldCreateBet) return interaction.editReply("Bet cancelled");
+        }
 
         await db
             .update(gambler)
@@ -90,7 +98,7 @@ export class Bets {
             summonerId: currentSummoner.puuid,
         });
 
-        interaction.reply(
+        interaction.editReply(
             `Bet placed by ${interaction.member.user.username} on ${currentSummoner.currentName} ${
                 win ? "winning" : "losing"
             } next game`
@@ -98,7 +106,7 @@ export class Bets {
     }
 
     @Slash({ name: "mybets", description: "List all your bets" })
-    async listBets(interaction: CommandInteraction) {
+    async listMyBets(interaction: CommandInteraction) {
         const betsWithSummoner = await db
             .select()
             .from(bet)
@@ -108,39 +116,64 @@ export class Bets {
         if (!betsWithSummoner?.[0])
             return sendErrorToChannelId(interaction.channelId, "You don't have any bets", interaction);
 
-        const embed = new EmbedBuilder()
-            .setTitle("Your bets")
-            .setDescription(
-                betsWithSummoner
-                    .map(
-                        ({ bet, summoner }) =>
-                            bet.points + " on " + summoner.currentName + " to " + (bet.hasBetOnWin ? "win" : "lose")
-                    )
-                    .join("\n")
-            );
+        const embed = getMyBetsMessageEmbed(betsWithSummoner);
 
         interaction.reply({ embeds: [embed] });
     }
 
-    @Slash({ name: "claim", description: "Claim your daily points" })
-    async claim(interaction: CommandInteraction) {
-        const gamb = await getOrCreateGambler(interaction);
-        if (gamb.lastClaim && DateFns.differenceInHours(new Date(), gamb.lastClaim) < 24) {
-            return sendErrorToChannelId(
-                interaction.channelId,
-                "You already claimed your daily points, come back tomorrow",
-                interaction
-            );
-        }
+    @Slash({ name: "listbets", description: "List all active bets" })
+    async listAllBets(interaction: CommandInteraction) {
+        const bets = await getBetsByChannelIdGroupedBySummoner(interaction.channelId);
 
-        await db
-            .update(gambler)
-            .set({ points: gamb.points + 500, lastClaim: new Date() })
-            .where(eq(gambler.id, gamb.id));
+        if (!bets || Object.keys(bets).length === 0)
+            return sendErrorToChannelId(interaction.channelId, "No active bets", interaction);
 
-        interaction.reply(`500 points claimed (${gamb.points + 500})`);
+        const embed = new EmbedBuilder().setTitle("Active bets on this channel").setDescription(
+            Object.entries(bets)
+                .map(([name, bets]) => {
+                    return `on **${name}**:\n${bets
+                        .map((b) => `${b.bet.points} on ${b.bet.hasBetOnWin ? "win" : "lose"} (${b.gambler.name})`)
+                        .join("\n")}`;
+                })
+                .join("\n\n")
+        );
+
+        interaction.reply({ embeds: [embed] });
     }
+    // @Slash({ name: "claim", description: "Claim your daily points" })
+    // async claim(interaction: CommandInteraction) {
+    //     const gamb = await getOrCreateGambler(interaction);
+    //     if (gamb.lastClaim && DateFns.differenceInHours(new Date(), gamb.lastClaim) < 24) {
+    //         return sendErrorToChannelId(
+    //             interaction.channelId,
+    //             "You already claimed your daily points, come back tomorrow",
+    //             interaction
+    //         );
+    //     }
+
+    //     await db
+    //         .update(gambler)
+    //         .set({ points: gamb.points + 500, lastClaim: new Date() })
+    //         .where(eq(gambler.id, gamb.id));
+
+    //     interaction.reply(`500 points claimed (${gamb.points + 500})`);
+    // }
 }
+
+export const getBetsByChannelIdGroupedBySummoner = async (channelId: string) => {
+    const bets = await db
+        .select()
+        .from(bet)
+        .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
+        .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
+        .where(and(eq(summoner.channelId, channelId), isNull(bet.endedAt)));
+    // .where(and(eq(summoner.channelId, channelId), eq(bet.endedAt, null)));
+
+    const bySummoners = groupBy(bets, (b) => b.summoner.currentName);
+
+    return bySummoners;
+    // .where(eq(summoner.channelId, interaction.channelId));
+};
 
 export const getOrCreateGambler = async (interaction: CommandInteraction) => {
     const { id, avatar } = interaction.member.user;
@@ -161,4 +194,50 @@ export const sendErrorToChannelId = async (channelId: string, error: string, int
     const embed = new EmbedBuilder().setTitle("Error").setDescription(error).setColor(0xff0000);
 
     return interaction ? interaction.reply({ embeds: [embed] }) : sendToChannelId(channelId, embed);
+};
+
+export const sendBetConfirmation = async ({
+    summ,
+    points,
+    win,
+    interaction,
+}: {
+    summ: Summoner;
+    points: number;
+    win: boolean;
+    interaction: CommandInteraction;
+}) => {
+    const collectorFilter = (reaction: MessageReaction, user: User) => {
+        return ["✅", "❌"].includes(reaction.emoji.name) && user.id === interaction.user.id;
+    };
+
+    const embed = new EmbedBuilder()
+        .setTitle("Summoner in game")
+        .setDescription(
+            `You can't bet on ${summ.currentName} right now, but you can bet on the next game\n\n${points} points on ${
+                summ.currentName
+            } ${win ? "winning" : "losing"} next game ?`
+        )
+        .setColor(0x00ff00);
+
+    const message = await interaction.channel.send({ embeds: [embed] });
+    // const message = await interaction.reply({ embeds: [embed], fetchReply: true });
+    await Promise.all([message.react("✅"), message.react("❌")]);
+
+    try {
+        const collected = await message.awaitReactions({
+            filter: collectorFilter,
+            max: 1,
+            time: 5000,
+            errors: ["time"],
+        });
+        const reaction = collected.first();
+
+        console.log(message.deletable);
+        if (message.deletable) await message.delete();
+        return reaction.emoji.name == "✅";
+    } catch {
+        if (message.deletable) await message.delete();
+    } finally {
+    }
 };

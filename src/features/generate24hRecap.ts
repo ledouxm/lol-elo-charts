@@ -1,17 +1,18 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
-import { db } from "./db/db";
-import { InsertRank, apex, bet, gambler, rank } from "./db/schema";
-import { formatRank } from "./utils";
+import { db } from "../db/db";
+import { InsertRank, apex, bet, gambler, rank } from "../db/schema";
+import { formatRank } from "../utils";
 import { getTotalLpFromRank, makeTierData } from "./lps";
-import { getSummonersWithChannels } from "./routes";
-import { getArrow } from "./getColor";
-import { EmbedBuilder } from "discord.js";
+import { getSummonersWithChannels } from "./summoner";
+import { getArrow } from "../utils";
 import { groupBy } from "pastable";
-import { sendToChannelId } from "./discord";
+import { sendToChannelId } from "../discord";
 import * as DateFns from "date-fns";
+import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed } from "./messages";
 
 export const generate24hRecaps = async () => {
     await generate24hRankRecap();
+    await generate24hBetsRecap();
 };
 
 export const generate24hRankRecap = async () => {
@@ -66,7 +67,7 @@ export const generate24hRankRecap = async () => {
     );
 
     for (const [channelId, items] of Object.entries(byChannelId)) {
-        const embed = await getRecapMessageEmbed(items);
+        const embed = getRecapMessageEmbed(items);
         await sendToChannelId(channelId, embed);
     }
 };
@@ -102,38 +103,7 @@ export const generate24hBetsRecap = async () => {
     const groupedByChannelId = groupBy(allEndedBets, (b) => b.channelId);
 
     for (const [channelId, bets] of Object.entries(groupedByChannelId)) {
-        const embed = await getBetsRecapMessageEmbed(bets);
+        const embed = getBetsRecapMessageEmbed(bets);
         await sendToChannelId(channelId, embed);
     }
-};
-
-const getBetsRecapMessageEmbed = async (
-    bets: {
-        gamblerId: string;
-        wins: number;
-        losses: number;
-        result: number;
-    }[]
-) => {
-    const embed = new EmbedBuilder().setTitle("24h Bets Recap").setFields(
-        bets.map((b) => ({
-            name: b.gamblerId,
-            value: `Wins: ${b.wins}\nLosses: ${b.losses}\nResult: ${b.result}`,
-        }))
-    );
-    return embed;
-};
-
-const getRecapMessageEmbed = async (items: RecapItem[]) => {
-    const embed = new EmbedBuilder()
-        .setTitle("24h Recap")
-        .setFields(items.map((i) => ({ name: i.name, value: i.description })));
-
-    return embed;
-};
-
-type RecapItem = {
-    name: string;
-    diff: number;
-    description: string;
 };
