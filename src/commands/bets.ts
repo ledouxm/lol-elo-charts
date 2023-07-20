@@ -76,13 +76,13 @@ export class Bets {
             );
         }
 
+        await interaction.deferReply();
+
         const { summoner: currentSummoner } = s[0];
         const currentGame = await getSummonerCurrentGame(currentSummoner.id);
 
         if (currentGame) {
-            await interaction.deferReply();
             const shouldCreateBet = await sendBetConfirmation({ summ: currentSummoner, points, win, interaction });
-            console.log({ shouldCreateBet });
             if (!shouldCreateBet) return interaction.editReply("Bet cancelled");
         }
 
@@ -99,7 +99,7 @@ export class Bets {
         });
 
         interaction.editReply(
-            `Bet placed by ${interaction.member.user.username} on ${currentSummoner.currentName} ${
+            `Bet placed by **${interaction.member.user.username}** on **${currentSummoner.currentName}** ${
                 win ? "winning" : "losing"
             } next game`
         );
@@ -168,7 +168,6 @@ export const getBetsByChannelIdGroupedBySummoner = async (channelId: string) => 
         .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
         .where(and(eq(summoner.channelId, channelId), isNull(bet.endedAt)));
     // .where(and(eq(summoner.channelId, channelId), eq(bet.endedAt, null)));
-
     const bySummoners = groupBy(bets, (b) => b.summoner.currentName);
 
     return bySummoners;
@@ -233,7 +232,6 @@ export const sendBetConfirmation = async ({
         });
         const reaction = collected.first();
 
-        console.log(message.deletable);
         if (message.deletable) await message.delete();
         return reaction.emoji.name == "✅";
     } catch {

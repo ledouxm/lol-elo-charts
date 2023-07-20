@@ -49,31 +49,37 @@ const tryToResolveBet = async ({
     const isWin = game.info.participants.find((p) => p.puuid === summ.puuid)?.win === activeBet.bet.hasBetOnWin;
 
     if (isWin) {
+        // increase points if win
         await db
             .update(gambler)
             .set({ points: activeBet.gambler.points + activeBet.bet.points * 2 })
             .where(eq(gambler.id, gambler.id));
     }
 
+    // add endedAt isWin and matchId to bet
     await db
         .update(bet)
         .set({ endedAt: new Date(), isWin, matchId: game.metadata.matchId })
         .where(eq(bet.id, activeBet.bet.id));
 
-    return db
-        .select()
-        .from(bet)
-        .where(eq(bet.id, activeBet.bet.id))
-        .limit(1)
-        .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
-        .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
-        .limit(1)?.[0];
+    const newBet = (
+        await db
+            .select()
+            .from(bet)
+            .where(eq(bet.id, activeBet.bet.id))
+            .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
+            .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
+            .limit(1)
+    )?.[0];
+
+    return { ...newBet, match: game };
 };
 
 export type AchievedBet = {
     bet: InferModel<typeof bet, "select">;
     gambler: Gambler;
     summoner: InferModel<typeof summoner, "select">;
+    match: Galeforce.dto.MatchDTO;
 };
 
 const getGameMatchingBet = async (

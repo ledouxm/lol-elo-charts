@@ -3,7 +3,12 @@ import { db } from "../db/db";
 import { InsertRank, rank, summoner } from "../db/schema";
 import { sendToChannelId } from "../discord";
 import { areRanksEqual } from "../utils";
-import { getSummonersWithChannels, galeforce, getMessageContent } from "./summoner";
+import {
+    getSummonersWithChannels,
+    galeforce,
+    getRankDifferenceMessageContent,
+    getAchievedBetsMessageContent,
+} from "./summoner";
 import { checkBetsAndGetLastGame } from "./bets";
 
 export const checkElo = async () => {
@@ -12,7 +17,7 @@ export const checkElo = async () => {
     console.log(
         "checking elo for summoners: ",
         summoners
-            .map((s) => `${s.currentName} (${s.channels.length} channel${s.channels.length ? "s" : ""})`)
+            .map((s) => `${s.currentName} (${s.channels.length} channel${s.channels.length > 1 ? "s" : ""})`)
             .join(", "),
         " at ",
         new Date().toISOString()
@@ -67,11 +72,14 @@ export const checkElo = async () => {
                 ...newRank,
             });
 
+            const embedBuilder = await getRankDifferenceMessageContent({ lastRank, rank: newRank, summ, elo });
+            summ.channels.forEach((channel) => sendToChannelId(channel, embedBuilder));
+
             const bets = await checkBetsAndGetLastGame(summ.puuid!);
+            if (!bets.length) continue;
 
-            const embedBuilder = await getMessageContent({ lastRank, rank: newRank, summ, elo, bets });
-
-            summ.channels.forEach((c) => sendToChannelId(c, embedBuilder));
+            const betEmbed = await getAchievedBetsMessageContent(bets);
+            summ.channels.forEach((channel) => sendToChannelId(channel, betEmbed));
         } catch (e) {
             console.log(e);
         }
