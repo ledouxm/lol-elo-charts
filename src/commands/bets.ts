@@ -146,24 +146,6 @@ export class Bets {
 
         interaction.reply({ embeds: [embed] });
     }
-    // @Slash({ name: "claim", description: "Claim your daily points" })
-    // async claim(interaction: CommandInteraction) {
-    //     const gamb = await getOrCreateGambler(interaction);
-    //     if (gamb.lastClaim && DateFns.differenceInHours(new Date(), gamb.lastClaim) < 24) {
-    //         return sendErrorToChannelId(
-    //             interaction.channelId,
-    //             "You already claimed your daily points, come back tomorrow",
-    //             interaction
-    //         );
-    //     }
-
-    //     await db
-    //         .update(gambler)
-    //         .set({ points: gamb.points + 500, lastClaim: new Date() })
-    //         .where(eq(gambler.id, gamb.id));
-
-    //     interaction.reply(`500 points claimed (${gamb.points + 500})`);
-    // }
 }
 
 export const getBetsByChannelIdGroupedBySummoner = async (channelId: string) => {

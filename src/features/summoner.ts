@@ -1,13 +1,10 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { InferModel, and, eq, lt } from "drizzle-orm";
+import { InferModel, and, eq } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { gambler, summoner } from "../db/schema";
+import { MinimalRank, formatRank, getArrow, getColor, getEmoji, getRankDifference } from "../utils";
 import { getProfileIconUrl } from "./icons";
-import { MinimalRank, formatRank, getRankDifference } from "../utils";
-import { getArrow, getColor, getEmoji } from "../utils";
-import { AchievedBet } from "./bets";
-import { formatDistanceToNow } from "date-fns";
 
 export const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
@@ -152,37 +149,6 @@ export const getRankDifferenceMessageContent = async ({
         ]);
 
     return embed;
-};
-
-export const getAchievedBetsMessageContent = async (bets: AchievedBet[]) => {
-    const sorted = bets.sort(compareBets);
-    const embed = new EmbedBuilder()
-        .setTitle("Bets resolved")
-        .setColor(0x00ff00)
-        .setDescription(sorted.map(getAchievedBetString).join("\n"));
-
-    return embed;
-};
-
-const compareBets = (a: AchievedBet, b: AchievedBet) => {
-    if (a.bet.isWin && !b.bet.isWin) {
-        return -1; // a avant b si a a win: true et b n'a pas win: true
-    }
-    if (!a.bet.isWin && b.bet.isWin) {
-        return 1; // b avant a si b a win: true et a n'a pas win: true
-    }
-    return a.bet.points - b.bet.points; // tri par bet.points
-};
-
-const getAchievedBetString = (b: AchievedBet) => {
-    const { bet, summoner, gambler, match } = b;
-    const { points, isWin } = bet;
-    const { currentName } = summoner;
-
-    const icon = isWin ? "✅" : "❌";
-    return `${icon} ${gambler.name} : ${points} points on ${currentName} ${
-        isWin ? "winning" : "losing"
-    } (${formatDistanceToNow(new Date(match.info.gameStartTimestamp), { addSuffix: true })})`;
 };
 
 export const getSummonerCurrentGame = async (summonerId: string) => {

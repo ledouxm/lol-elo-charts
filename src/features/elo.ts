@@ -3,13 +3,9 @@ import { db } from "../db/db";
 import { InsertRank, rank, summoner } from "../db/schema";
 import { sendToChannelId } from "../discord";
 import { areRanksEqual } from "../utils";
-import {
-    getSummonersWithChannels,
-    galeforce,
-    getRankDifferenceMessageContent,
-    getAchievedBetsMessageContent,
-} from "./summoner";
+import { getSummonersWithChannels, galeforce, getRankDifferenceMessageContent } from "./summoner";
 import { checkBetsAndGetLastGame } from "./bets";
+import { getAchievedBetsMessageContent } from "./messages";
 
 export const checkElo = async () => {
     const summoners = await getSummonersWithChannels();
