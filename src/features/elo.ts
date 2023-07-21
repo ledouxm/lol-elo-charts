@@ -6,6 +6,7 @@ import { areRanksEqual } from "../utils";
 import { getSummonersWithChannels, galeforce, getRankDifferenceMessageContent } from "./summoner";
 import { checkBetsAndGetLastGame } from "./bets";
 import { getAchievedBetsMessageContent } from "./messages";
+import { groupBy } from "pastable";
 
 export const checkElo = async () => {
     const summoners = await getSummonersWithChannels();
@@ -68,14 +69,21 @@ export const checkElo = async () => {
                 ...newRank,
             });
 
+            // send summoner update to every channel he is watched in
             const embedBuilder = await getRankDifferenceMessageContent({ lastRank, rank: newRank, summ, elo });
             summ.channels.forEach((channel) => sendToChannelId(channel, embedBuilder));
 
             const bets = await checkBetsAndGetLastGame(summ.puuid!);
             if (!bets.length) continue;
 
-            const betEmbed = await getAchievedBetsMessageContent(bets);
-            summ.channels.forEach((channel) => sendToChannelId(channel, betEmbed));
+            const groupedByGambler = groupBy(bets, (bet) => bet.gambler.id);
+
+            for (const gamblerId in groupedByGambler) {
+                const bets = groupedByGambler[gamblerId];
+
+                const betEmbed = await getAchievedBetsMessageContent(bets);
+                sendToChannelId(bets[0].gambler.channelId, betEmbed);
+            }
         } catch (e) {
             console.log(e);
         }
