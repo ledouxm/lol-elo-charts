@@ -1,13 +1,17 @@
 import { giveEveryone500Points } from "./features/summoner";
 import { getAndSaveApex } from "./features/apex";
-import { checkElo } from "./features/elo";
+import { checkBets, checkElo } from "./features/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
 
 export const startCronJobs = () => {
-    const eloDelay = `*/${process.env.CRON_DELAY_SEC || 5} * * * *`;
+    const eloDelay = `*/${process.env.CRON_RANK_DELAY_MIN || 5} * * * *`;
     console.log("checking elo", cronstrue.toString(eloDelay));
     cron.schedule(eloDelay, () => checkElo());
+
+    const betDelay = `*/${process.env.CRON_BETS_DELAY_MIN || 5} * * * *`;
+    console.log("checking bets", cronstrue.toString(betDelay));
+    cron.schedule(betDelay, () => checkBets());
 
     const everydayAtMidnight = "0 0 * * *";
     console.log("getting apex and generating recaps", cronstrue.toString(everydayAtMidnight));

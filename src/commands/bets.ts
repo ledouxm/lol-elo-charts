@@ -102,6 +102,7 @@ export class Bets {
         console.log("deferred reply");
 
         const currentGame = await getSummonerCurrentGame(currentSummoner.id);
+        console.log(currentSummoner.id);
         console.log("current game", !!currentGame);
         if (currentGame) {
             const shouldCreateBet = await sendBetConfirmation({ summ: currentSummoner, points, win, interaction });
@@ -134,7 +135,7 @@ export class Bets {
         const betsWithSummoner = await db
             .select()
             .from(bet)
-            .where(eq(bet.gamblerId, interaction.member.user.id))
+            .where(and(eq(gambler.discordId, interaction.member.user.id), eq(gambler.channelId, interaction.channelId)))
             .leftJoin(summoner, eq(bet.summonerId, summoner.puuid));
 
         if (!betsWithSummoner?.[0])
@@ -169,6 +170,9 @@ export class Bets {
     async pointsLeaderboard(interaction: CommandInteraction) {
         console.log("points leaderboard");
         const leaderboard = await getLeaderBoard(interaction.channelId);
+
+        if (!leaderboard || leaderboard.length === 0)
+            return sendErrorToChannelId(interaction.channelId, "No gambler in this channel", interaction);
 
         const embed = new EmbedBuilder()
             .setTitle("Points leaderboard")
@@ -230,7 +234,11 @@ export const getOrCreateGambler = async (interaction: CommandInteraction) => {
     const name = interaction.member.user.username;
     const channelId = interaction.channelId;
 
-    const existing = await db.select().from(gambler).where(eq(gambler.id, id)).limit(1);
+    const existing = await db
+        .select()
+        .from(gambler)
+        .where(and(eq(gambler.discordId, id), eq(gambler.channelId, channelId)))
+        .limit(1);
     if (existing?.[0]) {
         // if last claim was yesterday, give 500 points
         const lastClaim = existing[0].lastClaim;
@@ -238,15 +246,27 @@ export const getOrCreateGambler = async (interaction: CommandInteraction) => {
             await db
                 .update(gambler)
                 .set({ points: existing[0].points + 500, lastClaim: new Date() })
-                .where(eq(gambler.id, id));
+                .where(and(eq(gambler.discordId, id), eq(gambler.channelId, channelId)));
         }
 
-        return (await db.select().from(gambler).where(eq(gambler.id, id)).limit(1))?.[0];
+        return (
+            await db
+                .select()
+                .from(gambler)
+                .where(and(eq(gambler.discordId, id), eq(gambler.channelId, channelId)))
+                .limit(1)
+        )?.[0];
     }
 
-    await db.insert(gambler).values({ id, name, avatar, channelId });
+    await db.insert(gambler).values({ discordId: id, name, avatar, channelId });
 
-    return (await db.select().from(gambler).where(eq(gambler.id, id)).limit(1))[0];
+    return (
+        await db
+            .select()
+            .from(gambler)
+            .where(and(eq(gambler.discordId, id), eq(gambler.channelId, channelId)))
+            .limit(1)
+    )[0];
 };
 
 export const sendErrorToChannelId = async (channelId: string, error: string, interaction?: CommandInteraction) => {
