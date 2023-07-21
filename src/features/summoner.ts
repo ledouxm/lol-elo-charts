@@ -5,6 +5,8 @@ import { db } from "../db/db";
 import { gambler, summoner } from "../db/schema";
 import { MinimalRank, formatRank, getArrow, getColor, getEmoji, getRankDifference } from "../utils";
 import { getProfileIconUrl } from "./icons";
+import { addMinutes, subMinutes } from "date-fns";
+import { betDelayInMinutes } from "./bets";
 
 export const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
@@ -159,7 +161,12 @@ export const getSummonerCurrentGame = async (summonerId: string) => {
             .summonerId(summonerId)
             .exec();
 
-        if (!activeGame || activeGame.gameQueueConfigId !== 420) return null;
+        if (
+            !activeGame ||
+            activeGame.gameQueueConfigId !== 420 ||
+            addMinutes(new Date(activeGame.gameStartTime), betDelayInMinutes) > new Date()
+        )
+            return null;
         return activeGame;
     } catch {
         return null;

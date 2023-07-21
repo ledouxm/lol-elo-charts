@@ -5,7 +5,7 @@ import { Gambler, bet, gambler, summoner } from "../db/schema";
 import { galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
 
-const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 2;
+export const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 10;
 
 export const checkBetsAndGetLastGame = async (summonerId: string) => {
     const activeBets = await db

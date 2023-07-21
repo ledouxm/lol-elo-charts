@@ -223,7 +223,7 @@ export const getOrCreateGambler = async (interaction: CommandInteraction) => {
                 .where(eq(gambler.id, id));
         }
 
-        return await db.select().from(gambler).where(eq(gambler.id, id)).limit(1)?.[0];
+        return (await db.select().from(gambler).where(eq(gambler.id, id)).limit(1))?.[0];
     }
 
     await db.insert(gambler).values({ id, name, avatar, channelId });
