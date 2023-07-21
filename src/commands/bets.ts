@@ -78,11 +78,29 @@ export class Bets {
             );
         }
         console.log("summoner found");
+        const { summoner: currentSummoner } = s[0];
+
+        const existingBet = await db
+            .select()
+            .from(bet)
+            .where(
+                and(
+                    and(eq(bet.gamblerId, currentGambler.id), eq(bet.summonerId, currentSummoner.puuid)),
+                    isNull(bet.endedAt)
+                )
+            )
+            .limit(1);
+
+        if (existingBet?.[0])
+            return sendErrorToChannelId(
+                interaction.channelId,
+                `You already have a bet on ${currentSummoner.currentName}`,
+                interaction
+            );
 
         await interaction.deferReply();
         console.log("deferred reply");
 
-        const { summoner: currentSummoner } = s[0];
         const currentGame = await getSummonerCurrentGame(currentSummoner.id);
         console.log("current game", !!currentGame);
         if (currentGame) {
