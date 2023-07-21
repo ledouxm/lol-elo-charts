@@ -72,10 +72,10 @@ export const checkBets = async () => {
     const bets = await checkBetsAndGetLastGame();
     if (!bets.length) return;
 
-    const groupedByGambler = groupBy(bets, (bet) => bet.gambler.id);
-    console.log("groupedByGambler", Object.keys(groupedByGambler));
-    for (const gamblerId in groupedByGambler) {
-        const bets = groupedByGambler[gamblerId];
+    const groupedByChannelId = groupBy(bets, (bet) => bet.gambler.channelId);
+
+    for (const channelId in groupedByChannelId) {
+        const bets = groupedByChannelId[channelId];
 
         const betEmbed = await getAchievedBetsMessageContent(bets);
         sendToChannelId(bets[0].gambler.channelId, betEmbed);
