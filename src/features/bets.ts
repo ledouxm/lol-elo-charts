@@ -89,6 +89,8 @@ const getGameMatchingBet = async (
     gameCache?: GameCache
 ) => {
     const betDate = subMinutes(activeBet.bet.createdAt, betDelayInMinutes);
+    console.log("bet createdAt", activeBet.bet.createdAt, betDelayInMinutes);
+    console.log("betDate", betDate);
 
     console.log("fetching game matching bet", activeBet.bet.id, "for", activeBet.summoner.currentName);
     const lastGames = await galeforce.lol.match
@@ -106,7 +108,7 @@ const getGameMatchingBet = async (
     return match;
 };
 
-const getMatchIdAfterDate = async (gameIds: string[], date: Date, gameCache?: GameCache) => {
+const getMatchIdAfterDate = async (gameIds: string[], betDate: Date, gameCache?: GameCache) => {
     for (const gameId of gameIds) {
         const fromCache = gameCache?.get(gameId);
         const game =
@@ -115,7 +117,10 @@ const getMatchIdAfterDate = async (gameIds: string[], date: Date, gameCache?: Ga
 
         if (!fromCache) gameCache?.set(gameId, game);
 
-        if (new Date(game.info.gameStartTimestamp) > date && !isMatchRemake(game)) return game;
+        const isRemake = isMatchRemake(game);
+        console.log("game", gameId, "isRemake", isRemake, "timestamp:", new Date(game.info.gameStartTimestamp));
+
+        if (new Date(game.info.gameStartTimestamp) > betDate && !isRemake) return game;
     }
 
     return null;
