@@ -73,7 +73,7 @@ export const checkBets = async () => {
     if (!bets.length) return;
 
     const groupedByGambler = groupBy(bets, (bet) => bet.gambler.id);
-
+    console.log("groupedByGambler", Object.keys(groupedByGambler));
     for (const gamblerId in groupedByGambler) {
         const bets = groupedByGambler[gamblerId];
 

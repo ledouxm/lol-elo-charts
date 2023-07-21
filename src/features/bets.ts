@@ -30,6 +30,8 @@ export const checkBetsAndGetLastGame = async () => {
         if (newBet) newBets.push(newBet);
     }
 
+    console.log("resolved", newBets.length, "bets");
+
     return newBets;
 };
 
@@ -98,8 +100,9 @@ const getGameMatchingBet = async (
 
     if (!lastGames?.length) return null;
 
+    console.log("found", lastGames.length, "games", lastGames.join(", "));
     const match = await getMatchIdAfterDate(lastGames, betDate, gameCache);
-
+    console.log("match", match?.metadata.matchId, "is after", betDate.toISOString(), "for bet", activeBet.bet.id);
     return match;
 };
 
