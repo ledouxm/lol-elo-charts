@@ -1,9 +1,9 @@
 import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, MessageReaction, User } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import { eq, and, isNull, desc, sql } from "drizzle-orm";
+import { eq, and, isNull, desc, sql, isNotNull } from "drizzle-orm";
 import { db } from "@/db/db";
 import { sendToChannelId } from "@/discord";
-import { Gambler, Summoner, bet, gambler, rank, summoner } from "../db/schema";
+import { Bet, Gambler, Summoner, bet, gambler, rank, summoner } from "../db/schema";
 import * as DateFns from "date-fns";
 import { getMyBetsMessageEmbed } from "@/features/messages";
 import { getSummonerCurrentGame } from "@/features/summoner";
@@ -151,16 +151,12 @@ export class Bets {
     async pointsLeaderboard(interaction: CommandInteraction) {
         console.log("points leaderboard");
         const leaderboard = await getLeaderBoard(interaction.channelId);
-        console.log(leaderboard);
 
-        interaction.reply("ok");
-        // .limit(10);
-        // if (!leaderboard?.[0])
-        //     return sendErrorToChannelId(interaction.channelId, "No one has any points yet", interaction);
-        // const embed = new EmbedBuilder().setTitle("Points leaderboard").setDescription(
-        //     leaderboard.map((g) => `${g.name}: ${g.points}`).join("\n")
-        // );
-        // interaction.reply({ embeds: [embed] });
+        const embed = new EmbedBuilder()
+            .setTitle("Points leaderboard")
+            .setDescription(leaderboard.map((g) => `**${g.name}**: ${g.points} (${g.wins}/${g.losses})`).join("\n"));
+
+        interaction.reply({ embeds: [embed] });
     }
 }
 
@@ -195,10 +191,7 @@ export const getLeaderBoard = async (channelId: string) => {
         .orderBy(desc(gambler.points))
         .leftJoin(wins, eq(wins.gamblerId, gambler.id))
         .leftJoin(losses, eq(losses.gamblerId, gambler.id))
-        .where(eq(gambler.channelId, channelId));
-    // .leftJoin(bet, eq(bet.gamblerId, gambler.id))
-    // .leftJoin(summoner, eq(summoner.puuid, gambler.id));
-    // .where(eq(summoner.channelId, channelId));
+        .where(and(eq(gambler.channelId, channelId), and(isNotNull(wins.wins), isNotNull(losses.losses))));
 };
 
 export const getBetsByChannelIdGroupedBySummoner = async (channelId: string) => {
@@ -210,7 +203,7 @@ export const getBetsByChannelIdGroupedBySummoner = async (channelId: string) => 
         .where(and(eq(summoner.channelId, channelId), isNull(bet.endedAt)));
     const bySummoners = groupBy(bets, (b) => b.summoner.currentName);
 
-    return bySummoners;
+    return bySummoners as Record<string, { bet: Bet; summoner: Summoner; gambler: Gambler }[]>;
 };
 
 export const getOrCreateGambler = async (interaction: CommandInteraction) => {
