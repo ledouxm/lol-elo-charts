@@ -64,23 +64,16 @@ export const apex = pgTable("apex", {
 
 export type Apex = InferModel<typeof apex, "select">;
 
-export const gambler = pgTable(
-    "gambler",
-    {
-        id: varchar("id", { length: 25 }),
-        channelId: varchar("channel_id", { length: 100 }).notNull(),
-        name: text("name"),
-        avatar: varchar("avatar", { length: 40 }),
-        createdAt: timestamp("created_at").defaultNow(),
-        points: integer("points").default(500),
-        lastClaim: timestamp("last_claim").defaultNow(),
-    },
-    (table) => {
-        return {
-            pk: primaryKey(table.id, table.channelId),
-        };
-    }
-);
+export const gambler = pgTable("gambler", {
+    id: serial("id").primaryKey(),
+    discordId: varchar("discord_id", { length: 50 }),
+    channelId: varchar("channel_id", { length: 100 }).notNull(),
+    name: text("name"),
+    avatar: varchar("avatar", { length: 40 }),
+    createdAt: timestamp("created_at").defaultNow(),
+    points: integer("points").default(500),
+    lastClaim: timestamp("last_claim").defaultNow(),
+});
 
 export type Gambler = InferModel<typeof gambler, "select">;
 
@@ -90,7 +83,7 @@ export const gamblerRelations = relations(gambler, ({ many }) => {
 
 export const bet = pgTable("bet", {
     id: serial("id").primaryKey(),
-    gamblerId: varchar("gambler_id", { length: 25 }).notNull(),
+    gamblerId: integer("gambler_id").notNull(),
     summonerId: varchar("summoner_id", { length: 100 }),
     points: integer("points").notNull(),
     createdAt: timestamp("created_at").defaultNow(),

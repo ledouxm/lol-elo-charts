@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "f41dda20-530d-4d3b-8eb5-0bc9c3279a35",
+  "id": "6396a589-04de-4c73-8818-46e188a01a77",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "apex": {
@@ -34,6 +34,132 @@
         },
         "created_at": {
           "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "bet": {
+      "name": "bet",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "gambler_id": {
+          "name": "gambler_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summoner_id": {
+          "name": "summoner_id",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "points": {
+          "name": "points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "varchar(25)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_bet_on_win": {
+          "name": "has_bet_on_win",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_win": {
+          "name": "is_win",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "gambler": {
+      "name": "gambler",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "discord_id": {
+          "name": "discord_id",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "points": {
+          "name": "points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 500
+        },
+        "last_claim": {
+          "name": "last_claim",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
@@ -99,8 +225,8 @@
         "puuid": {
           "name": "puuid",
           "type": "varchar(100)",
-          "primaryKey": true,
-          "notNull": true
+          "primaryKey": false,
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -138,11 +264,25 @@
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
+        },
+        "last_game_id": {
+          "name": "last_game_id",
+          "type": "varchar(25)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "summoner_puuid_channel_id": {
+          "name": "summoner_puuid_channel_id",
+          "columns": [
+            "puuid",
+            "channel_id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     }
   },
@@ -162,8 +302,10 @@
       "values": {
         "IRON": "IRON",
         "SILVER": "SILVER",
+        "BRONZE": "BRONZE",
         "GOLD": "GOLD",
         "PLATINUM": "PLATINUM",
+        "EMERALD": "EMERALD",
         "DIAMOND": "DIAMOND",
         "MASTER": "MASTER",
         "GRANDMASTER": "GRANDMASTER",

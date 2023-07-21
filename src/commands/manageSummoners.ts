@@ -1,11 +1,10 @@
+import { summoner } from "@/db/schema";
+import { EmbedBuilder } from "@discordjs/builders";
 import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import { addSummoner, removeSummoner } from "../features/summoner";
-import { db } from "../db/db";
-import { summoner } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { EmbedBuilder } from "@discordjs/builders";
-import { getOrCreateGambler } from "./bets";
+import { db } from "../db/db";
+import { addSummoner, galeforce, removeSummoner } from "../features/summoner";
 
 @Discord()
 export class ManageSummoner {
@@ -21,7 +20,9 @@ export class ManageSummoner {
         interaction: CommandInteraction
     ) {
         console.log("addSummoner", name);
-        await addSummoner(name, interaction.channelId);
+        const riotSummoner = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name(name).exec();
+
+        await addSummoner(riotSummoner, interaction.channelId);
         interaction.reply("Added summoner " + name);
     }
 
@@ -61,8 +62,6 @@ export class ManageSummoner {
 
     @Slash({ name: "test", description: "List all summoners being tracked" })
     async test(interaction: CommandInteraction) {
-        console.log(interaction.member);
-
-        interaction.reply("Test");
+        interaction.reply("ok");
     }
 }

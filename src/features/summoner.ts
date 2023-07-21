@@ -10,10 +10,8 @@ import { betDelayInMinutes } from "./bets";
 
 export const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
-export const addSummoner = async (name: string, channelId: string) => {
+export const addSummoner = async (riotSummoner: Galeforce.dto.SummonerDTO, channelId: string) => {
     try {
-        const riotSummoner = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name(name).exec();
-
         const identifier = { puuid: summoner.puuid, channelId };
 
         const existing = (
@@ -160,6 +158,8 @@ export const getSummonerCurrentGame = async (summonerId: string) => {
             .region(galeforce.region.lol.EUROPE_WEST)
             .summonerId(summonerId)
             .exec();
+
+        console.log(activeGame.gameStartTime);
 
         if (
             !activeGame ||

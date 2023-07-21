@@ -1,34 +1,32 @@
 import { InferModel, and, eq, isNull } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
-import { Gambler, bet, gambler, summoner } from "../db/schema";
+import { Bet, Gambler, Summoner, bet, gambler, summoner } from "../db/schema";
 import { galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
 
 export const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 2;
 
-export const checkBetsAndGetLastGame = async (summonerId: string) => {
-    const activeBets = await db
+export const checkBetsAndGetLastGame = async () => {
+    const bets = await db
         .select()
         .from(bet)
-        .where(and(eq(bet.summonerId, summonerId), isNull(bet.endedAt)))
-        .leftJoin(gambler, eq(bet.gamblerId, gambler.id));
+        .where(isNull(bet.endedAt))
+        .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
+        .leftJoin(summoner, and(eq(bet.summonerId, summoner.puuid), eq(summoner.channelId, gambler.channelId)));
 
-    if (!activeBets?.[0]) {
+    if (!bets?.[0]) {
         void console.log("no bets");
         return [] as AchievedBet[];
     }
-    console.log("Checking", activeBets.length, "bets");
+    console.log("Checking", bets.length, "bets");
 
-    const summ = (await db.select().from(summoner).where(eq(summoner.puuid, summonerId)).limit(1))?.[0];
-
-    if (!summ) throw new Error("Summoner not found");
     const newBets = [] as AchievedBet[];
 
     const gameCache: GameCache = new Map();
 
-    for (const activeBet of activeBets) {
-        const newBet = await tryToResolveBet({ activeBet, summ, gameCache });
+    for (const activeBet of bets) {
+        const newBet = await tryToResolveBet({ activeBet, gameCache });
         if (newBet) newBets.push(newBet);
     }
 
@@ -39,17 +37,16 @@ type GameCache = Map<string, Galeforce.dto.MatchDTO>;
 
 const tryToResolveBet = async ({
     activeBet,
-    summ,
     gameCache,
 }: {
-    activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler };
-    summ: InferModel<typeof summoner, "select">;
+    activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler; summoner: Summoner };
     gameCache?: GameCache;
 }) => {
-    const game = await getGameMatchingBet(activeBet, summ, gameCache);
+    const game = await getGameMatchingBet(activeBet, gameCache);
     if (!game) return;
 
-    const isWin = game.info.participants.find((p) => p.puuid === summ.puuid)?.win === activeBet.bet.hasBetOnWin;
+    const isWin =
+        game.info.participants.find((p) => p.puuid === activeBet.summoner.puuid)?.win === activeBet.bet.hasBetOnWin;
 
     if (isWin) {
         // increase points if win
@@ -79,24 +76,23 @@ const tryToResolveBet = async ({
 };
 
 export type AchievedBet = {
-    bet: InferModel<typeof bet, "select">;
+    bet: Bet;
     gambler: Gambler;
-    summoner: InferModel<typeof summoner, "select">;
+    summoner: Summoner;
     match: Galeforce.dto.MatchDTO;
 };
 
 const getGameMatchingBet = async (
-    activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler },
-    summ: InferModel<typeof summoner, "select">,
+    activeBet: { bet: Bet; gambler: Gambler; summoner: Summoner },
     gameCache?: GameCache
 ) => {
     const betDate = subMinutes(activeBet.bet.createdAt, betDelayInMinutes);
 
-    console.log("fetching game matching bet", activeBet.bet.id, "for", summ.currentName);
+    console.log("fetching game matching bet", activeBet.bet.id, "for", activeBet.summoner.currentName);
     const lastGames = await galeforce.lol.match
         .list()
         .region(galeforce.region.riot.EUROPE)
-        .puuid(summ.puuid)
+        .puuid(activeBet.summoner.puuid)
         .query({ startTime: Math.round(betDate.getTime() / 1000), count: 5, queue: 420 })
         .exec();
 

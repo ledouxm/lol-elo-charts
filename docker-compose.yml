@@ -13,7 +13,8 @@ services:
             VIRTUAL_HOST: ${VIRTUAL_HOST}
             LETSENCRYPT_HOST: ${VIRTUAL_HOST}
             BOT_TOKEN: ${BOT_TOKEN}
-            CRON_DELAY_SEC: ${CRON_DELAY_SEC}
+            CRON_RANK_DELAY_MIN: ${CRON_RANK_DELAY_MIN}
+            CRON_BETS_DELAY_MIN: ${CRON_BETS_DELAY_MIN}
             ENABLE_BETS: ${ENABLE_BETS}
         depends_on:
             - postgresql

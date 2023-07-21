@@ -3,10 +3,11 @@ import { db } from "../db/db";
 import { InsertRank, rank, summoner } from "../db/schema";
 import { sendToChannelId } from "../discord";
 import { areRanksEqual } from "../utils";
-import { getSummonersWithChannels, galeforce, getRankDifferenceMessageContent } from "./summoner";
+import { getSummonersWithChannels, getRankDifferenceMessageContent } from "./summoner";
 import { checkBetsAndGetLastGame } from "./bets";
 import { getAchievedBetsMessageContent } from "./messages";
 import { groupBy } from "pastable";
+import { getSoloQElo, getSummonerData } from "./lol/summoner";
 
 export const checkElo = async () => {
     const summoners = await getSummonersWithChannels();
@@ -22,24 +23,13 @@ export const checkElo = async () => {
 
     for (const summ of summoners) {
         try {
-            const summonerData = await galeforce.lol
-                .summoner()
-                .region(galeforce.region.lol.EUROPE_WEST)
-                .puuid(summ.puuid)
-                .exec();
+            const summonerData = await getSummonerData(summ.puuid);
 
             if (summonerData.name !== summ.currentName) {
                 await db.update(summoner).set({ currentName: summonerData.name }).where(eq(summoner.puuid, summ.puuid));
             }
 
-            const elos = await galeforce.lol.league
-                .entries()
-                .summonerId(summ.id)
-                .region(galeforce.region.lol.EUROPE_WEST)
-                .queue(galeforce.queue.lol.RANKED_SOLO)
-                .exec();
-
-            const elo = elos.find((e) => e.queueType === "RANKED_SOLO_5x5");
+            const elo = await getSoloQElo(summ.id);
             if (!elo) continue;
 
             const newRank = {
@@ -72,20 +62,22 @@ export const checkElo = async () => {
             // send summoner update to every channel he is watched in
             const embedBuilder = await getRankDifferenceMessageContent({ lastRank, rank: newRank, summ, elo });
             summ.channels.forEach((channel) => sendToChannelId(channel, embedBuilder));
-
-            const bets = await checkBetsAndGetLastGame(summ.puuid!);
-            if (!bets.length) continue;
-
-            const groupedByGambler = groupBy(bets, (bet) => bet.gambler.id);
-
-            for (const gamblerId in groupedByGambler) {
-                const bets = groupedByGambler[gamblerId];
-
-                const betEmbed = await getAchievedBetsMessageContent(bets);
-                sendToChannelId(bets[0].gambler.channelId, betEmbed);
-            }
         } catch (e) {
             console.log(e);
         }
+    }
+};
+
+export const checkBets = async () => {
+    const bets = await checkBetsAndGetLastGame();
+    if (!bets.length) return;
+
+    const groupedByGambler = groupBy(bets, (bet) => bet.gambler.id);
+
+    for (const gamblerId in groupedByGambler) {
+        const bets = groupedByGambler[gamblerId];
+
+        const betEmbed = await getAchievedBetsMessageContent(bets);
+        sendToChannelId(bets[0].gambler.channelId, betEmbed);
     }
 };
