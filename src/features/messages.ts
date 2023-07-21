@@ -57,12 +57,12 @@ const compareBets = (a: AchievedBet, b: AchievedBet) => {
 
 const getAchievedBetString = (b: AchievedBet) => {
     const { bet, summoner, gambler, match } = b;
-    const { points, isWin } = bet;
+    const { points, isWin, hasBetOnWin } = bet;
     const { currentName } = summoner;
 
     const icon = isWin ? "✅" : "❌";
     return `${icon} **${gambler.name}** : ${isWin ? "+" : "-"}${points} points on **${currentName}** ${
-        isWin ? "winning" : "losing"
+        hasBetOnWin ? "winning" : "losing"
     } (${formatDistanceToNow(new Date(match.info.gameEndTimestamp), { addSuffix: true })})`;
 };
 
