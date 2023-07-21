@@ -4,10 +4,10 @@ import { eq, and, isNull, desc, sql, isNotNull } from "drizzle-orm";
 import { db } from "@/db/db";
 import { sendToChannelId } from "@/discord";
 import { Bet, Gambler, Summoner, bet, gambler, rank, summoner } from "../db/schema";
-import * as DateFns from "date-fns";
 import { getMyBetsMessageEmbed } from "@/features/messages";
 import { getSummonerCurrentGame } from "@/features/summoner";
 import { groupBy } from "pastable";
+import { isSameDay } from "date-fns";
 
 @Discord()
 export class Bets {
@@ -213,7 +213,18 @@ export const getOrCreateGambler = async (interaction: CommandInteraction) => {
     const channelId = interaction.channelId;
 
     const existing = await db.select().from(gambler).where(eq(gambler.id, id)).limit(1);
-    if (existing?.[0]) return existing[0];
+    if (existing?.[0]) {
+        // if last claim was yesterday, give 500 points
+        const lastClaim = existing[0].lastClaim;
+        if (!isSameDay(lastClaim, new Date())) {
+            await db
+                .update(gambler)
+                .set({ points: existing[0].points + 500, lastClaim: new Date() })
+                .where(eq(gambler.id, id));
+        }
+
+        return await db.select().from(gambler).where(eq(gambler.id, id)).limit(1)?.[0];
+    }
 
     await db.insert(gambler).values({ id, name, avatar, channelId });
 

@@ -3,6 +3,9 @@ import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { Gambler, bet, gambler, summoner } from "../db/schema";
 import { galeforce } from "./summoner";
+import { subMinutes } from "date-fns";
+
+const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 2;
 
 export const checkBetsAndGetLastGame = async (summonerId: string) => {
     const activeBets = await db
@@ -87,18 +90,19 @@ const getGameMatchingBet = async (
     summ: InferModel<typeof summoner, "select">,
     gameCache?: GameCache
 ) => {
+    const betDate = subMinutes(activeBet.bet.createdAt, betDelayInMinutes);
+
     console.log("fetching game matching bet", activeBet.bet.id, "for", summ.currentName);
     const lastGames = await galeforce.lol.match
         .list()
         .region(galeforce.region.riot.EUROPE)
         .puuid(summ.puuid)
-        .query({ startTime: Math.round(activeBet.bet.createdAt.getTime() / 1000), count: 5, queue: 420 })
+        .query({ startTime: Math.round(betDate.getTime() / 1000), count: 5, queue: 420 })
         .exec();
 
     if (!lastGames?.length) return null;
 
-    const match = await getMatchIdAfterDate(lastGames, activeBet.bet.createdAt, gameCache);
-    // const matchingGame = lastGames.find((g) => new Date(g.gameStartTimestamp).getTime() === activeBet.bet.createdAt.getTime());
+    const match = await getMatchIdAfterDate(lastGames, betDate, gameCache);
 
     return match;
 };
@@ -112,8 +116,12 @@ const getMatchIdAfterDate = async (gameIds: string[], date: Date, gameCache?: Ga
 
         if (!fromCache) gameCache?.set(gameId, game);
 
-        if (new Date(game.info.gameStartTimestamp) > date) return game;
+        if (new Date(game.info.gameStartTimestamp) > date && !isMatchRemake(game)) return game;
     }
 
     return null;
+};
+
+const isMatchRemake = (game: Galeforce.dto.MatchDTO) => {
+    return game.info.participants.some((p) => p.teamEarlySurrendered);
 };
