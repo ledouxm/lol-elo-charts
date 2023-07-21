@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, MessageReaction, User } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import { eq, and, isNull, desc, sql, isNotNull } from "drizzle-orm";
+import { eq, and, isNull, desc, sql, isNotNull, ilike } from "drizzle-orm";
 import { db } from "@/db/db";
 import { sendToChannelId } from "@/discord";
 import { Bet, Gambler, Summoner, bet, gambler, rank, summoner } from "../db/schema";
@@ -63,7 +63,7 @@ export class Bets {
         const s = await db
             .select()
             .from(summoner)
-            .where(eq(summoner.currentName, name))
+            .where(ilike(summoner.currentName, name))
             .leftJoin(rank, eq(rank.summonerId, summoner.puuid))
             .limit(1);
 
