@@ -20,7 +20,9 @@ export const getMyBetsMessageEmbed = (betsWithSummoner: { bet: Bet; summoner: Su
 
 export const getBetsRecapMessageEmbed = (
     bets: {
-        gamblerId: string;
+        channelId: string;
+        gamblerId: number;
+        name: string;
         wins: number;
         losses: number;
         result: number;
@@ -28,8 +30,8 @@ export const getBetsRecapMessageEmbed = (
 ) => {
     const embed = new EmbedBuilder().setTitle("24h Bets Recap").setFields(
         bets.map((b) => ({
-            name: b.gamblerId,
-            value: `Wins: ${b.wins}\nLosses: ${b.losses}\nResult: ${b.result}`,
+            name: b.name,
+            value: `${b.result > 0 ? "+" : "-"}${b.result} (${b.wins}W/${b.losses}L)`,
         }))
     );
     return embed;

@@ -250,7 +250,6 @@ const getWinRateFields = (elo: Galeforce.dto.LeagueEntryDTO) => {
         },
         {
             name: "Winrate",
-            type: "",
             value: `${((elo.wins / (elo.wins + elo.losses)) * 100).toFixed(2)}%`,
             inline: true,
         },

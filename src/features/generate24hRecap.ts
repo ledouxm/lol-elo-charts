@@ -27,7 +27,7 @@ export const generate24hRankRecap = async () => {
         const startRanks = await db
             .select()
             .from(rank)
-            .where(and(lte(rank.createdAt, startOfYesterday), eq(rank.summonerId, summ.puuid)))
+            .where(and(gte(rank.createdAt, startOfYesterday), eq(rank.summonerId, summ.puuid)))
             .orderBy(desc(rank.createdAt))
             .limit(1);
 
@@ -38,12 +38,16 @@ export const generate24hRankRecap = async () => {
             .orderBy(desc(rank.createdAt))
             .limit(1);
 
+        console.log({ startDate: startOfYesterday, endDate: endOfYesterday, startRanks, endRanks });
+
         if (!endRanks?.[0] || !startRanks?.[0]) continue;
 
         const lastApex = await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1);
 
         const startRank = startRanks?.[0] as InsertRank;
         const endRank = endRanks?.[0] as InsertRank;
+
+        console.log(lastApex);
 
         const startLp = getTotalLpFromRank(startRank, makeTierData(lastApex?.[0]));
         const endLp = getTotalLpFromRank(endRank, makeTierData(lastApex?.[0]));
@@ -54,9 +58,7 @@ export const generate24hRankRecap = async () => {
         recap.push({
             name: summ.currentName + ": " + (isLoss ? "-" : "+") + Math.abs(diff),
             diff,
-            description: `${startRank.id}:${endRank.id} ${formatRank(startRank)} ${getArrow(isLoss)} ${formatRank(
-                endRank
-            )}`,
+            description: `${endRank.id} ${formatRank(startRank)} ⮞ ${formatRank(endRank)}`,
             channelId: summ.channelId,
         });
     }
@@ -102,13 +104,14 @@ export const getAllEndedBets = async ({ startDate, endDate }: { startDate?: Date
         .select({
             gamblerId: bet.gamblerId,
             channelId: gambler.channelId,
+            name: gambler.name,
             wins: sql<number>`SUM(CASE WHEN is_win = TRUE THEN 1 ELSE 0 END)`,
             losses: sql<number>`SUM(CASE WHEN is_win = FALSE THEN 1 ELSE 0 END)`,
             result: sql<number>`SUM(CASE WHEN is_win = TRUE THEN bet.points ELSE -bet.points END)`,
         })
         .from(bet)
         .leftJoin(gambler, eq(gambler.id, bet.gamblerId))
-        .groupBy(bet.gamblerId, gambler.channelId);
+        .groupBy(bet.gamblerId, gambler.channelId, gambler.name);
 
     if (startDate && endDate) query.where(and(lte(bet.createdAt, endDate), gte(bet.createdAt, startDate)));
 

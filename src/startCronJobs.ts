@@ -17,6 +17,9 @@ export const startCronJobs = () => {
     console.log("getting apex and generating recaps", cronstrue.toString(everydayAtMidnight));
     cron.schedule(everydayAtMidnight, () => getAndSaveApex());
 
+    console.log("sending daily recaps to everyone", cronstrue.toString(everydayAtMidnight));
+    cron.schedule(everydayAtMidnight, () => getAndSaveApex());
+
     // console.log("giving everyone 500 golds everyday", cronstrue.toString(everydayAtMidnight));
     // cron.schedule(everydayAtMidnight, () => giveEveryone500Points());
 };
