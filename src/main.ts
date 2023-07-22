@@ -8,6 +8,7 @@ const start = async () => {
         await initDb();
         await startDiscordBot();
         startCronJobs();
+        // await getAndSaveApex();
     } catch (err) {
         console.log(err);
         process.exit(1);

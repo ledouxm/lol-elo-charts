@@ -1,7 +1,7 @@
 import { Apex, InsertRank, summoner } from "@/db/schema";
 import { createCanvas } from "canvas";
 import { Chart, LineController, LineElement, LinearScale, PointElement, TimeScale, Title } from "chart.js";
-import "chartjs-adapter-date-fns";
+require("chartjs-adapter-date-fns");
 import fs from "fs";
 import { getTodaysRanks } from "./generate24hRecap";
 import { getMinifiedRank, getRankFromTotalLp, getTotalLpFromRank, makeTierData } from "./lps";
