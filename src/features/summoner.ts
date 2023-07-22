@@ -2,9 +2,9 @@ import { EmbedBuilder } from "@discordjs/builders";
 import { InferModel, and, eq } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
-import { gambler, summoner } from "../db/schema";
-import { MinimalRank, formatRank, getArrow, getColor, getEmoji, getRankDifference } from "../utils";
-import { getProfileIconUrl } from "./icons";
+import { Summoner, gambler, summoner } from "../db/schema";
+import { MinimalRank, RankDifference, formatRank, getArrow, getColor, getEmoji, getRankDifference } from "../utils";
+import { getChampionIconUrl, getProfileIconUrl } from "./icons";
 import { addMinutes, subMinutes } from "date-fns";
 import { betDelayInMinutes } from "./bets";
 
@@ -89,24 +89,49 @@ export const getSummonersWithChannels = async () => {
         } else acc.push({ ...s, channels: [s.channelId] });
 
         return acc;
-    }, [] as (InferModel<typeof summoner, "select"> & { channels: string[] })[]);
+    }, [] as SummonerWithChannels[]);
 
     return summoners;
 };
 
-export const getRankDifferenceMessageContent = async ({
-    lastRank,
-    rank,
-    summ,
-    elo,
-}: {
-    lastRank: MinimalRank;
-    rank: MinimalRank;
-    summ: InferModel<typeof summoner, "select">;
-    elo: Galeforce.dto.LeagueEntryDTO;
-}) => {
+export type SummonerWithChannels = Summoner & { channels: string[] };
+
+type Participant = Galeforce.dto.MatchDTO["info"]["participants"][0];
+type Team = Galeforce.dto.MatchDTO["info"]["teams"][0];
+
+export const getParticipant = (match: Galeforce.dto.MatchDTO, summ: Summoner): Participant => {
+    return match.info.participants.find((p) => p.puuid === summ.puuid);
+};
+
+export const getMatchInformationsForSummoner = async (summ: Summoner, match: Galeforce.dto.MatchDTO) => {
+    const participant = getParticipant(match, summ);
+
+    const championIconUrl = await getChampionIconUrl(participant.championName);
+    console.log(championIconUrl, participant.championName);
+    const team = match.info.teams.find((t) => t.teamId === participant.teamId);
+
+    return {
+        participant,
+        team,
+        championIconUrl,
+    } as {
+        participant: Participant;
+        team: Team;
+        championIconUrl: string;
+    };
+};
+
+// export const getRankEmbed =
+
+export const getFirstRankEmbed = async (
+    summ: Summoner,
+    rank: MinimalRank,
+    elo: Galeforce.dto.LeagueEntryDTO,
+    lastMatch?: Galeforce.dto.MatchDTO
+) => {
     const profileIcon = await getProfileIconUrl(summ.icon);
-    if (!lastRank) {
+
+    if (!lastMatch)
         return new EmbedBuilder()
             .setColor(0xfbfaa6)
             .setTitle(`${summ.currentName}`)
@@ -117,38 +142,136 @@ export const getRankDifferenceMessageContent = async ({
                 },
             ])
             .setThumbnail(profileIcon);
-    }
-    const rankDifference = getRankDifference(lastRank, rank);
+
+    const { participant, championIconUrl } = await getMatchInformationsForSummoner(summ, lastMatch);
+
+    const isWin = participant.win;
+
+    const embed = new EmbedBuilder()
+        .setColor(getColor(!isWin))
+        .setTitle(`${summ.currentName}`)
+        .setThumbnail(championIconUrl)
+        .setDescription(await getMatchDescription(lastMatch, participant))
+        .setFields([
+            {
+                name: `is now ${formatRank(rank)}`,
+                value: " ",
+            },
+            ...getWinRateFields(elo),
+        ])
+        .setTimestamp(new Date(lastMatch.info.gameEndTimestamp));
+
+    return embed;
+};
+export const getRankDifferenceEmbed = async ({
+    summ,
+    elo,
+    lastGame,
+    rankDifference,
+}: {
+    summ: Summoner;
+    elo: Galeforce.dto.LeagueEntryDTO;
+    lastGame?: Galeforce.dto.MatchDTO;
+    rankDifference: RankDifference;
+}) => {
+    if (!lastGame) return getRankDifferenceWithoutGameEmbed({ rankDifference, summ, elo });
+    return getRankDifferenceWithMatchEmbed({ rankDifference, summ, elo, lastGame });
+};
+
+export const getRankDifferenceWithMatchEmbed = async ({
+    summ,
+    elo,
+    lastGame,
+    rankDifference,
+}: {
+    summ: Summoner;
+    elo: Galeforce.dto.LeagueEntryDTO;
+    lastGame: Galeforce.dto.MatchDTO;
+    rankDifference: RankDifference;
+}) => {
+    const { participant, championIconUrl } = await getMatchInformationsForSummoner(summ, lastGame);
+
+    const isWin = participant.win;
+    const footer = getRankDifferenceString(rankDifference);
+
+    const embed = new EmbedBuilder()
+        .setColor(getColor(!isWin))
+        .setTitle(`${summ.currentName} (${rankDifference.content})`)
+        .setDescription(await getMatchDescription(lastGame, participant))
+        .setThumbnail(championIconUrl)
+        .setFields(getWinRateFields(elo))
+        .setFooter({ text: footer })
+        .setTimestamp(new Date(lastGame.info.gameEndTimestamp));
+
+    return embed;
+};
+
+export const getRankDifferenceWithoutGameEmbed = async ({
+    rankDifference,
+    summ,
+    elo,
+}: {
+    rankDifference: RankDifference;
+    summ: Summoner;
+    elo: Galeforce.dto.LeagueEntryDTO;
+}) => {
+    const profileIcon = await getProfileIconUrl(summ.icon);
 
     const isLoss = ["DEMOTION", "LOSS"].includes(rankDifference.type);
 
+    const footer = getRankDifferenceString(rankDifference);
+
     const embed = new EmbedBuilder()
         .setColor(getColor(isLoss))
-        .setTitle(summ.currentName)
+        .setTitle(`${summ.currentName} (${rankDifference.content})`)
+        .setDescription("Couldn't find a game, is Riot match API down?")
         .setThumbnail(profileIcon)
-        .setFields([
-            {
-                name: `${getEmoji(isLoss)} ${rankDifference.content}`,
-                value: `${rankDifference.from} ${getArrow(isLoss)} ${rankDifference.to}`,
-            },
-            {
-                name: "Wins",
-                value: elo.wins.toString(),
-                inline: true,
-            },
-            {
-                name: "Losses",
-                value: elo.losses.toString(),
-                inline: true,
-            },
-            {
-                name: "Winrate",
-                value: `${((elo.wins / (elo.wins + elo.losses)) * 100).toFixed(2)}%`,
-                inline: true,
-            },
-        ]);
+        .setFields(getWinRateFields(elo))
+        .setFooter({ text: footer });
 
     return embed;
+};
+
+const getRankDifferenceString = (rankDifference: RankDifference) => {
+    return `${rankDifference.from} ⮞ ${rankDifference.to}`;
+};
+
+const getWinRateFields = (elo: Galeforce.dto.LeagueEntryDTO) => {
+    return [
+        {
+            name: "Wins",
+            value: elo.wins.toString(),
+            inline: true,
+        },
+        {
+            name: "Losses",
+            value: elo.losses.toString(),
+            inline: true,
+        },
+        {
+            name: "Winrate",
+            type: "",
+            value: `${((elo.wins / (elo.wins + elo.losses)) * 100).toFixed(2)}%`,
+            inline: true,
+        },
+    ];
+};
+
+const getMatchDescription = async (match: Galeforce.dto.MatchDTO, participant: Participant) => {
+    return `**${participant.kills}/${participant.deaths}/${participant.assists}** with **${
+        participant.championName
+    }** (${formatGameDuration(match.info.gameDuration)})`;
+};
+
+const formatGameDuration = (gameDuration: number) => {
+    const minutes = Math.floor(gameDuration / 60);
+    const seconds = gameDuration % 60;
+
+    return `${minutes}:${addZeroIf1Digit(seconds)}`;
+};
+
+const addZeroIf1Digit = (number: number) => {
+    return number < 10 ? `0${number}` : number;
 };
 
 export const getSummonerCurrentGame = async (summonerId: string) => {

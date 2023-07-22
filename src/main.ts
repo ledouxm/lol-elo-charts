@@ -9,6 +9,12 @@ const start = async () => {
         await initDb();
         await startDiscordBot();
         startCronJobs();
+        // await checkElo();
+
+        // const summ = (await db.select().from(summoner).limit(1))?.[0];
+        // const lastGame = await getLastGame(summ);
+
+        // console.log(getMatchInformationsForSummoner(summ, lastGame));
 
         // setTimeout(async () => {
         //     await checkElo();

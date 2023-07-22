@@ -99,9 +99,11 @@ export const getRankDifference = (oldRank: MinimalRank, newRank: MinimalRank) =>
         type: hasLost ? "LOSS" : "WIN",
         from: formatRank(oldRank),
         to: formatRank(newRank),
-        content: `${hasLost ? "LOST" : "GAINED"} ${Math.abs(lpDifference)} LP`,
+        content: `${hasLost ? "-" : "+"}${Math.abs(lpDifference)} LP`,
     };
 };
+
+export type RankDifference = ReturnType<typeof getRankDifference>;
 
 export const formatRank = (ranking: MinimalRank) =>
     `${ranking.tier}${ranking.division !== "NA" ? ` ${ranking.division}` : ""} - ${ranking.leaguePoints} LP`;

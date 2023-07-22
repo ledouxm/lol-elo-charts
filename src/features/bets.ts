@@ -129,3 +129,19 @@ const getMatchIdAfterDate = async (gameIds: string[], betDate: Date, gameCache?:
 const isMatchRemake = (game: Galeforce.dto.MatchDTO) => {
     return game.info.participants.some((p) => p.teamEarlySurrendered);
 };
+
+export const getLastGame = async (summoner: Summoner) => {
+    const lastGames = await galeforce.lol.match
+        .list()
+        .region(galeforce.region.riot.EUROPE)
+        .puuid(summoner.puuid)
+        .query({ count: 1, queue: 420 })
+        .exec();
+
+    if (!lastGames?.[0]) return null;
+
+    const match = await galeforce.lol.match.match().region(galeforce.region.riot.EUROPE).matchId(lastGames[0]).exec();
+    if (match?.info.participants.some((p) => p.teamEarlySurrendered)) return null;
+
+    return match;
+};
