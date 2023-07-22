@@ -17,7 +17,6 @@ export const generate24hRecaps = async () => {
 
 export const generate24hRankRecap = async () => {
     const summoners = await getSummonersWithChannels();
-
     const recap = [] as (RecapItem & { channelId: string })[];
 
     for (const summ of summoners) {
@@ -27,7 +26,7 @@ export const generate24hRankRecap = async () => {
         const startRanks = await db
             .select()
             .from(rank)
-            .where(and(gte(rank.createdAt, startOfYesterday), eq(rank.summonerId, summ.puuid)))
+            .where(and(lte(rank.createdAt, startOfYesterday), eq(rank.summonerId, summ.puuid)))
             .orderBy(desc(rank.createdAt))
             .limit(1);
 
@@ -38,8 +37,6 @@ export const generate24hRankRecap = async () => {
             .orderBy(desc(rank.createdAt))
             .limit(1);
 
-        console.log({ startDate: startOfYesterday, endDate: endOfYesterday, startRanks, endRanks });
-
         if (!endRanks?.[0] || !startRanks?.[0]) continue;
 
         const lastApex = await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1);
@@ -47,7 +44,8 @@ export const generate24hRankRecap = async () => {
         const startRank = startRanks?.[0] as InsertRank;
         const endRank = endRanks?.[0] as InsertRank;
 
-        console.log(lastApex);
+        // if start and end rank are the same, skip
+        if (startRank.id === endRank.id) continue;
 
         const startLp = getTotalLpFromRank(startRank, makeTierData(lastApex?.[0]));
         const endLp = getTotalLpFromRank(endRank, makeTierData(lastApex?.[0]));
@@ -55,11 +53,13 @@ export const generate24hRankRecap = async () => {
         const diff = endLp - startLp;
         const isLoss = diff < 0;
 
-        recap.push({
-            name: summ.currentName + ": " + (isLoss ? "" : "+") + Math.abs(diff),
-            diff,
-            description: `${endRank.id} ${formatRank(startRank)} ⮞ ${formatRank(endRank)}`,
-            channelId: summ.channelId,
+        summ.channels.forEach((channelId) => {
+            recap.push({
+                name: summ.currentName + ": " + (isLoss ? "" : "+") + Math.abs(diff),
+                diff,
+                description: `${formatRank(startRank)} ⮞ ${formatRank(endRank)}`,
+                channelId: channelId,
+            });
         });
     }
 

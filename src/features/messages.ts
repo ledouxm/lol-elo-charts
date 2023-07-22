@@ -31,7 +31,7 @@ export const getBetsRecapMessageEmbed = (
     const embed = new EmbedBuilder().setTitle("24h Bets Recap").setFields(
         bets.map((b) => ({
             name: b.name,
-            value: `${b.result > 0 ? "+" : "-"}${b.result} (${b.wins}W/${b.losses}L)`,
+            value: `${b.result > 0 ? "+" : "-"}${Math.abs(b.result)} (${b.wins}W/${b.losses}L)`,
         }))
     );
     return embed;

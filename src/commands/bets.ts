@@ -80,6 +80,13 @@ export class Bets {
         console.log("summoner found");
         const { summoner: currentSummoner } = s[0];
 
+        if (!currentSummoner.isActive)
+            return sendErrorToChannelId(
+                interaction.channelId,
+                `Summoner is not active, you must add it using '/addsummoner <summoner name>' first`,
+                interaction
+            );
+
         const existingBet = await db
             .select()
             .from(bet)
