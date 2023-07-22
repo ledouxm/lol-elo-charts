@@ -56,7 +56,7 @@ export const generate24hRankRecap = async () => {
         const isLoss = diff < 0;
 
         recap.push({
-            name: summ.currentName + ": " + (isLoss ? "-" : "+") + Math.abs(diff),
+            name: summ.currentName + ": " + (isLoss ? "" : "+") + Math.abs(diff),
             diff,
             description: `${endRank.id} ${formatRank(startRank)} ⮞ ${formatRank(endRank)}`,
             channelId: summ.channelId,
