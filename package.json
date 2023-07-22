@@ -17,6 +17,12 @@
         "@discordjs/ws": "^0.8.3",
         "@discordx/importer": "^1.2.2",
         "axios": "^1.4.0",
+        "canvas": "^2.11.2",
+        "chart.js": "^4.3.0",
+        "chartjs-adapter-date-fns": "^3.0.0",
+        "chartjs-node-canvas": "^4.1.6",
+        "chartjs-plugin-autocolors": "^0.2.2",
+        "chartjs-plugin-datalabels": "^2.2.0",
         "cors": "^2.8.5",
         "cronstrue": "^2.28.0",
         "date-fns": "^2.30.0",
@@ -29,6 +35,7 @@
         "node-cron": "^3.0.2",
         "pastable": "^2.2.0",
         "postgres": "^3.3.5",
+        "puppeteer": "^20.9.0",
         "reflect-metadata": "^0.1.13"
     },
     "devDependencies": {

@@ -280,7 +280,7 @@ export const sendErrorToChannelId = async (channelId: string, error: string, int
     console.error(error, channelId);
     const embed = new EmbedBuilder().setTitle("Error").setDescription(error).setColor(0xff0000);
 
-    return interaction ? interaction.reply({ embeds: [embed] }) : sendToChannelId(channelId, embed);
+    return interaction ? interaction.reply({ embeds: [embed] }) : sendToChannelId({ channelId, embed });
 };
 
 export const sendBetConfirmation = async ({

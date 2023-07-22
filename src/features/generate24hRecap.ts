@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "../db/db";
-import { InsertRank, apex, bet, gambler, rank } from "../db/schema";
+import { InsertRank, apex, bet, gambler, rank, summoner } from "../db/schema";
 import { formatRank } from "../utils";
 import { getTotalLpFromRank, makeTierData } from "./lps";
 import { getSummonersWithChannels } from "./summoner";
@@ -9,6 +9,7 @@ import { groupBy } from "pastable";
 import { sendToChannelId } from "../discord";
 import * as DateFns from "date-fns";
 import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed } from "./messages";
+import { generateRankGraph } from "./generateGraph";
 
 export const generate24hRecaps = async () => {
     await generate24hRankRecap();
@@ -19,36 +20,22 @@ export const generate24hRankRecap = async () => {
     const summoners = await getSummonersWithChannels();
     const recap = [] as (RecapItem & { channelId: string })[];
 
+    const lastApex = (await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1))?.[0];
+
     for (const summ of summoners) {
-        const startOfYesterday = DateFns.addHours(DateFns.startOfYesterday(), 2);
-        const endOfYesterday = DateFns.addHours(DateFns.endOfYesterday(), 2);
+        const samePuuid = eq(rank.summonerId, summ.puuid);
 
-        const startRanks = await db
-            .select()
-            .from(rank)
-            .where(and(lte(rank.createdAt, startOfYesterday), eq(rank.summonerId, summ.puuid)))
-            .orderBy(desc(rank.createdAt))
-            .limit(1);
+        const { startRank, endRank } = await getTodaysRanks(samePuuid);
 
-        const endRanks = await db
-            .select()
-            .from(rank)
-            .where(and(lte(rank.createdAt, endOfYesterday), eq(rank.summonerId, summ.puuid)))
-            .orderBy(desc(rank.createdAt))
-            .limit(1);
+        console.log(startRank);
 
-        if (!endRanks?.[0] || !startRanks?.[0]) continue;
-
-        const lastApex = await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1);
-
-        const startRank = startRanks?.[0] as InsertRank;
-        const endRank = endRanks?.[0] as InsertRank;
+        if (!endRank || !startRank) continue;
 
         // if start and end rank are the same, skip
         if (startRank.id === endRank.id) continue;
 
-        const startLp = getTotalLpFromRank(startRank, makeTierData(lastApex?.[0]));
-        const endLp = getTotalLpFromRank(endRank, makeTierData(lastApex?.[0]));
+        const startLp = getTotalLpFromRank(startRank, makeTierData(lastApex));
+        const endLp = getTotalLpFromRank(endRank, makeTierData(lastApex));
 
         const diff = endLp - startLp;
         const isLoss = diff < 0;
@@ -70,8 +57,45 @@ export const generate24hRankRecap = async () => {
 
     for (const [channelId, items] of Object.entries(byChannelId)) {
         const embed = getRecapMessageEmbed(items);
-        await sendToChannelId(channelId, embed);
+        const file = await generateRankGraph(channelId, lastApex);
+
+        await sendToChannelId({ channelId, embed, file });
     }
+};
+
+export const getTodaysRanks = async (additionnalWhereStatements?: any) => {
+    const startOfYesterday = DateFns.startOfYesterday();
+    const endOfYesterday = DateFns.endOfYesterday();
+
+    const select = {
+        id: rank.id,
+        summonerId: rank.summonerId,
+        tier: rank.tier,
+        division: rank.division,
+        leaguePoints: rank.leaguePoints,
+        createdAt: rank.createdAt,
+        name: summoner.currentName,
+        channelId: summoner.channelId,
+    };
+
+    const startRanks = await db
+        .select(select)
+        .from(rank)
+        .where(and(lte(rank.createdAt, startOfYesterday), additionnalWhereStatements))
+        .orderBy(desc(rank.createdAt))
+        .leftJoin(summoner, eq(summoner.puuid, rank.summonerId))
+        .limit(1);
+
+    const dayRanks = await db
+        .select(select)
+        .from(rank)
+        .where(
+            and(lte(rank.createdAt, endOfYesterday), gte(rank.createdAt, startOfYesterday), additionnalWhereStatements)
+        )
+        .leftJoin(summoner, eq(summoner.puuid, rank.summonerId))
+        .orderBy(desc(rank.createdAt));
+
+    return { startRank: startRanks?.[0], endRank: dayRanks?.[0], dayRanks };
 };
 
 /**
@@ -95,7 +119,7 @@ export const generate24hBetsRecap = async () => {
 
     for (const [channelId, bets] of Object.entries(groupedByChannelId)) {
         const embed = getBetsRecapMessageEmbed(bets);
-        await sendToChannelId(channelId, embed);
+        await sendToChannelId({ channelId, embed });
     }
 };
 

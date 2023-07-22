@@ -70,7 +70,7 @@ export const checkSummonerElo = async (summ: SummonerWithChannels) => {
 
     // send summoner update to every channel he is watched in
     const { embed, lastGame } = await getCheckEloEmbed({ lastRank, newRank, summ, elo });
-    summ.channels.forEach((channel) => sendToChannelId(channel, embed));
+    summ.channels.forEach((channel) => sendToChannelId({ channelId: channel, embed }));
 
     if (lastGame)
         return db.update(summoner).set({ lastGameId: lastGame.metadata.matchId }).where(eq(summoner.puuid, summ.puuid));
@@ -116,6 +116,6 @@ export const checkBets = async () => {
         const bets = groupedByChannelId[channelId];
 
         const betEmbed = await getAchievedBetsMessageContent(bets);
-        sendToChannelId(bets[0].gambler.channelId, betEmbed);
+        sendToChannelId({ channelId: bets[0].gambler.channelId, embed: betEmbed });
     }
 };

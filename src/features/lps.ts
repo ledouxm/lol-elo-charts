@@ -1,3 +1,4 @@
+import { MinimalRank } from "@/utils";
 import { Apex, InsertRank, divisionEnum, tierEnum } from "../db/schema";
 
 export type TierData = Record<InsertRank["tier"], { nbDivision: number; lpMax: number }>;
@@ -25,7 +26,7 @@ export const makeTierData = (apex: Apex) => {
     } as TierData;
 };
 
-export const getTotalLpFromRank = (rank: InsertRank, tierData: TierData) => {
+export const getTotalLpFromRank = (rank: MinimalRank, tierData: TierData) => {
     let totalLp = 0;
 
     const tierIndex = tierEnum.enumValues.findIndex((tier) => tier === rank.tier);
@@ -45,3 +46,46 @@ export const getTotalLpFromRank = (rank: InsertRank, tierData: TierData) => {
 
     return totalLp;
 };
+
+export const getRankFromTotalLp = (totalLp: number, tierData: TierData): MinimalRank => {
+    let totalLpLeft = totalLp;
+
+    const tier = tierEnum.enumValues.find((tier) => {
+        const tierLp = tierData[tier].nbDivision * tierData[tier].lpMax;
+        if (totalLpLeft > tierLp) {
+            totalLpLeft -= tierLp;
+            return false;
+        }
+        return true;
+    });
+
+    if (["MASTER", "GRANDMASTER", "CHALLENGER"].includes(tier)) {
+        return { tier, division: "I", leaguePoints: totalLpLeft };
+    }
+
+    const division = divisionEnum.enumValues.find(() => {
+        const divisionLp = tierData[tier].lpMax;
+        if (totalLpLeft > divisionLp) {
+            totalLpLeft -= divisionLp;
+            return false;
+        }
+        return true;
+    });
+
+    return { tier, division, leaguePoints: totalLpLeft };
+};
+
+const divisionToNumber = (division: InsertRank["division"]) => {
+    switch (division) {
+        case "I":
+            return 1;
+        case "II":
+            return 2;
+        case "III":
+            return 3;
+        case "IV":
+            return 4;
+    }
+};
+export const getMinifiedRank = (rank: MinimalRank) =>
+    `${rank.tier[0]}${divisionToNumber(rank.division)}-${rank.leaguePoints}LP` as string;

@@ -1,4 +1,4 @@
-import type { EmbedBuilder, Interaction, Message, TextChannel } from "discord.js";
+import type { AttachmentBuilder, EmbedBuilder, Interaction, Message, TextChannel } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 import "./commands/bets";
@@ -57,14 +57,26 @@ export const startDiscordBot = async () => {
     await bot.login(process.env.BOT_TOKEN);
 };
 
-export const sendToChannelId = async (channelId: string, embed: EmbedBuilder | string, retry = true) => {
+export const sendToChannelId = async ({
+    channelId,
+    embed,
+    file,
+    content,
+    retry = true,
+}: {
+    channelId: string;
+    embed?: EmbedBuilder | string;
+    file?: AttachmentBuilder | Buffer;
+    retry?: boolean;
+    content?: string;
+}) => {
     try {
         const channel = bot.channels.cache.get(channelId);
         if (!channel) {
             console.log("Could not find channel", channelId);
             if (retry) {
                 await bot.channels.fetch(channelId, { cache: true, force: true });
-                await sendToChannelId(channelId, embed, false);
+                await sendToChannelId({ channelId, embed, file, content });
             }
             return;
         }
@@ -76,7 +88,11 @@ export const sendToChannelId = async (channelId: string, embed: EmbedBuilder | s
             return;
         }
 
-        await (channel as TextChannel).send({ embeds: [embed] });
+        await (channel as TextChannel).send({
+            embeds: embed ? [embed] : undefined,
+            files: file ? [file] : undefined,
+            content,
+        });
     } catch (e) {
         console.log("Error sending to channel", channelId, e);
     }
