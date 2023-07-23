@@ -3,10 +3,10 @@ import { db, initDb } from "./db/db";
 import "./features/discord/discord";
 import { startDiscordBot } from "./features/discord/discord";
 import { startCronJobs } from "./startCronJobs";
-import { rank, summoner } from "./db/schema";
-import { addRequest, galeforce } from "./features/summoner";
+import { match, rank, summoner } from "./db/schema";
+import { addRequest, galeforce, getSummonersWithChannels } from "./features/summoner";
 import { getSummonerData } from "./features/lol/summoner";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getAndSaveApex } from "./features/lol/apex";
 import axios from "axios";
 import { makeRouter } from "./features/router";
@@ -26,6 +26,34 @@ const start = async () => {
     }
 };
 
+const fetchMatches = async (matchIds: string[]) => {
+    const summoners = await db.selectDistinctOn([summoner.puuid]).from(summoner);
+    for (const matchId of matchIds) {
+        const game = await galeforce.lol.match.match().region(galeforce.region.riot.EUROPE).matchId(matchId).exec();
+
+        for (const participant of game.info.participants) {
+            const summ = summoners.find((s) => s.puuid === participant.puuid);
+            if (!summ) continue;
+
+            const existingMatch = await db
+                .select()
+                .from(match)
+                .where(and(eq(match.matchId, matchId), eq(match.summonerId, summ.puuid)))
+                .limit(1);
+            if (existingMatch?.[0]) continue;
+
+            await db.insert(match).values({
+                startedAt: new Date(game.info.gameStartTimestamp),
+                matchId: game.metadata.matchId,
+                endedAt: new Date(game.info.gameEndTimestamp),
+                isWin: participant.win,
+                kda: `${participant.kills}/${participant.deaths}/${participant.assists}`,
+                championName: participant.championName,
+                summonerId: summ.puuid,
+            });
+        }
+    }
+};
 const transformSummonerAndRanks = async () => {
     const summoners = await db.selectDistinctOn([summoner.currentName]).from(summoner);
 

@@ -308,7 +308,7 @@ export const sendBetConfirmation = async ({
         )
         .setColor(0xfbfaa6);
     const message = await interaction.channel.send({ embeds: [embed] });
-    // const message = await interaction.reply({ embeds: [embed], fetchReply: true });
+
     await Promise.all([message.react("✅"), message.react("❌")]);
 
     try {

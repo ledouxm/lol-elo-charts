@@ -1,12 +1,10 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { InferModel, and, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { Summoner, gambler, request, summoner } from "../db/schema";
-import { MinimalRank, RankDifference, formatRank, getArrow, getColor, getEmoji, getRankDifference } from "../utils";
+import { MinimalRank, RankDifference, formatRank, getColor } from "../utils";
 import { getChampionIconUrl, getProfileIconUrl } from "./lol/icons";
-import { addMinutes, subMinutes } from "date-fns";
-import { betDelayInMinutes } from "./bets";
 
 export const addRequest = async () => {
     try {

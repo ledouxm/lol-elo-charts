@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "../db/db";
-import { apex, bet, gambler, rank, summoner } from "../db/schema";
+import { Summoner, apex, bet, gambler, match, rank, summoner } from "../db/schema";
 import { formatRank } from "../utils";
 import { getTotalLpFromRank, makeTierData } from "./lol/lps";
 import { getSummonersWithChannels } from "./summoner";
@@ -37,9 +37,12 @@ export const generate24hRankRecap = async () => {
         const diff = endLp - startLp;
         const isLoss = diff < 0;
 
+        const winRate = await getYesterdayWinRate(summ);
+        const winRateString = winRate ? ` (${winRate.wins}W/${winRate.losses}L)` : "";
+
         summ.channels.forEach((channelId) => {
             recap.push({
-                name: summ.currentName + ": " + (isLoss ? "-" : "+") + Math.abs(diff),
+                name: summ.currentName + ": " + (isLoss ? "-" : "+") + Math.abs(diff) + winRateString,
                 diff,
                 description: `${formatRank(startRank)} ⮞ ${formatRank(endRank)}`,
                 channelId: channelId,
@@ -58,6 +61,22 @@ export const generate24hRankRecap = async () => {
 
         await sendToChannelId({ channelId, embed, file });
     }
+};
+
+export const getYesterdayWinRate = async (summ: Summoner) => {
+    const start = DateFns.startOfYesterday();
+    const end = DateFns.endOfYesterday();
+
+    const wins = await db
+        .select({
+            wins: sql<number>`SUM(CASE WHEN is_win = TRUE THEN 1 ELSE 0 END)`,
+            losses: sql<number>`SUM(CASE WHEN is_win = FALSE THEN 1 ELSE 0 END)`,
+        })
+        .from(match)
+        .where(and(eq(match.summonerId, summ.puuid), gte(match.endedAt, start), lte(match.endedAt, end)))
+        .groupBy(match.summonerId);
+
+    return wins[0];
 };
 
 export const getTodaysRanks = async (additionnalWhereStatements?: any) => {

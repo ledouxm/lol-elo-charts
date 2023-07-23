@@ -1,8 +1,8 @@
 import { InferModel, and, eq, isNull } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
-import { Bet, Gambler, Summoner, bet, gambler, summoner } from "../db/schema";
-import { addRequest, galeforce } from "./summoner";
+import { Bet, Gambler, Summoner, bet, gambler, match, summoner } from "../db/schema";
+import { Participant, addRequest, galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
 
 export const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 2;
@@ -46,6 +46,8 @@ const tryToResolveBet = async ({
 }) => {
     const game = await getGameMatchingBet(activeBet, gameCache);
     if (!game) return;
+
+    await insertMatchFromMatchDto(game, activeBet.summoner.puuid);
 
     const isWin =
         game.info.participants.find((p) => p.puuid === activeBet.summoner.puuid)?.win === activeBet.bet.hasBetOnWin;
@@ -104,9 +106,36 @@ const getGameMatchingBet = async (
     if (!lastGames?.length) return null;
 
     console.log("found", lastGames.length, "games", lastGames.join(", "));
-    const match = await getMatchIdAfterDate(lastGames, betDate, gameCache);
-    console.log("match", match?.metadata.matchId, "is after", betDate.toISOString(), "for bet", activeBet.bet.id);
-    return match;
+    const game = await getMatchIdAfterDate(lastGames, betDate, gameCache);
+    if (!game) return null;
+
+    console.log("match", game?.metadata.matchId, "is after", betDate.toISOString(), "for bet", activeBet.bet.id);
+    return game;
+};
+
+export const insertMatchFromMatchDto = async (game: Galeforce.dto.MatchDTO, puuid: string) => {
+    const existing = await db
+        .select()
+        .from(match)
+        .where(and(eq(match.matchId, game.metadata.matchId), eq(match.summonerId, puuid)))
+        .limit(1);
+
+    if (existing?.[0]) return;
+
+    const participant: Participant = game.info.participants.find((p) => p.puuid === puuid);
+
+    const isWin = participant.win;
+    const kda = `${participant.kills}/${participant.deaths}/${participant.assists}`;
+
+    return db.insert(match).values({
+        startedAt: new Date(game.info.gameStartTimestamp),
+        matchId: game.metadata.matchId,
+        endedAt: new Date(game.info.gameEndTimestamp),
+        isWin,
+        kda,
+        championName: participant.championName,
+        summonerId: puuid,
+    });
 };
 
 const getMatchIdAfterDate = async (gameIds: string[], betDate: Date, gameCache?: GameCache) => {

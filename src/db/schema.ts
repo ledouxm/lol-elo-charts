@@ -38,7 +38,7 @@ export const summoner = pgTable(
 export type Summoner = InferModel<typeof summoner, "select">;
 
 export const summonerRelations = relations(summoner, ({ many }) => {
-    return { ranks: many(rank), bets: many(bet) };
+    return { ranks: many(rank), bets: many(bet), matches: many(match) };
 });
 
 export const rank = pgTable("rank", {
@@ -106,4 +106,22 @@ export const betRelations = relations(bet, ({ one }) => {
 export const request = pgTable("request", {
     id: serial("id").primaryKey(),
     createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const match = pgTable("match", {
+    id: serial("id").primaryKey(),
+    matchId: varchar("match_id", { length: 25 }).notNull(),
+    summonerId: varchar("summoner_id", { length: 100 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+    startedAt: timestamp("started_at"),
+    endedAt: timestamp("ended_at"),
+    isWin: boolean("is_win"),
+    championName: text("champion_name"),
+    kda: varchar("kda", { length: 20 }),
+});
+
+export const matchRelations = relations(match, ({ one }) => {
+    return {
+        summoner: one(summoner, { fields: [match.summonerId], references: [summoner.puuid] }),
+    };
 });

@@ -4,7 +4,7 @@ import { InsertRank, Summoner, rank, summoner } from "../../db/schema";
 import { sendToChannelId } from "../discord/discord";
 import { MinimalRank, areRanksEqual, RankDifference, getRankDifference } from "../../utils";
 import { getSummonersWithChannels, getFirstRankEmbed, getRankDifferenceEmbed, SummonerWithChannels } from "../summoner";
-import { checkBetsAndGetLastGame, getLastGame } from "../bets";
+import { checkBetsAndGetLastGame, getLastGame, insertMatchFromMatchDto } from "../bets";
 import { getAchievedBetsMessageContent } from "../discord/messages";
 import { groupBy } from "pastable";
 import { getSoloQElo, getSummonerData } from "./summoner";
@@ -72,13 +72,15 @@ export const checkSummonerElo = async (summ: SummonerWithChannels) => {
     const { embed, lastGame } = await getCheckEloEmbed({ lastRank, newRank, summ, elo });
     summ.channels.forEach((channel) => sendToChannelId({ channelId: channel, embed }));
 
-    if (lastGame)
-        return db.update(summoner).set({ lastGameId: lastGame.metadata.matchId }).where(eq(summoner.puuid, summ.puuid));
+    if (lastGame) {
+        await db.update(summoner).set({ lastGameId: lastGame.metadata.matchId }).where(eq(summoner.puuid, summ.puuid));
+
+        await insertMatchFromMatchDto(lastGame, summ.puuid!);
+    }
 };
 
 const getNewLastGameIfExists = async (summ: Summoner) => {
     const lastGame = await getLastGame(summ);
-
     return lastGame.metadata.matchId === summ?.lastGameId ? null : lastGame;
 };
 
