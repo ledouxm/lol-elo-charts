@@ -307,8 +307,6 @@ export const getSummonerCurrentGame = async (summonerId: string) => {
             .exec();
         await addRequest();
 
-        console.log(activeGame.gameStartTime);
-
         if (
             !activeGame ||
             activeGame.gameQueueConfigId !== 420 ||
