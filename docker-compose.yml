@@ -16,6 +16,7 @@ services:
             CRON_RANK_DELAY_MIN: ${CRON_RANK_DELAY_MIN}
             CRON_BETS_DELAY_MIN: ${CRON_BETS_DELAY_MIN}
             ENABLE_BETS: ${ENABLE_BETS}
+            FORCE_RECAPS: ${FORCE_RECAPS}
         depends_on:
             - postgresql
         networks:

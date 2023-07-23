@@ -20,7 +20,6 @@
         "canvas": "^2.11.2",
         "chart.js": "^4.3.0",
         "chartjs-adapter-date-fns": "^3.0.0",
-        "chartjs-node-canvas": "^4.1.6",
         "chartjs-plugin-autocolors": "^0.2.2",
         "chartjs-plugin-datalabels": "^2.2.0",
         "cors": "^2.8.5",

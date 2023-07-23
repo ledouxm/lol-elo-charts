@@ -32,9 +32,6 @@ dependencies:
   chartjs-adapter-date-fns:
     specifier: ^3.0.0
     version: 3.0.0(chart.js@4.3.0)(date-fns@2.30.0)
-  chartjs-node-canvas:
-    specifier: ^4.1.6
-    version: 4.1.6(chart.js@4.3.0)
   chartjs-plugin-autocolors:
     specifier: ^0.2.2
     version: 0.2.2(@kurkle/color@0.3.2)(chart.js@4.3.0)
@@ -1650,19 +1647,6 @@ packages:
     dependencies:
       chart.js: 4.3.0
       date-fns: 2.30.0
-    dev: false
-
-  /chartjs-node-canvas@4.1.6(chart.js@4.3.0):
-    resolution: {integrity: sha512-UQJbPWrvqB/FoLclGA9BaLQmZbzSYlujF4w8NZd6Xzb+sqgACBb2owDX6m7ifCXLjUW5Nz0Qx0qqrTtQkkSoYw==}
-    peerDependencies:
-      chart.js: ^3.5.1
-    dependencies:
-      canvas: 2.11.2
-      chart.js: 4.3.0
-      tslib: 2.6.0
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
     dev: false
 
   /chartjs-plugin-autocolors@0.2.2(@kurkle/color@0.3.2)(chart.js@4.3.0):

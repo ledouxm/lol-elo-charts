@@ -9,7 +9,7 @@ import { groupBy } from "pastable";
 import { sendToChannelId } from "../discord";
 import * as DateFns from "date-fns";
 import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed } from "./messages";
-// import { generateRankGraph } from "./generateGraph";
+import { generateRankGraph } from "./generateGraph";
 
 export const generate24hRecaps = async () => {
     await generate24hRankRecap();
@@ -57,9 +57,9 @@ export const generate24hRankRecap = async () => {
 
     for (const [channelId, items] of Object.entries(byChannelId)) {
         const embed = getRecapMessageEmbed(items);
-        // const file = await generateRankGraph(channelId, lastApex);
+        const file = await generateRankGraph(channelId, lastApex);
 
-        await sendToChannelId({ channelId, embed, file: undefined });
+        await sendToChannelId({ channelId, embed, file });
     }
 };
 

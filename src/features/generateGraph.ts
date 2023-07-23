@@ -1,8 +1,6 @@
 import { Apex, InsertRank, summoner } from "@/db/schema";
 import { createCanvas } from "canvas";
 import { Chart, LineController, LineElement, LinearScale, PointElement, TimeScale, Title } from "chart.js";
-require("chartjs-adapter-date-fns");
-import fs from "fs";
 import { getTodaysRanks } from "./generate24hRecap";
 import { getMinifiedRank, getRankFromTotalLp, getTotalLpFromRank, makeTierData } from "./lps";
 
@@ -14,6 +12,8 @@ import autocolors from "chartjs-plugin-autocolors";
 
 Chart.register(TimeScale, LinearScale, LineController, PointElement, LineElement, ChartDataLabels, autocolors, Title);
 export const generateRankGraph = async (channelId: string, apex: Apex) => {
+    await import("chartjs-adapter-date-fns");
+
     const summoners = await db.select().from(summoner).where(eq(summoner.channelId, channelId));
 
     const ranksBySummoner: Record<string, (InsertRank & { total: number })[]> = {};
@@ -38,7 +38,7 @@ export const generateRankGraph = async (channelId: string, apex: Apex) => {
         data: ranks.map((r) => ({ x: r.createdAt.toISOString(), y: r.total })),
         fill: false,
         datalabels: {
-            display: (ctx: any) => (ctx.dataIndex === 1 ? "auto" : false),
+            display: (ctx: any) => (ctx.dataIndex === Math.floor(ctx.dataset.data.length / 2) ? "auto" : false),
             formatter: (_, ctx: any) => {
                 return ctx.chart.data.datasets[ctx.datasetIndex].label;
             },
