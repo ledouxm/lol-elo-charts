@@ -122,12 +122,9 @@ export type SummonerWithChannels = Summoner & { channels: string[] };
 export type Participant = Galeforce.dto.MatchDTO["info"]["participants"][0];
 export type Team = Galeforce.dto.MatchDTO["info"]["teams"][0];
 
-export const getParticipant = (match: Galeforce.dto.MatchDTO, summ: Summoner): Participant => {
-    return match.info.participants.find((p) => p.puuid === summ.puuid);
-};
-
 export const getMatchInformationsForSummoner = async (summ: Summoner, match: Galeforce.dto.MatchDTO) => {
-    const participant = getParticipant(match, summ);
+    const participantIndex = match.info.participants.findIndex((p) => p.puuid === summ.puuid);
+    const participant: Participant = match.info.participants[participantIndex];
 
     const championIconUrl = await getChampionIconUrl(participant.championName);
     const team = match.info.teams.find((t) => t.teamId === participant.teamId);
@@ -135,11 +132,13 @@ export const getMatchInformationsForSummoner = async (summ: Summoner, match: Gal
     return {
         participant,
         team,
+        participantIndex,
         championIconUrl,
     } as {
         participant: Participant;
         team: Team;
         championIconUrl: string;
+        participantIndex: number;
     };
 };
 
@@ -149,11 +148,11 @@ export const getFirstRankEmbed = async (
     summ: Summoner,
     rank: MinimalRank,
     elo: Galeforce.dto.LeagueEntryDTO,
-    lastMatch?: Galeforce.dto.MatchDTO
+    lastGame?: Galeforce.dto.MatchDTO
 ) => {
     const profileIcon = await getProfileIconUrl(summ.icon);
 
-    if (!lastMatch)
+    if (!lastGame)
         return new EmbedBuilder()
             .setColor(0xfbfaa6)
             .setTitle(`${summ.currentName}`)
@@ -165,7 +164,7 @@ export const getFirstRankEmbed = async (
             ])
             .setThumbnail(profileIcon);
 
-    const { participant, championIconUrl } = await getMatchInformationsForSummoner(summ, lastMatch);
+    const { participant, championIconUrl, participantIndex } = await getMatchInformationsForSummoner(summ, lastGame);
 
     const isWin = participant.win;
 
@@ -173,7 +172,7 @@ export const getFirstRankEmbed = async (
         .setColor(getColor(!isWin))
         .setTitle(`${summ.currentName}`)
         .setThumbnail(championIconUrl)
-        .setDescription(await getMatchDescription(lastMatch, participant))
+        .setDescription(await getMatchDescription(lastGame, participant))
         .setFields([
             {
                 name: `is now ${formatRank(rank)}`,
@@ -181,7 +180,12 @@ export const getFirstRankEmbed = async (
             },
             ...getWinRateFields(elo),
         ])
-        .setTimestamp(new Date(lastMatch.info.gameEndTimestamp));
+        .setTimestamp(new Date(lastGame.info.gameEndTimestamp))
+        .setURL(
+            `https://www.leagueofgraphs.com/match/euw/${lastGame.metadata.matchId.slice(5)}#participant${
+                participantIndex + 1
+            }`
+        );
 
     return embed;
 };
@@ -211,7 +215,7 @@ export const getRankDifferenceWithMatchEmbed = async ({
     lastGame: Galeforce.dto.MatchDTO;
     rankDifference: RankDifference;
 }) => {
-    const { participant, championIconUrl } = await getMatchInformationsForSummoner(summ, lastGame);
+    const { participant, championIconUrl, participantIndex } = await getMatchInformationsForSummoner(summ, lastGame);
 
     const isWin = participant.win;
     const footer = getRankDifferenceString(rankDifference);
@@ -223,7 +227,12 @@ export const getRankDifferenceWithMatchEmbed = async ({
         .setThumbnail(championIconUrl)
         .setFields(getWinRateFields(elo))
         .setFooter({ text: footer })
-        .setTimestamp(new Date(lastGame.info.gameEndTimestamp));
+        .setTimestamp(new Date(lastGame.info.gameEndTimestamp))
+        .setURL(
+            `https://www.leagueofgraphs.com/match/euw/${lastGame.metadata.matchId.slice(5)}#participant${
+                participantIndex + 1
+            }`
+        );
 
     return embed;
 };

@@ -10,6 +10,7 @@ import { eq, and } from "drizzle-orm";
 import { getAndSaveApex } from "./features/lol/apex";
 import axios from "axios";
 import { makeRouter } from "./features/router";
+import { insertMatchFromMatchDto } from "./features/bets";
 
 const start = async () => {
     try {
@@ -42,15 +43,7 @@ const fetchMatches = async (matchIds: string[]) => {
                 .limit(1);
             if (existingMatch?.[0]) continue;
 
-            await db.insert(match).values({
-                startedAt: new Date(game.info.gameStartTimestamp),
-                matchId: game.metadata.matchId,
-                endedAt: new Date(game.info.gameEndTimestamp),
-                isWin: participant.win,
-                kda: `${participant.kills}/${participant.deaths}/${participant.assists}`,
-                championName: participant.championName,
-                summonerId: summ.puuid,
-            });
+            await insertMatchFromMatchDto(game, summ.puuid);
         }
     }
 };

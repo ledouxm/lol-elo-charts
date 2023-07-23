@@ -122,7 +122,8 @@ export const insertMatchFromMatchDto = async (game: Galeforce.dto.MatchDTO, puui
 
     if (existing?.[0]) return;
 
-    const participant: Participant = game.info.participants.find((p) => p.puuid === puuid);
+    const participantIndex = game.info.participants.findIndex((p) => p.puuid === puuid);
+    const participant: Participant = game.info.participants[participantIndex];
 
     const isWin = participant.win;
     const kda = `${participant.kills}/${participant.deaths}/${participant.assists}`;
@@ -133,6 +134,7 @@ export const insertMatchFromMatchDto = async (game: Galeforce.dto.MatchDTO, puui
         endedAt: new Date(game.info.gameEndTimestamp),
         isWin,
         kda,
+        participantIndex,
         championName: participant.championName,
         summonerId: puuid,
     });

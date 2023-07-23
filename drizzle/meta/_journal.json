@@ -36,6 +36,13 @@
       "when": 1690096058787,
       "tag": "0004_empty_khan",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1690098121436,
+      "tag": "0005_tan_magik",
+      "breakpoints": true
     }
   ]
 }

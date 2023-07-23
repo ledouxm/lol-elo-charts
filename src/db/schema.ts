@@ -113,6 +113,7 @@ export const match = pgTable("match", {
     matchId: varchar("match_id", { length: 25 }).notNull(),
     summonerId: varchar("summoner_id", { length: 100 }).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
+    participantIndex: integer("participant_index"),
     startedAt: timestamp("started_at"),
     endedAt: timestamp("ended_at"),
     isWin: boolean("is_win"),

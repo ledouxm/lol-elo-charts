@@ -1,0 +1,1 @@
+ALTER TABLE "match" ADD COLUMN "participant_index" integer;
