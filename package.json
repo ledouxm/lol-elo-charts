@@ -29,6 +29,7 @@
         "discordx": "^11.7.6",
         "dotenv": "^16.3.1",
         "drizzle-orm": "^0.27.2",
+        "express": "^4.18.2",
         "galeforce": "^0.6.1",
         "node-cron": "^3.0.2",
         "pastable": "^2.2.0",
@@ -39,7 +40,9 @@
     "devDependencies": {
         "@faker-js/faker": "^8.0.2",
         "@mikro-orm/cli": "^5.3.1",
+        "@types/cors": "^2.8.13",
         "@types/debug": "^4.1.7",
+        "@types/express": "^4.17.17",
         "@types/node": "^16.4.1",
         "@types/node-cron": "^3.0.7",
         "cross-env": "^7.0.3",

@@ -9,12 +9,14 @@ import { getSummonerData } from "./features/lol/summoner";
 import { eq } from "drizzle-orm";
 import { getAndSaveApex } from "./features/lol/apex";
 import axios from "axios";
+import { makeRouter } from "./features/router";
 
 const start = async () => {
     try {
         await initDb();
         await startDiscordBot();
         startCronJobs();
+        makeRouter();
         if (process.env.FORCE_RECAPS) {
             await getAndSaveApex();
         }

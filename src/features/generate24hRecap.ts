@@ -1,10 +1,9 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "../db/db";
-import { InsertRank, apex, bet, gambler, rank, summoner } from "../db/schema";
+import { apex, bet, gambler, rank, summoner } from "../db/schema";
 import { formatRank } from "../utils";
 import { getTotalLpFromRank, makeTierData } from "./lol/lps";
 import { getSummonersWithChannels } from "./summoner";
-import { getArrow } from "../utils";
 import { groupBy } from "pastable";
 import { sendToChannelId } from "./discord/discord";
 import * as DateFns from "date-fns";
