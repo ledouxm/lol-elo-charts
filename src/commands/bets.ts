@@ -2,9 +2,9 @@ import { ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, Message
 import { Discord, Slash, SlashOption } from "discordx";
 import { eq, and, isNull, desc, sql, isNotNull, ilike } from "drizzle-orm";
 import { db } from "@/db/db";
-import { sendToChannelId } from "@/discord";
+import { sendToChannelId } from "@/features/discord/discord";
 import { Bet, Gambler, Summoner, bet, gambler, rank, summoner } from "../db/schema";
-import { getMyBetsMessageEmbed } from "@/features/messages";
+import { getMyBetsMessageEmbed } from "@/features/discord/messages";
 import { getSummonerCurrentGame } from "@/features/summoner";
 import { groupBy } from "pastable";
 import { isSameDay } from "date-fns";

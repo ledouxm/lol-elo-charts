@@ -1,6 +1,6 @@
 import { giveEveryone500Points } from "./features/summoner";
-import { getAndSaveApex } from "./features/apex";
-import { checkBets, checkElo } from "./features/elo";
+import { getAndSaveApex } from "./features/lol/apex";
+import { checkBets, checkElo } from "./features/lol/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
 

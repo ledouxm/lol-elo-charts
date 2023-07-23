@@ -1,8 +1,8 @@
 import { Apex, InsertRank, summoner } from "@/db/schema";
 import { createCanvas } from "canvas";
 import { Chart, LineController, LineElement, LinearScale, PointElement, TimeScale, Title } from "chart.js";
-import { getTodaysRanks } from "./generate24hRecap";
-import { getMinifiedRank, getRankFromTotalLp, getTotalLpFromRank, makeTierData } from "./lps";
+import { getTodaysRanks } from "../generate24hRecap";
+import { getMinifiedRank, getRankFromTotalLp, getTotalLpFromRank, makeTierData } from "../lol/lps";
 
 import { db } from "@/db/db";
 import { endOfYesterday, format, startOfYesterday } from "date-fns";

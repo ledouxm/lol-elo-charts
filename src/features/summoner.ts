@@ -4,7 +4,7 @@ import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { Summoner, gambler, request, summoner } from "../db/schema";
 import { MinimalRank, RankDifference, formatRank, getArrow, getColor, getEmoji, getRankDifference } from "../utils";
-import { getChampionIconUrl, getProfileIconUrl } from "./icons";
+import { getChampionIconUrl, getProfileIconUrl } from "./lol/icons";
 import { addMinutes, subMinutes } from "date-fns";
 import { betDelayInMinutes } from "./bets";
 

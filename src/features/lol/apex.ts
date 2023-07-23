@@ -1,8 +1,8 @@
 import Galeforce from "galeforce";
-import { db } from "../db/db";
-import { apex } from "../db/schema";
-import { generate24hRecaps } from "./generate24hRecap";
-import { galeforce, getQueueRank } from "./summoner";
+import { db } from "../../db/db";
+import { apex } from "../../db/schema";
+import { generate24hRecaps } from "../generate24hRecap";
+import { galeforce, getQueueRank } from "../summoner";
 
 const getApex = async () => {
     const masters = await getQueueRank(galeforce.tier.MASTER);

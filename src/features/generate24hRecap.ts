@@ -2,14 +2,14 @@ import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "../db/db";
 import { InsertRank, apex, bet, gambler, rank, summoner } from "../db/schema";
 import { formatRank } from "../utils";
-import { getTotalLpFromRank, makeTierData } from "./lps";
+import { getTotalLpFromRank, makeTierData } from "./lol/lps";
 import { getSummonersWithChannels } from "./summoner";
 import { getArrow } from "../utils";
 import { groupBy } from "pastable";
-import { sendToChannelId } from "../discord";
+import { sendToChannelId } from "./discord/discord";
 import * as DateFns from "date-fns";
-import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed } from "./messages";
-import { generateRankGraph } from "./generateGraph";
+import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed } from "./discord/messages";
+import { generateRankGraph } from "./chart/generateGraph";
 
 export const generate24hRecaps = async () => {
     await generate24hRankRecap();

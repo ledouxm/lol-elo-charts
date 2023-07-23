@@ -1,8 +1,8 @@
 import type { AttachmentBuilder, EmbedBuilder, Interaction, Message, TextChannel } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
-import "./commands/bets";
-import "./commands/manageSummoners";
+import "../../commands/bets";
+import "../../commands/manageSummoners";
 
 export const bot = new Client({
     // To use only guild command

@@ -1,13 +1,13 @@
 import { desc, eq } from "drizzle-orm";
-import { db } from "../db/db";
-import { InsertRank, Summoner, rank, summoner } from "../db/schema";
-import { sendToChannelId } from "../discord";
-import { MinimalRank, areRanksEqual, RankDifference, getRankDifference } from "../utils";
-import { getSummonersWithChannels, getFirstRankEmbed, getRankDifferenceEmbed, SummonerWithChannels } from "./summoner";
-import { checkBetsAndGetLastGame, getLastGame } from "./bets";
-import { getAchievedBetsMessageContent } from "./messages";
+import { db } from "../../db/db";
+import { InsertRank, Summoner, rank, summoner } from "../../db/schema";
+import { sendToChannelId } from "../discord/discord";
+import { MinimalRank, areRanksEqual, RankDifference, getRankDifference } from "../../utils";
+import { getSummonersWithChannels, getFirstRankEmbed, getRankDifferenceEmbed, SummonerWithChannels } from "../summoner";
+import { checkBetsAndGetLastGame, getLastGame } from "../bets";
+import { getAchievedBetsMessageContent } from "../discord/messages";
 import { groupBy } from "pastable";
-import { getSoloQElo, getSummonerData } from "./lol/summoner";
+import { getSoloQElo, getSummonerData } from "./summoner";
 import Galeforce from "galeforce";
 
 export const checkElo = async () => {

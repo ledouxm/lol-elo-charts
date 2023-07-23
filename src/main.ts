@@ -1,13 +1,13 @@
 import "./envVars";
 import { db, initDb } from "./db/db";
-import "./discord";
-import { startDiscordBot } from "./discord";
+import "./features/discord/discord";
+import { startDiscordBot } from "./features/discord/discord";
 import { startCronJobs } from "./startCronJobs";
 import { rank, summoner } from "./db/schema";
 import { addRequest, galeforce } from "./features/summoner";
 import { getSummonerData } from "./features/lol/summoner";
 import { eq } from "drizzle-orm";
-import { getAndSaveApex } from "./features/apex";
+import { getAndSaveApex } from "./features/lol/apex";
 import axios from "axios";
 
 const start = async () => {

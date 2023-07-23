@@ -1,7 +1,7 @@
 import { Bet, Summoner } from "@/db/schema";
 import { formatDistanceToNow } from "date-fns";
 import { EmbedBuilder } from "discord.js";
-import { AchievedBet } from "./bets";
+import { AchievedBet } from "../bets";
 
 export const getMyBetsMessageEmbed = (betsWithSummoner: { bet: Bet; summoner: Summoner }[]) => {
     const embed = new EmbedBuilder()
