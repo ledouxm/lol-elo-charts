@@ -9,11 +9,10 @@ import { endOfYesterday, format, startOfYesterday } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import autocolors from "chartjs-plugin-autocolors";
+import "./chartjs-adapter";
 
 Chart.register(TimeScale, LinearScale, LineController, PointElement, LineElement, ChartDataLabels, autocolors, Title);
 export const generateRankGraph = async (channelId: string, apex: Apex) => {
-    await import("chartjs-adapter-date-fns");
-
     const summoners = await db.select().from(summoner).where(eq(summoner.channelId, channelId));
 
     const ranksBySummoner: Record<string, (InsertRank & { total: number })[]> = {};
