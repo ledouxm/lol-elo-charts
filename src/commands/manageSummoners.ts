@@ -5,6 +5,7 @@ import { Discord, Slash, SlashOption } from "discordx";
 import { eq } from "drizzle-orm";
 import { db } from "../db/db";
 import { addSummoner, galeforce, getSummonerByName, removeSummoner } from "../features/summoner";
+import { getInGameSummoners } from "@/features/activity";
 
 @Discord()
 export class ManageSummoner {
@@ -62,6 +63,7 @@ export class ManageSummoner {
 
     @Slash({ name: "test", description: "List all summoners being tracked" })
     async test(interaction: CommandInteraction) {
+        await getInGameSummoners();
         interaction.reply("ok");
     }
 }

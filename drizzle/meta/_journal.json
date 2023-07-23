@@ -15,6 +15,13 @@
       "when": 1690077669115,
       "tag": "0001_redundant_blazing_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1690091815145,
+      "tag": "0002_bitter_strong_guy",
+      "breakpoints": true
     }
   ]
 }

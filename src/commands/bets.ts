@@ -7,7 +7,8 @@ import { Bet, Gambler, Summoner, bet, gambler, rank, summoner } from "../db/sche
 import { getMyBetsMessageEmbed } from "@/features/discord/messages";
 import { getSummonerCurrentGame } from "@/features/summoner";
 import { groupBy } from "pastable";
-import { isSameDay } from "date-fns";
+import { addMinutes, isSameDay } from "date-fns";
+import { betDelayInMinutes } from "@/features/bets";
 
 @Discord()
 export class Bets {
@@ -111,7 +112,7 @@ export class Bets {
         const currentGame = await getSummonerCurrentGame(currentSummoner.id);
         console.log(currentSummoner.id);
         console.log("current game", !!currentGame);
-        if (currentGame) {
+        if (currentGame && addMinutes(new Date(currentGame.gameStartTime), betDelayInMinutes) > new Date()) {
             const shouldCreateBet = await sendBetConfirmation({ summ: currentSummoner, points, win, interaction });
             if (!shouldCreateBet) return interaction.editReply("Bet cancelled");
         }

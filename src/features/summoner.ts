@@ -121,8 +121,8 @@ export const getSummonersWithChannels = async () => {
 
 export type SummonerWithChannels = Summoner & { channels: string[] };
 
-type Participant = Galeforce.dto.MatchDTO["info"]["participants"][0];
-type Team = Galeforce.dto.MatchDTO["info"]["teams"][0];
+export type Participant = Galeforce.dto.MatchDTO["info"]["participants"][0];
+export type Team = Galeforce.dto.MatchDTO["info"]["teams"][0];
 
 export const getParticipant = (match: Galeforce.dto.MatchDTO, summ: Summoner): Participant => {
     return match.info.participants.find((p) => p.puuid === summ.puuid);
@@ -132,7 +132,6 @@ export const getMatchInformationsForSummoner = async (summ: Summoner, match: Gal
     const participant = getParticipant(match, summ);
 
     const championIconUrl = await getChampionIconUrl(participant.championName);
-    console.log(championIconUrl, participant.championName);
     const team = match.info.teams.find((t) => t.teamId === participant.teamId);
 
     return {
@@ -307,12 +306,7 @@ export const getSummonerCurrentGame = async (summonerId: string) => {
             .exec();
         await addRequest();
 
-        if (
-            !activeGame ||
-            activeGame.gameQueueConfigId !== 420 ||
-            addMinutes(new Date(activeGame.gameStartTime), betDelayInMinutes) > new Date()
-        )
-            return null;
+        if (!activeGame || activeGame.gameQueueConfigId !== 420) return null;
         return activeGame;
     } catch {
         return null;

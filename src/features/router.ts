@@ -53,3 +53,7 @@ export const getRequestsBetween = async (start: Date, end?: Date) => {
 
     return { minutes, seconds };
 };
+
+export const clearRequests = async () => {
+    return db.delete(request);
+};

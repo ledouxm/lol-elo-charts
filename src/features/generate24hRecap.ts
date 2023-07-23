@@ -26,8 +26,6 @@ export const generate24hRankRecap = async () => {
 
         const { startRank, endRank } = await getTodaysRanks(samePuuid);
 
-        console.log(startRank);
-
         if (!endRank || !startRank) continue;
 
         // if start and end rank are the same, skip

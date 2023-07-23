@@ -1,8 +1,9 @@
-import { giveEveryone500Points } from "./features/summoner";
 import { getAndSaveApex } from "./features/lol/apex";
 import { checkBets, checkElo } from "./features/lol/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
+import { clearRequests } from "./features/router";
+import { getInGameSummoners } from "./features/activity";
 
 export const startCronJobs = () => {
     const eloDelay = `*/${process.env.CRON_RANK_DELAY_MIN || 5} * * * *`;
@@ -17,9 +18,11 @@ export const startCronJobs = () => {
     console.log("getting apex and generating recaps", cronstrue.toString(everydayAtMidnight));
     cron.schedule(everydayAtMidnight, () => getAndSaveApex());
 
-    // console.log("sending daily recaps to everyone with charts", cronstrue.toString(everydayAtMidnight));
-    // cron.schedule(everydayAtMidnight, () => getAndSaveApex());
+    const every3Hours = "0 */3 * * *";
+    console.log("clearing all requests in db", cronstrue.toString(every3Hours));
+    cron.schedule(every3Hours, () => clearRequests());
 
-    // console.log("giving everyone 500 golds everyday", cronstrue.toString(everydayAtMidnight));
-    // cron.schedule(everydayAtMidnight, () => giveEveryone500Points());
+    const activeGameDelay = `*/${process.env.CRON_ACTIVE_GAME_DELAY_MIN || 5} * * * *`;
+    console.log("checking active games", cronstrue.toString(activeGameDelay));
+    cron.schedule(activeGameDelay, () => getInGameSummoners());
 };

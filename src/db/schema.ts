@@ -26,6 +26,7 @@ export const summoner = pgTable(
         checkedAt: timestamp("checked_at"),
         channelId: varchar("channel_id", { length: 100 }).notNull(),
         lastGameId: varchar("last_game_id", { length: 25 }),
+        lastNotifiedInGameId: varchar("last_notified_in_game_id", { length: 25 }),
     },
     (table) => {
         return {

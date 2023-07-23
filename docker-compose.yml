@@ -15,9 +15,11 @@ services:
             BOT_TOKEN: ${BOT_TOKEN}
             CRON_RANK_DELAY_MIN: ${CRON_RANK_DELAY_MIN}
             CRON_BETS_DELAY_MIN: ${CRON_BETS_DELAY_MIN}
+            CRON_ACTIVE_GAME_DELAY_MIN: ${CRON_ACTIVE_GAME_DELAY_MIN}
             ENABLE_BETS: ${ENABLE_BETS}
             FORCE_RECAPS: ${FORCE_RECAPS}
             HTTP_PORT: ${HTTP_PORT}
+
         depends_on:
             - postgresql
         networks:

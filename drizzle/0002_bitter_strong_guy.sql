@@ -1,0 +1,1 @@
+ALTER TABLE "summoner" ADD COLUMN "last_notified_in_game_id" varchar(25);
