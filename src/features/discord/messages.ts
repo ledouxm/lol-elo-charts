@@ -41,7 +41,7 @@ export const getAchievedBetsMessageContent = async (bets: AchievedBet[]) => {
     const sorted = bets.sort(compareBets);
     const embed = new EmbedBuilder()
         .setTitle("Bets resolved")
-        .setColor(0x00ff00)
+        .setColor(0xfbfaa6)
         .setDescription(sorted.map(getAchievedBetString).join("\n"));
 
     return embed;
