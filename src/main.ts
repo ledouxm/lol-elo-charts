@@ -4,18 +4,17 @@ import "./discord";
 import { startDiscordBot } from "./discord";
 import { startCronJobs } from "./startCronJobs";
 import { rank, summoner } from "./db/schema";
-import { galeforce } from "./features/summoner";
+import { addRequest, galeforce } from "./features/summoner";
 import { getSummonerData } from "./features/lol/summoner";
 import { eq } from "drizzle-orm";
 import { getAndSaveApex } from "./features/apex";
+import axios from "axios";
 
 const start = async () => {
     try {
         await initDb();
         await startDiscordBot();
-
         startCronJobs();
-
         if (process.env.FORCE_RECAPS) {
             await getAndSaveApex();
         }
@@ -34,6 +33,7 @@ const transformSummonerAndRanks = async () => {
             .region(galeforce.region.lol.EUROPE_WEST)
             .name(summ.currentName)
             .exec();
+        await addRequest();
         if (!riotSummoner) continue;
 
         const summonerData = await getSummonerData(riotSummoner.puuid);

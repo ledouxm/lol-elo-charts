@@ -2,7 +2,7 @@ import { InferModel, and, eq, isNull } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { Bet, Gambler, Summoner, bet, gambler, summoner } from "../db/schema";
-import { galeforce } from "./summoner";
+import { addRequest, galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
 
 export const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 2;
@@ -99,6 +99,7 @@ const getGameMatchingBet = async (
         .puuid(activeBet.summoner.puuid)
         .query({ startTime: Math.round(betDate.getTime() / 1000), count: 5, queue: 420 })
         .exec();
+    await addRequest();
 
     if (!lastGames?.length) return null;
 
@@ -111,9 +112,7 @@ const getGameMatchingBet = async (
 const getMatchIdAfterDate = async (gameIds: string[], betDate: Date, gameCache?: GameCache) => {
     for (const gameId of gameIds) {
         const fromCache = gameCache?.get(gameId);
-        const game =
-            fromCache ||
-            (await galeforce.lol.match.match().region(galeforce.region.riot.EUROPE).matchId(gameId).exec());
+        const game = await getGameFromCacheOrFetch(gameId, gameCache);
 
         if (!fromCache) gameCache?.set(gameId, game);
 
@@ -124,6 +123,17 @@ const getMatchIdAfterDate = async (gameIds: string[], betDate: Date, gameCache?:
     }
 
     return null;
+};
+
+const getGameFromCacheOrFetch = async (gameId: string, gameCache?: GameCache) => {
+    const fromCache = gameCache?.get(gameId);
+    if (fromCache) return fromCache;
+
+    const game = await galeforce.lol.match.match().region(galeforce.region.riot.EUROPE).matchId(gameId).exec();
+    await addRequest();
+    gameCache?.set(gameId, game);
+
+    return game;
 };
 
 const isMatchRemake = (game: Galeforce.dto.MatchDTO) => {
@@ -137,10 +147,12 @@ export const getLastGame = async (summoner: Summoner) => {
         .puuid(summoner.puuid)
         .query({ count: 1, queue: 420 })
         .exec();
+    await addRequest();
 
     if (!lastGames?.[0]) return null;
 
     const match = await galeforce.lol.match.match().region(galeforce.region.riot.EUROPE).matchId(lastGames[0]).exec();
+    await addRequest();
     if (match?.info.participants.some((p) => p.teamEarlySurrendered)) return null;
 
     return match;

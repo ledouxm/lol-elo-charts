@@ -4,7 +4,7 @@ import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import { eq } from "drizzle-orm";
 import { db } from "../db/db";
-import { addSummoner, galeforce, removeSummoner } from "../features/summoner";
+import { addSummoner, galeforce, getSummonerByName, removeSummoner } from "../features/summoner";
 
 @Discord()
 export class ManageSummoner {
@@ -20,7 +20,7 @@ export class ManageSummoner {
         interaction: CommandInteraction
     ) {
         console.log("addSummoner", name);
-        const riotSummoner = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name(name).exec();
+        const riotSummoner = await getSummonerByName(name);
 
         await addSummoner(riotSummoner, interaction.channelId);
         interaction.reply("Added summoner " + name);

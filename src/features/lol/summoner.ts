@@ -1,15 +1,21 @@
-import { galeforce } from "../summoner";
+import { addRequest, galeforce } from "../summoner";
 
-export const getSummonerData = async (puuid: string) =>
-    galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).puuid(puuid).exec();
+export const getSummonerData = async (puuid: string) => {
+    const summonerData = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).puuid(puuid).exec();
+    await addRequest();
+    return summonerData;
+};
 
-export const getElos = async (id: string) =>
-    galeforce.lol.league
+export const getElos = async (id: string) => {
+    const result = await galeforce.lol.league
         .entries()
         .summonerId(id)
         .region(galeforce.region.lol.EUROPE_WEST)
         .queue(galeforce.queue.lol.RANKED_SOLO)
         .exec();
+    await addRequest();
+    return result;
+};
 
 export const getSoloQElo = async (id: string) => {
     const elos = await getElos(id);

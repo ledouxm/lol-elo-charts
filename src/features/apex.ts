@@ -2,27 +2,12 @@ import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { apex } from "../db/schema";
 import { generate24hRecaps } from "./generate24hRecap";
-import { galeforce } from "./summoner";
+import { galeforce, getQueueRank } from "./summoner";
 
 const getApex = async () => {
-    const masters = await galeforce.lol.league
-        .league()
-        .queue(galeforce.queue.lol.RANKED_SOLO)
-        .tier(galeforce.tier.MASTER)
-        .region(galeforce.region.lol.EUROPE_WEST)
-        .exec();
-    const grandmasters = await galeforce.lol.league
-        .league()
-        .queue(galeforce.queue.lol.RANKED_SOLO)
-        .tier(galeforce.tier.GRANDMASTER)
-        .region(galeforce.region.lol.EUROPE_WEST)
-        .exec();
-    const challengers = await galeforce.lol.league
-        .league()
-        .queue(galeforce.queue.lol.RANKED_SOLO)
-        .tier(galeforce.tier.CHALLENGER)
-        .region(galeforce.region.lol.EUROPE_WEST)
-        .exec();
+    const masters = await getQueueRank(galeforce.tier.MASTER);
+    const grandmasters = await getQueueRank(galeforce.tier.GRANDMASTER);
+    const challengers = await getQueueRank(galeforce.tier.CHALLENGER);
 
     const getMaxLp = (league: Galeforce.dto.LeagueListDTO) => {
         return Math.max(...league.entries.map((e) => e.leaguePoints));

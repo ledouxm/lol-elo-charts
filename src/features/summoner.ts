@@ -2,13 +2,38 @@ import { EmbedBuilder } from "@discordjs/builders";
 import { InferModel, and, eq } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
-import { Summoner, gambler, summoner } from "../db/schema";
+import { Summoner, gambler, request, summoner } from "../db/schema";
 import { MinimalRank, RankDifference, formatRank, getArrow, getColor, getEmoji, getRankDifference } from "../utils";
 import { getChampionIconUrl, getProfileIconUrl } from "./icons";
 import { addMinutes, subMinutes } from "date-fns";
 import { betDelayInMinutes } from "./bets";
 
+export const addRequest = async () => {
+    try {
+        await db.insert(request).values({ createdAt: new Date() });
+    } catch (e) {
+        console.log("cant insert request", e);
+    }
+};
 export const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
+
+export const getSummonerByName = async (name: string) => {
+    const summoner = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name(name).exec();
+    await addRequest();
+    return summoner;
+};
+
+export const getQueueRank = async (tier: Galeforce.Tier) => {
+    const queue = await galeforce.lol.league
+        .league()
+        .queue(galeforce.queue.lol.RANKED_SOLO)
+        .region(galeforce.region.lol.EUROPE_WEST)
+        .tier(tier)
+        .exec();
+    await addRequest();
+
+    return queue;
+};
 
 export const addSummoner = async (riotSummoner: Galeforce.dto.SummonerDTO, channelId: string) => {
     try {
@@ -280,6 +305,7 @@ export const getSummonerCurrentGame = async (summonerId: string) => {
             .region(galeforce.region.lol.EUROPE_WEST)
             .summonerId(summonerId)
             .exec();
+        await addRequest();
 
         console.log(activeGame.gameStartTime);
 

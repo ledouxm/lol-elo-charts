@@ -101,3 +101,8 @@ export const betRelations = relations(bet, ({ one }) => {
         summoner: one(summoner, { fields: [bet.summonerId], references: [summoner.puuid] }),
     };
 });
+
+export const request = pgTable("request", {
+    id: serial("id").primaryKey(),
+    createdAt: timestamp("created_at").defaultNow(),
+});
