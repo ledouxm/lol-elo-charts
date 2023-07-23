@@ -88,7 +88,7 @@ export const sendToChannelId = async ({
             return;
         }
 
-        await (channel as TextChannel).send({
+        return (channel as TextChannel).send({
             embeds: embed ? [embed] : undefined,
             files: file ? [file] : undefined,
             content,
