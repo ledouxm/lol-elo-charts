@@ -188,6 +188,44 @@ export class Bets {
 
         interaction.reply({ embeds: [embed] });
     }
+
+    @Slash({ name: "beg", description: "Beg for points" })
+    async beg(interaction: CommandInteraction) {
+        const currentGambler = await getOrCreateGambler(interaction);
+
+        if (currentGambler.points > 0)
+            return sendErrorToChannelId(
+                interaction.channelId,
+                `You already have ${currentGambler.points} points`,
+                interaction
+            );
+
+        const gamblerBets = await db
+            .select()
+            .from(bet)
+            .where(and(eq(bet.gamblerId, currentGambler.id), isNull(bet.endedAt)))
+            .limit(1);
+
+        const hasActiveBets = gamblerBets?.[0];
+        if (hasActiveBets)
+            return sendErrorToChannelId(
+                interaction.channelId,
+                `You have ${gamblerBets[0].points} points in active bets`,
+                interaction
+            );
+
+        const lastBeg = currentGambler.lastBeg;
+        if (isSameDay(lastBeg, new Date()))
+            return sendErrorToChannelId(interaction.channelId, `You already begged today`, interaction);
+
+        await db.update(gambler).set({ points: 10, lastBeg: new Date() }).where(eq(gambler.id, currentGambler.id));
+
+        const embed = new EmbedBuilder()
+            .setColor(0xfbfaa6)
+            .setDescription(`**${interaction.member.user.username}** begged and got 10 points`);
+
+        interaction.reply({ embeds: [embed] });
+    }
 }
 
 export const getLeaderBoard = async (channelId: string) => {

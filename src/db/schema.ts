@@ -74,6 +74,7 @@ export const gambler = pgTable("gambler", {
     createdAt: timestamp("created_at").defaultNow(),
     points: integer("points").default(500),
     lastClaim: timestamp("last_claim").defaultNow(),
+    lastBeg: timestamp("last_beg"),
 });
 
 export type Gambler = InferModel<typeof gambler, "select">;

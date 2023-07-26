@@ -43,6 +43,13 @@
       "when": 1690098121436,
       "tag": "0005_tan_magik",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1690359030703,
+      "tag": "0006_chief_harrier",
+      "breakpoints": true
     }
   ]
 }
