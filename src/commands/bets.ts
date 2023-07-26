@@ -149,7 +149,7 @@ export class Bets {
                 and(
                     eq(gambler.discordId, interaction.member.user.id),
                     eq(gambler.channelId, interaction.channelId),
-                    eq(bet.endedAt, null)
+                    isNull(bet.endedAt)
                 )
             );
 
