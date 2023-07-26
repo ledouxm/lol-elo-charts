@@ -10,7 +10,7 @@ export const getMyBetsMessageEmbed = (betsWithSummoner: { bet: Bet; summoner: Su
             betsWithSummoner
                 .map(
                     ({ bet, summoner }) =>
-                        bet.points + " on " + summoner.currentName + " to " + (bet.hasBetOnWin ? "win" : "lose")
+                        bet.points + " on **" + summoner.currentName + "** " + (bet.hasBetOnWin ? "winning" : "losing")
                 )
                 .join("\n")
         );
@@ -63,7 +63,7 @@ const getAchievedBetString = (b: AchievedBet) => {
     const { currentName } = summoner;
 
     const icon = isWin ? "✅" : "❌";
-    return `${icon} **${gambler.name}** : ${isWin ? "+" : "-"}${points} points on **${currentName}** ${
+    return `${icon} **${gambler.name}** : ${isWin ? "+" : "-"}${points * 2} points on **${currentName}** ${
         hasBetOnWin ? "winning" : "losing"
     } (${formatDistanceToNow(new Date(match.info.gameEndTimestamp), { addSuffix: true })})`;
 };

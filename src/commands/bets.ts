@@ -143,8 +143,11 @@ export class Bets {
         const betsWithSummoner = await db
             .select()
             .from(bet)
-            .where(and(eq(gambler.discordId, interaction.member.user.id), eq(gambler.channelId, interaction.channelId)))
-            .leftJoin(summoner, eq(bet.summonerId, summoner.puuid));
+            .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
+            .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
+            .where(
+                and(eq(gambler.discordId, interaction.member.user.id), eq(gambler.channelId, interaction.channelId))
+            );
 
         if (!betsWithSummoner?.[0])
             return sendErrorToChannelId(interaction.channelId, "You don't have any bets", interaction);
