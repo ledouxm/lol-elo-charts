@@ -146,7 +146,11 @@ export class Bets {
             .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
             .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
             .where(
-                and(eq(gambler.discordId, interaction.member.user.id), eq(gambler.channelId, interaction.channelId))
+                and(
+                    eq(gambler.discordId, interaction.member.user.id),
+                    eq(gambler.channelId, interaction.channelId),
+                    eq(bet.endedAt, null)
+                )
             );
 
         if (!betsWithSummoner?.[0])
