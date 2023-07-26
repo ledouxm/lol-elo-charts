@@ -143,7 +143,7 @@ export class Bets {
         const betsWithSummoner = await db
             .select()
             .from(bet)
-            .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
+            .leftJoin(summoner, and(eq(bet.summonerId, summoner.puuid), eq(summoner.channelId, interaction.channelId)))
             .leftJoin(gambler, eq(bet.gamblerId, gambler.id))
             .where(
                 and(
