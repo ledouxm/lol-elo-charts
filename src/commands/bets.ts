@@ -64,7 +64,7 @@ export class Bets {
         const s = await db
             .select()
             .from(summoner)
-            .where(ilike(summoner.currentName, name))
+            .where(and(ilike(summoner.currentName, name), eq(summoner.channelId, interaction.channelId)))
             .leftJoin(rank, eq(rank.summonerId, summoner.puuid))
             .limit(1);
 
