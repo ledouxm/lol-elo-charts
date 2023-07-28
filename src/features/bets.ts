@@ -44,13 +44,27 @@ const tryToResolveBet = async ({
     activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler; summoner: Summoner };
     gameCache?: GameCache;
 }) => {
+    console.log(
+        "resolving bet",
+        activeBet.bet.id,
+        "for",
+        activeBet.summoner.currentName,
+        "on win",
+        activeBet.bet.hasBetOnWin,
+        "by",
+        activeBet.gambler.name
+    );
     const game = await getGameMatchingBet(activeBet, gameCache);
     if (!game) return;
+
+    console.log("game", game.metadata.matchId, "found");
 
     await insertMatchFromMatchDto(game, activeBet.summoner.puuid);
 
     const isWin =
         game.info.participants.find((p) => p.puuid === activeBet.summoner.puuid)?.win === activeBet.bet.hasBetOnWin;
+
+    console.log("bet is win", isWin);
 
     if (isWin) {
         // increase points if win
@@ -75,6 +89,8 @@ const tryToResolveBet = async ({
             .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
             .limit(1)
     )?.[0];
+
+    console.log(newBet);
 
     return { ...newBet, match: game };
 };
