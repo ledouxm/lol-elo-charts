@@ -26,8 +26,12 @@ export const checkBetsAndGetLastGame = async () => {
     const gameCache: GameCache = new Map();
 
     for (const activeBet of bets) {
-        const newBet = await tryToResolveBet({ activeBet, gameCache });
-        if (newBet) newBets.push(newBet);
+        try {
+            const newBet = await tryToResolveBet({ activeBet, gameCache });
+            if (newBet) newBets.push(newBet);
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     console.log("resolved", newBets.length, "bets");
