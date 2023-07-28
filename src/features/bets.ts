@@ -48,6 +48,7 @@ const tryToResolveBet = async ({
     activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler; summoner: Summoner };
     gameCache?: GameCache;
 }) => {
+    console.log("activeBet", activeBet);
     console.log(
         "resolving bet",
         activeBet.bet.id,
@@ -114,7 +115,13 @@ const getGameMatchingBet = async (
     console.log("bet createdAt", activeBet.bet.createdAt, betDelayInMinutes);
     console.log("betDate", betDate);
 
-    console.log("fetching game matching bet", activeBet.bet.id, "for", activeBet.summoner.currentName);
+    console.log(
+        "fetching game matching bet",
+        activeBet.bet.id,
+        "for",
+        activeBet.summoner.currentName,
+        Math.round(betDate.getTime() / 1000)
+    );
     const lastGames = await galeforce.lol.match
         .list()
         .region(galeforce.region.riot.EUROPE)
@@ -123,6 +130,7 @@ const getGameMatchingBet = async (
         .exec();
     await addRequest();
 
+    console.log(lastGames);
     if (!lastGames?.length) return null;
 
     console.log("found", lastGames.length, "games", lastGames.join(", "));
