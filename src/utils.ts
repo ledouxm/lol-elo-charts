@@ -71,7 +71,7 @@ export const getMostOcurrence = (arr: Array<string>) => {
 
 export type MinimalRank = Pick<InsertRank, "tier" | "division" | "leaguePoints">;
 
-const tiers = ["IRON", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
+const tiers = ["IRON", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
 const ranks = ["IV", "III", "II", "I"];
 export const getRankDifference = (oldRank: MinimalRank, newRank: MinimalRank) => {
     const sameTier = oldRank.tier === newRank.tier;
