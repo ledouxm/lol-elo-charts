@@ -5,14 +5,16 @@ import { summoner } from "@/db/schema";
 import { EmbedBuilder } from "@discordjs/builders";
 import { getChampionById, getChampionIconUrl } from "./lol/icons";
 import { sendToChannelId } from "./discord/discord";
-import { formatDistanceToNow } from "date-fns";
 
 export const getInGameSummoners = async () => {
     const summoners = await getSummonersWithChannels();
+    console.log("checking activity for", summoners.length, "summoners");
     for (const summ of summoners) {
         try {
             const activeGame = await getSummonerCurrentGame(summ.id);
             if (!activeGame) continue;
+
+            console.log("activeGame", activeGame?.gameId, "for summoner", summ.currentName);
 
             const matchId = "EUW1_" + activeGame.gameId;
             if (matchId === summ.lastNotifiedInGameId) continue;

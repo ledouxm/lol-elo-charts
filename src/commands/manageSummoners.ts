@@ -1,11 +1,12 @@
-import { summoner } from "@/db/schema";
+import { apex, rank, summoner } from "@/db/schema";
 import { EmbedBuilder } from "@discordjs/builders";
 import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "../db/db";
 import { addSummoner, galeforce, getSummonerByName, removeSummoner } from "../features/summoner";
 import { getInGameSummoners } from "@/features/activity";
+import { getTotalLpFromRank, makeTierData } from "@/features/lol/lps";
 
 @Discord()
 export class ManageSummoner {
@@ -54,6 +55,51 @@ export class ManageSummoner {
         interaction.reply({ embeds: [embed] });
     }
 
+    @Slash({ name: "lpleaderboard", description: "Show the leaderboard of the channel" })
+    async leaderboard(interaction: CommandInteraction) {
+        const lastApex = await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1);
+
+        const tierData = makeTierData(lastApex[0]);
+
+        const summoners = await db.select().from(summoner).where(eq(summoner.channelId, interaction.channelId));
+
+        const summonersWithRank = [];
+
+        for (const summoner of summoners) {
+            const summonerRank = await db
+                .select()
+                .from(rank)
+                .where(eq(rank.summonerId, summoner.puuid))
+                .orderBy(desc(rank.createdAt))
+                .limit(1);
+
+            console.log(summonerRank);
+
+            if (summonerRank.length) {
+                summonersWithRank.push({
+                    summoner,
+                    rank: summonerRank[0],
+                    totalLp: getTotalLpFromRank(summonerRank[0], tierData),
+                });
+            }
+        }
+
+        const embed = new EmbedBuilder().setTitle("Channel leaderboard").setDescription(
+            summonersWithRank.length
+                ? summonersWithRank
+                      .sort((a, b) => b.totalLp - a.totalLp)
+                      .map(
+                          (s, index) =>
+                              `${index + 1}) ${s.summoner.currentName} - ${s.rank.tier} ${s.rank.division} ${
+                                  s.rank.leaguePoints
+                              } LP`
+                      )
+                      .join("\n")
+                : "No summoner watched"
+        );
+
+        interaction.reply({ embeds: [embed] });
+    }
     // @Slash({ name: "register", description: "Register yourself as gambler" })
     // async registerAsGamber(interaction: CommandInteraction) {
     //     const gamb = await getOrCreateGambler(interaction);
