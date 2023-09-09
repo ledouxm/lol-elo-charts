@@ -53,7 +53,7 @@ const tryToResolveBet = async ({
         "resolving bet",
         activeBet.bet.id,
         "for",
-        activeBet.summoner.currentName,
+        activeBet.summoner?.currentName,
         "on win",
         activeBet.bet.hasBetOnWin,
         "by",

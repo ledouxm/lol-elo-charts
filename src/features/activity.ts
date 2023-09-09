@@ -8,13 +8,14 @@ import { sendToChannelId } from "./discord/discord";
 
 export const getInGameSummoners = async () => {
     const summoners = await getSummonersWithChannels();
+    console.log(summoners);
     console.log("checking activity for", summoners.length, "summoners");
     for (const summ of summoners) {
         try {
             const activeGame = await getSummonerCurrentGame(summ.id);
             if (!activeGame) continue;
 
-            console.log("activeGame", activeGame?.gameId, "for summoner", summ.currentName);
+            console.log("activeGame", activeGame?.gameId, "for summoner", summ?.currentName);
 
             const matchId = "EUW1_" + activeGame.gameId;
             if (matchId === summ.lastNotifiedInGameId) continue;
