@@ -15,9 +15,18 @@ export const addRequest = async () => {
 };
 export const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
 
-export const getSummonerByName = async (name: string) => {
-    const summoner = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name(name).exec();
-    await addRequest();
+export const getSummonerByName = async (name: string, tag: string) => {
+    const account = await galeforce.riot.account
+        .account()
+        .gameName(name)
+        .tagLine(tag)
+        .region(galeforce.region.riot.EUROPE)
+        .exec();
+    const summoner = await galeforce.lol
+        .summoner()
+        .region(galeforce.region.lol.EUROPE_WEST)
+        .puuid(account.puuid)
+        .exec();
     return summoner;
 };
 
