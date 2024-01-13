@@ -28,11 +28,16 @@ export class ManageSummoner {
         tag: string,
         interaction: CommandInteraction
     ) {
-        console.log("addSummoner", name);
-        const riotSummoner = await getSummonerByName(name, tag || "EUW");
+        try {
+            console.log("addSummoner", name);
+            const riotSummoner = await getSummonerByName(name, tag || "EUW");
 
-        await addSummoner(riotSummoner, interaction.channelId);
-        interaction.reply("Added summoner " + name);
+            await addSummoner(riotSummoner, interaction.channelId);
+            interaction.reply("Added summoner " + name + "#" + tag || "EUW");
+        } catch (e) {
+            console.log(e);
+            interaction.reply("Summoner not found");
+        }
     }
 
     @Slash({ name: "removesummoner", description: "Remove a summoner from the list of summoners to track" })
