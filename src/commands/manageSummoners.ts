@@ -19,10 +19,17 @@ export class ManageSummoner {
             type: ApplicationCommandOptionType.String,
         })
         name: string,
+        @SlashOption({
+            description: "Tag",
+            name: "name",
+            required: false,
+            type: ApplicationCommandOptionType.String,
+        })
+        tag: string,
         interaction: CommandInteraction
     ) {
         console.log("addSummoner", name);
-        const riotSummoner = await getSummonerByName(name);
+        const riotSummoner = await getSummonerByName(name, tag || "EUW");
 
         await addSummoner(riotSummoner, interaction.channelId);
         interaction.reply("Added summoner " + name);
