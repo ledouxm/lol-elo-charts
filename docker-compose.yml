@@ -1,7 +1,8 @@
 version: "3.4"
 services:
     server:
-        image: "ghcr.io/ledouxm/lol-elo-charts:${BRANCH}"
+        image: lol-elo-charts
+        build: .
         ports:
             - "8080"
         environment:
@@ -10,8 +11,6 @@ services:
             POSTGRES_HOST: ${POSTGRES_HOST}
             POSTGRES_USER: ${POSTGRES_USER}
             RG_API_KEY: ${RG_API_KEY}
-            VIRTUAL_HOST: ${VIRTUAL_HOST}
-            LETSENCRYPT_HOST: ${VIRTUAL_HOST}
             BOT_TOKEN: ${BOT_TOKEN}
             CRON_RANK_DELAY_MIN: ${CRON_RANK_DELAY_MIN}
             CRON_BETS_DELAY_MIN: ${CRON_BETS_DELAY_MIN}
@@ -23,7 +22,6 @@ services:
         depends_on:
             - postgresql
         networks:
-            - nginx-network
             - lol-charts-network
         profiles:
             - production
@@ -46,14 +44,10 @@ services:
 
     adminer:
         image: adminer
-        environment:
-            VIRTUAL_HOST: ${ADMINER_VIRTUAL_HOST}
-            LETSENCRYPT_HOST: ${ADMINER_VIRTUAL_HOST}
         restart: always
         ports:
             - "8080"
         networks:
-            - nginx-network
             - lol-charts-network
 
 volumes:
@@ -62,6 +56,3 @@ volumes:
 networks:
     lol-charts-network:
         driver: bridge
-    nginx-network:
-        external: true
-        name: nginx-network
