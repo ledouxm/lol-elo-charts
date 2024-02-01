@@ -21,7 +21,7 @@ export class ManageSummoner {
         name: string,
         @SlashOption({
             description: "Tag",
-            name: "name",
+            name: "tag",
             required: false,
             type: ApplicationCommandOptionType.String,
         })
