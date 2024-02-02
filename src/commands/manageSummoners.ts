@@ -33,7 +33,7 @@ export class ManageSummoner {
             const riotSummoner = await getSummonerByName(name, tag || "EUW");
 
             await addSummoner(riotSummoner, interaction.channelId);
-            interaction.reply("Added summoner " + name + "#" + tag || "EUW");
+            interaction.reply("Added summoner " + name + "#" + (tag || "EUW"));
         } catch (e) {
             console.log(e);
             interaction.reply("Summoner not found");

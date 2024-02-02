@@ -2,8 +2,9 @@ import { addRequest, galeforce } from "../summoner";
 
 export const getSummonerData = async (puuid: string) => {
     const summonerData = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).puuid(puuid).exec();
+    const account = await galeforce.riot.account.account().region(galeforce.region.riot.EUROPE).puuid(puuid).exec();
     await addRequest();
-    return summonerData;
+    return { ...summonerData, fullname: `${account.gameName}#${account.tagLine}` };
 };
 
 export const getElos = async (id: string) => {

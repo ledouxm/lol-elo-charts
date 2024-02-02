@@ -27,7 +27,7 @@ export const getSummonerByName = async (name: string, tag: string) => {
         .region(galeforce.region.lol.EUROPE_WEST)
         .puuid(account.puuid)
         .exec();
-    return summoner;
+    return { ...summoner, fullname: `${account.gameName}#${account.tagLine}` };
 };
 
 export const getQueueRank = async (tier: Galeforce.Tier) => {
@@ -42,7 +42,10 @@ export const getQueueRank = async (tier: Galeforce.Tier) => {
     return queue;
 };
 
-export const addSummoner = async (riotSummoner: Galeforce.dto.SummonerDTO, channelId: string) => {
+export const addSummoner = async (
+    riotSummoner: Galeforce.dto.SummonerDTO & { fullname: string },
+    channelId: string
+) => {
     try {
         const identifier = { puuid: summoner.puuid, channelId };
 
@@ -56,7 +59,7 @@ export const addSummoner = async (riotSummoner: Galeforce.dto.SummonerDTO, chann
         if (existing) {
             await db
                 .update(summoner)
-                .set({ isActive: true, currentName: riotSummoner.name })
+                .set({ isActive: true, currentName: riotSummoner.fullname })
                 .where(eq(summoner.puuid, riotSummoner.puuid));
 
             return identifier;
@@ -67,7 +70,7 @@ export const addSummoner = async (riotSummoner: Galeforce.dto.SummonerDTO, chann
             id: riotSummoner.id,
             channelId,
             icon: riotSummoner.profileIconId,
-            currentName: riotSummoner.name,
+            currentName: riotSummoner.fullname,
         });
 
         return identifier;

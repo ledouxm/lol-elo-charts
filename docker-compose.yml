@@ -18,7 +18,7 @@ services:
             ENABLE_BETS: ${ENABLE_BETS}
             FORCE_RECAPS: ${FORCE_RECAPS}
             HTTP_PORT: ${HTTP_PORT}
-
+        restart: always
         depends_on:
             - postgresql
         networks:

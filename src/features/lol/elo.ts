@@ -34,8 +34,8 @@ export const checkElo = async () => {
 export const checkSummonerElo = async (summ: SummonerWithChannels) => {
     const summonerData = await getSummonerData(summ.puuid);
 
-    if (summonerData.name !== summ.currentName) {
-        await db.update(summoner).set({ currentName: summonerData.name }).where(eq(summoner.puuid, summ.puuid));
+    if (summonerData.fullname !== summ.currentName) {
+        await db.update(summoner).set({ currentName: summonerData.fullname }).where(eq(summoner.puuid, summ.puuid));
     }
 
     const elo = await getSoloQElo(summ.id);
@@ -58,7 +58,7 @@ export const checkSummonerElo = async (summ: SummonerWithChannels) => {
 
     await db
         .update(summoner)
-        .set({ icon: summonerData.profileIconId, currentName: summonerData.name, checkedAt: new Date() })
+        .set({ icon: summonerData.profileIconId, currentName: summonerData.fullname, checkedAt: new Date() })
         .where(eq(summoner.puuid, summ.puuid));
 
     if (lastRank && areRanksEqual(lastRank, newRank)) return;
