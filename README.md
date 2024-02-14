@@ -12,7 +12,7 @@ League of Legends LP tracking Discord bot
 
 ## Daily recaps with chart
 
-![Alt text](images/image.png)
+![Alt text](images/recap.png)
 
 ## Discord leaderboard
 
