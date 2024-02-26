@@ -306,13 +306,20 @@ const getDamageDealtPercent = (match: Galeforce.dto.MatchDTO, participant: Parti
     return ((participant.totalDamageDealtToChampions / totalDamage) * 100).toFixed(2);
 };
 
+const getKillParticipation = (match: Galeforce.dto.MatchDTO, participant: Participant) => {
+    const participantsInTeam = match.info.participants.filter((p) => p.teamId === participant.teamId);
+    const teamKills = participantsInTeam.reduce((acc, p) => acc + p.kills, 0);
+
+    return ((participant.kills + participant.assists) / teamKills) * 100;
+}
+
 const getMatchDescription = async (match: Galeforce.dto.MatchDTO, participant: Participant) => {
     return `**${participant.kills}/${participant.deaths}/${participant.assists}** with **${
         participant.championName
     }** (${formatGameDuration(match.info.gameDuration)}) - **${getDamageDealtPercent(
         match,
         participant
-    )}%** of team's damage`;
+        )}%** of team's damage and **${getKillParticipation(match, participant).toFixed(2)}%** kill participation`;
 };
 
 const formatGameDuration = (gameDuration: number) => {
