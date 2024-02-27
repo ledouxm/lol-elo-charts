@@ -319,7 +319,7 @@ const getMatchDescription = async (match: Galeforce.dto.MatchDTO, participant: P
     }** (${formatGameDuration(match.info.gameDuration)}) - **${getDamageDealtPercent(
         match,
         participant
-        )}%** of team's damage and **${getKillParticipation(match, participant).toFixed(2)}%** kill participation`;
+        )}%** of team's damage and **${getKillParticipation(match, participant).toFixed(2)}%** KP`;
 };
 
 const formatGameDuration = (gameDuration: number) => {
