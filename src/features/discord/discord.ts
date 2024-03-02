@@ -1,8 +1,18 @@
-import type { AttachmentBuilder, EmbedBuilder, Interaction, Message, TextChannel } from "discord.js";
+import type {
+    AnyComponentBuilder,
+    AttachmentBuilder,
+    ComponentBuilder,
+    EmbedBuilder,
+    Interaction,
+    Message,
+    TextChannel,
+} from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 import "../../commands/bets";
 import "../../commands/manageSummoners";
+import { executeButtonInteraction } from "@/commands/buttons";
+import { ActionRowBuilder } from "@discordjs/builders";
 
 export const bot = new Client({
     // To use only guild command
@@ -39,7 +49,12 @@ bot.once("ready", async () => {
 });
 
 bot.on("interactionCreate", (interaction: Interaction) => {
-    bot.executeInteraction(interaction);
+    if (interaction.isButton()) {
+        return void executeButtonInteraction(interaction);
+    }
+    if (interaction.isCommand()) {
+        return void bot.executeInteraction(interaction);
+    }
 });
 
 bot.on("messageCreate", (message: Message) => {
@@ -61,12 +76,14 @@ export const sendToChannelId = async ({
     channelId,
     embed,
     file,
+    components,
     content,
     retry = true,
 }: {
     channelId: string;
     embed?: EmbedBuilder | string;
     file?: AttachmentBuilder | Buffer;
+    components?: any[];
     retry?: boolean;
     content?: string;
 }) => {
@@ -91,6 +108,7 @@ export const sendToChannelId = async ({
         return (channel as TextChannel).send({
             embeds: embed ? [embed] : undefined,
             files: file ? [file] : undefined,
+            components,
             content,
         });
     } catch (e) {

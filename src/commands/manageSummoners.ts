@@ -1,6 +1,6 @@
 import { apex, rank, summoner } from "@/db/schema";
-import { EmbedBuilder } from "@discordjs/builders";
-import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, ButtonStyle, CommandInteraction } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import { desc, eq } from "drizzle-orm";
 import { db } from "../db/db";
@@ -119,9 +119,18 @@ export class ManageSummoner {
     //     interaction.reply("Test");
     // }
 
-    @Slash({ name: "test", description: "List all summoners being tracked" })
-    async test(interaction: CommandInteraction) {
-        await getInGameSummoners();
-        interaction.reply("ok");
-    }
+    // @Slash({ name: "test", description: "TEST" })
+    // async test(interaction: CommandInteraction) {
+    //     const detailsButton = new ButtonBuilder()
+    //         .setLabel("Details")
+    //         .setCustomId("details-EUW1_6839577079")
+    //         .setStyle(ButtonStyle.Secondary);
+
+    //     const row = new ActionRowBuilder().addComponents(detailsButton);
+
+    //     await interaction.reply({
+    //         content: "test",
+    //         components: [row],
+    //     });
+    // }
 }

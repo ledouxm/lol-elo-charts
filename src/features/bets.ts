@@ -165,6 +165,7 @@ export const insertMatchFromMatchDto = async (game: Galeforce.dto.MatchDTO, puui
         participantIndex,
         championName: participant.championName,
         summonerId: puuid,
+        details: game,
     });
 };
 

@@ -1,5 +1,17 @@
 import { InferModel, relations } from "drizzle-orm";
-import { serial, text, timestamp, pgTable, pgEnum, varchar, boolean, integer, primaryKey } from "drizzle-orm/pg-core";
+import {
+    serial,
+    text,
+    timestamp,
+    pgTable,
+    pgEnum,
+    varchar,
+    boolean,
+    integer,
+    primaryKey,
+    jsonb,
+} from "drizzle-orm/pg-core";
+import Galeforce from "galeforce";
 
 export const divisionEnum = pgEnum("division", ["IV", "III", "II", "I", "NA"]);
 export const tierEnum = pgEnum("tier", [
@@ -120,6 +132,7 @@ export const match = pgTable("match", {
     isWin: boolean("is_win"),
     championName: text("champion_name"),
     kda: varchar("kda", { length: 20 }),
+    details: jsonb("details").$type<Galeforce.dto.MatchDTO>(),
 });
 
 export const matchRelations = relations(match, ({ one }) => {
