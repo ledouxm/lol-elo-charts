@@ -24,9 +24,11 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
 
         const file = await createMatchDetailsFile(details, participant);
 
-        await interaction.reply({
+        await interaction.message.edit({
             files: [file],
         });
+
+        return void interaction.deferUpdate();
     }
 
     if (interaction.customId.startsWith("damages")) {
@@ -46,8 +48,10 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
 
         const file = await createMatchDamageFile(details, participant);
 
-        await interaction.reply({
+        await interaction.message.edit({
             files: [file],
         });
+
+        return void interaction.deferUpdate();
     }
 };
