@@ -9,6 +9,8 @@ import { getAchievedBetsMessageContent } from "../discord/messages";
 import { groupBy } from "pastable";
 import { getSoloQElo, getSummonerData } from "./summoner";
 import Galeforce from "galeforce";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import { ButtonStyle } from "discord.js";
 
 export const checkElo = async () => {
     const summoners = await getSummonersWithChannels();
@@ -69,8 +71,8 @@ export const checkSummonerElo = async (summ: SummonerWithChannels) => {
     });
 
     // send summoner update to every channel he is watched in
-    const { embed, lastGame } = await getCheckEloEmbed({ lastRank, newRank, summ, elo });
-    summ.channels.forEach((channel) => sendToChannelId({ channelId: channel, embed }));
+    const { embed, lastGame, row } = await getCheckEloEmbedAndButton({ lastRank, newRank, summ, elo });
+    summ.channels.forEach((channel) => sendToChannelId({ channelId: channel, embed, components: [row] }));
 
     if (lastGame) {
         await db.update(summoner).set({ lastGameId: lastGame.metadata.matchId }).where(eq(summoner.puuid, summ.puuid));
@@ -84,7 +86,7 @@ const getNewLastGameIfExists = async (summ: Summoner) => {
     return lastGame.metadata.matchId === summ?.lastGameId ? null : lastGame;
 };
 
-export const getCheckEloEmbed = async ({
+export const getCheckEloEmbedAndButton = async ({
     summ,
     lastRank,
     newRank,
@@ -97,15 +99,22 @@ export const getCheckEloEmbed = async ({
 }) => {
     const lastGame = await getNewLastGameIfExists(summ);
 
+    const detailsButton = new ButtonBuilder()
+        .setLabel("Details")
+        .setCustomId(`details-${lastGame.metadata.matchId}`)
+        .setStyle(ButtonStyle.Secondary);
+
+    const row = new ActionRowBuilder().addComponents(detailsButton);
+
     if (!lastRank) {
         const embed = await getFirstRankEmbed(summ, newRank, elo, lastGame);
-        return { embed, lastGame };
+        return { embed, lastGame, row };
     }
 
     const rankDifference = getRankDifference(lastRank, newRank);
     const embed = await getRankDifferenceEmbed({ summ, rankDifference, elo, lastGame });
 
-    return { embed, lastGame };
+    return { embed, lastGame, row };
 };
 
 export const checkBets = async () => {

@@ -22,7 +22,7 @@ const options = {
     kdaInnerSpacing: 5,
 };
 
-export const createMatchDetails = async (match: Galeforce.dto.MatchDTO, participant: Participant) => {
+export const createMatchDetailsFile = async (match: Galeforce.dto.MatchDTO, participant: Participant) => {
     const dragon = await DataDragon.latest();
     await dragon.items.fetch();
 
@@ -30,11 +30,11 @@ export const createMatchDetails = async (match: Galeforce.dto.MatchDTO, particip
     const blueSidePlayers = sortedPlayers[blueSide];
     const redSidePlayers = sortedPlayers[redSide];
 
-    const canvas = createCanvas(800, 467);
+    const canvas = createCanvas(700, 467);
     const ctx = canvas.getContext("2d");
 
     ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, 800, 600);
+    ctx.fillRect(0, 0, 700, 600);
 
     const { x, y, width, height } = getRectArguments(participant, blueSidePlayers, redSidePlayers);
     ctx.strokeStyle = "#FDB05F";
@@ -69,7 +69,7 @@ export const createMatchDetails = async (match: Galeforce.dto.MatchDTO, particip
     }
 
     for (const [index, player] of redSidePlayers.entries()) {
-        const leftX = 800 - options.championIconX - options.championIconSize;
+        const leftX = 700 - options.championIconX - options.championIconSize;
         const topY = getTopY(index);
 
         await drawChampionIcons({ ctx, participant: player, x: leftX, y: topY });
@@ -100,7 +100,7 @@ export const createMatchDetails = async (match: Galeforce.dto.MatchDTO, particip
         await drawKDA({ ctx, participant: player, x: kdaX, y: kdaY });
 
         ctx.font = `${options.kdaSmallFontSize}px Arial`;
-        const creepScore = `${player.totalMinionsKilled}cs`;
+        const creepScore = `${player.totalMinionsKilled + player.neutralMinionsKilled}cs`;
         const csWidth = ctx.measureText(creepScore).width + options.kdaSpacing;
 
         const csX = kdaX - csWidth;
@@ -112,11 +112,11 @@ export const createMatchDetails = async (match: Galeforce.dto.MatchDTO, particip
         match,
         y: 38,
         blueSizeX: 10,
-        redSizeX: 800 - 10,
+        redSizeX: 700 - 10,
     });
 
     const buffer = canvas.toBuffer("image/png");
-    await fs.writeFile("matchDetails.png", buffer);
+    return buffer;
 };
 
 const drawWinLoss = async ({
@@ -254,7 +254,7 @@ const drawCreepScore = async ({
 }) => {
     ctx.font = `${options.kdaSmallFontSize}px Arial`;
     ctx.fillStyle = "#787878";
-    ctx.fillText(participant.totalMinionsKilled.toString() + "cs", x, y);
+    ctx.fillText((participant.totalMinionsKilled + participant.neutralMinionsKilled).toString() + "cs", x, y);
 };
 
 const sortPlayersByTeamAndRole = (players: Participant[]) => {
@@ -274,7 +274,7 @@ const getRectArguments = (participant: Participant, blueSidePlayers: Participant
     const width = options.championIconSize + options.itemIconSpacing + 7 * options.itemIconSize;
     const height = options.championIconSize + options.summonerSpellIconSize;
 
-    const leftX = isBlueSide ? options.championIconX : 800 - options.championIconX - width;
+    const leftX = isBlueSide ? options.championIconX : 700 - options.championIconX - width;
     const topY = getTopY(index);
 
     return { x: leftX, y: topY, width, height };
