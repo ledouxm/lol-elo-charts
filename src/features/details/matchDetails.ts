@@ -3,7 +3,6 @@ import { Participant, getDamageDealtPercent, getKillParticipation } from "../sum
 import { groupBy, sortArrayOfObjectByPropFromArray, sortBy } from "pastable";
 import { createCanvas, loadImage, type CanvasRenderingContext2D } from "canvas";
 import { DDImageLoader, getChampionIconUrl, getItemIconImageData, getSummonerSpellIconImageData } from "../lol/icons";
-import fs from "fs/promises";
 import { DataDragon } from "data-dragon";
 
 const imageLoader = new DDImageLoader();
@@ -257,7 +256,7 @@ const drawCreepScore = async ({
     ctx.fillText((participant.totalMinionsKilled + participant.neutralMinionsKilled).toString() + "cs", x, y);
 };
 
-const sortPlayersByTeamAndRole = (players: Participant[]) => {
+export const sortPlayersByTeamAndRole = (players: Participant[]) => {
     const sortedByRole = sortArrayOfObjectByPropFromArray(players, "teamPosition", roleOrder);
     const sortedByTeam = groupBy(sortedByRole, "teamId");
 
@@ -288,7 +287,7 @@ const getTopY = (index: number) => {
 };
 
 const roleOrder = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
-const blueSide = 100 as const;
-const redSide = 200 as const;
+export const blueSide = 100 as const;
+export const redSide = 200 as const;
 
 type AnySide = typeof blueSide | typeof redSide;

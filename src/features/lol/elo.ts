@@ -104,7 +104,12 @@ export const getCheckEloEmbedAndButton = async ({
         .setCustomId(`details-${lastGame.metadata.matchId}`)
         .setStyle(ButtonStyle.Secondary);
 
-    const row = new ActionRowBuilder().addComponents(detailsButton);
+    const damageButton = new ButtonBuilder()
+        .setLabel("Damages")
+        .setCustomId(`damages-${lastGame.metadata.matchId}`)
+        .setStyle(ButtonStyle.Danger);
+
+    const row = new ActionRowBuilder().addComponents(detailsButton, damageButton);
 
     if (!lastRank) {
         const embed = await getFirstRankEmbed(summ, newRank, elo, lastGame);

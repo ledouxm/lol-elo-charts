@@ -4,7 +4,6 @@
         "module": "CommonJS",
         "lib": ["es6", "DOM"],
         "target": "ESNext",
-        "declaration": true,
         "removeComments": true,
         "noImplicitAny": false,
         "experimentalDecorators": true,
@@ -20,5 +19,5 @@
         "paths": {
             "@/*": ["./src/*"]
         }
-    },
+    }
 }

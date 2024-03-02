@@ -89,8 +89,6 @@ export class DDImageLoader {
             ? url
             : `https://ddragon.leagueoflegends.com/cdn/${await getDDVersion()}/img/${url}`;
 
-        console.log(fullUrl);
-
         if (this.cache[fullUrl]) return this.cache[fullUrl];
 
         const image = await loadImage(fullUrl);
