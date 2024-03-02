@@ -2,7 +2,7 @@
     "name": "lol-charts",
     "scripts": {
         "dev-start": "pnpm vite-node ./src/main.ts",
-        "dev": "nodemon",
+        "dev": "vite-node --watch ./src/main.ts",
         "build": "tsup src/main.ts --dts",
         "start": "cross-env NODE_ENV=production node dist/main.js",
         "migration:create": "drizzle-kit generate:pg",
@@ -23,6 +23,7 @@
         "chartjs-plugin-datalabels": "^2.2.0",
         "cors": "^2.8.5",
         "cronstrue": "^2.28.0",
+        "data-dragon": "^0.0.2",
         "date-fns": "^2.30.0",
         "debug": "^4.3.2",
         "discord.js": "^14.11.0",
@@ -35,7 +36,8 @@
         "pastable": "^2.2.0",
         "postgres": "^3.3.5",
         "puppeteer": "^20.9.0",
-        "reflect-metadata": "^0.1.13"
+        "reflect-metadata": "^0.1.13",
+        "xstate": "^5.9.0"
     },
     "devDependencies": {
         "@faker-js/faker": "^8.0.2",

@@ -6,21 +6,30 @@ import { startCronJobs } from "./startCronJobs";
 import { match, rank, summoner } from "./db/schema";
 import { addRequest, galeforce, getSummonersWithChannels } from "./features/summoner";
 import { getSummonerData } from "./features/lol/summoner";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNotNull } from "drizzle-orm";
 import { getAndSaveApex } from "./features/lol/apex";
 import axios from "axios";
 import { makeRouter } from "./features/router";
 import { insertMatchFromMatchDto } from "./features/bets";
+import { promises as fs } from "fs";
+import { createMatchDetails } from "./features/details/matchDetails";
+import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
 
 const start = async () => {
     try {
-        await initDb();
-        await startDiscordBot();
-        startCronJobs();
-        makeRouter();
-        if (process.env.FORCE_RECAPS) {
-            await getAndSaveApex();
-        }
+        const detailsRaw = await fs.readFile("./details.json", "utf-8");
+        const matches = JSON.parse(detailsRaw);
+        const details = matches[0].details;
+        console.log(details);
+        await createMatchDetails(details, details.info.participants[0]);
+
+        // await initDb();
+        // await startDiscordBot();
+        // startCronJobs();
+        // makeRouter();
+        // if (process.env.FORCE_RECAPS) {
+        //     await getAndSaveApex();
+        // }
     } catch (err) {
         console.log(err);
         process.exit(1);
@@ -47,6 +56,7 @@ const fetchMatches = async (matchIds: string[]) => {
         }
     }
 };
+
 const transformSummonerAndRanks = async () => {
     const summoners = await db.selectDistinctOn([summoner.currentName]).from(summoner);
 

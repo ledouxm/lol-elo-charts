@@ -299,19 +299,19 @@ const getWinRateFields = (elo: Galeforce.dto.LeagueEntryDTO) => {
     ];
 };
 
-const getDamageDealtPercent = (match: Galeforce.dto.MatchDTO, participant: Participant) => {
+export const getDamageDealtPercent = (match: Galeforce.dto.MatchDTO, participant: Participant) => {
     const participantsInTeam = match.info.participants.filter((p) => p.teamId === participant.teamId);
     const totalDamage = participantsInTeam.reduce((acc, p) => acc + p.totalDamageDealtToChampions, 0);
 
     return ((participant.totalDamageDealtToChampions / totalDamage) * 100).toFixed(2);
 };
 
-const getKillParticipation = (match: Galeforce.dto.MatchDTO, participant: Participant) => {
+export const getKillParticipation = (match: Galeforce.dto.MatchDTO, participant: Participant) => {
     const participantsInTeam = match.info.participants.filter((p) => p.teamId === participant.teamId);
     const teamKills = participantsInTeam.reduce((acc, p) => acc + p.kills, 0);
 
-    return ((participant.kills + participant.assists) / teamKills) * 100;
-}
+    return (((participant.kills + participant.assists) / teamKills) * 100).toFixed(2);
+};
 
 const getMatchDescription = async (match: Galeforce.dto.MatchDTO, participant: Participant) => {
     return `**${participant.kills}/${participant.deaths}/${participant.assists}** with **${
@@ -319,7 +319,7 @@ const getMatchDescription = async (match: Galeforce.dto.MatchDTO, participant: P
     }** (${formatGameDuration(match.info.gameDuration)}) - **${getDamageDealtPercent(
         match,
         participant
-        )}%** of team's damage and **${getKillParticipation(match, participant).toFixed(2)}%** KP`;
+    )}%** of team's damage and **${getKillParticipation(match, participant)}%** KP`;
 };
 
 const formatGameDuration = (gameDuration: number) => {

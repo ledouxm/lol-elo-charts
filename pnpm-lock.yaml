@@ -41,6 +41,9 @@ dependencies:
   cronstrue:
     specifier: ^2.28.0
     version: 2.28.0
+  data-dragon:
+    specifier: ^0.0.2
+    version: 0.0.2
   date-fns:
     specifier: ^2.30.0
     version: 2.30.0
@@ -70,7 +73,7 @@ dependencies:
     version: 3.0.2
   pastable:
     specifier: ^2.2.0
-    version: 2.2.0
+    version: 2.2.0(xstate@5.9.0)
   postgres:
     specifier: ^3.3.5
     version: 3.3.5
@@ -80,6 +83,9 @@ dependencies:
   reflect-metadata:
     specifier: ^0.1.13
     version: 0.1.13
+  xstate:
+    specifier: ^5.9.0
+    version: 5.9.0
 
 devDependencies:
   '@faker-js/faker':
@@ -1987,6 +1993,11 @@ packages:
       type: 1.2.0
     dev: true
 
+  /data-dragon@0.0.2:
+    resolution: {integrity: sha512-4hAzV3e4WYoCwlZ8sIQ81PgZ+IGD0qUQENxLinLy71OsaMW6yt4VVvn4EtmtpWif7/OanpPj7gKctg2cwBB9yg==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+    dev: false
+
   /data-uri-to-buffer@5.0.1:
     resolution: {integrity: sha512-a9l6T1qqDogvvnw0nKlfZzqsyikEBZBClF39V3TFoKhDtGBqHu2HkuomJc02j5zft8zrUaXEuoicLeW54RkzPg==}
     engines: {node: '>= 14'}
@@ -3749,7 +3760,7 @@ packages:
     engines: {node: '>= 0.8'}
     dev: false
 
-  /pastable@2.2.0:
+  /pastable@2.2.0(xstate@5.9.0):
     resolution: {integrity: sha512-VW3BlFr4aqazNaHOdf2Yg/GY8JRiMDnGExFCHXN+dm6yz8b5uZk9WuJk3YwhRPyzFjuZPnoxt8aFe5fX4gAStw==}
     engines: {node: '>=14.x'}
     peerDependencies:
@@ -3764,6 +3775,7 @@ packages:
       '@babel/core': 7.22.9
       ts-toolbelt: 9.6.0
       type-fest: 3.13.1
+      xstate: 5.9.0
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -5127,6 +5139,10 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+    dev: false
+
+  /xstate@5.9.0:
+    resolution: {integrity: sha512-CUNV/5U3LGIldt5lSA1VxQXN+7hIDbiemENiNWhxNWRr13eEdp/hA4HLmyhr4PxQ9ZRvELeAilzT8mUtrB9tHw==}
     dev: false
 
   /y18n@4.0.3:
