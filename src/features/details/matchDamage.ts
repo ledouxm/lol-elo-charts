@@ -110,7 +110,7 @@ const getRectArguments = (participant: Participant, blueSidePlayers: Participant
     const y =
         options.padding +
         (options.championIconSize + options.championIconSpace) * index +
-        (isBlueSide ? 0 : options.padding * 2);
+        (isBlueSide ? 0 : (options.championIconSize + options.championIconSpace) * 5 + options.padding * 2);
 
     return { x, y, width, height };
 };
