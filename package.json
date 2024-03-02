@@ -3,7 +3,7 @@
     "scripts": {
         "dev-start": "pnpm vite-node ./src/main.ts",
         "dev": "vite-node --watch ./src/main.ts",
-        "build": "tsup src/main.ts --dts",
+        "build": "tsup src/main.ts",
         "start": "cross-env NODE_ENV=production node dist/main.js",
         "migration:create": "drizzle-kit generate:pg",
         "migration:up": "pnpm mikro-orm migration:up",
