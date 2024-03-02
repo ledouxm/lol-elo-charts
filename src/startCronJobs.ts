@@ -22,7 +22,7 @@ export const startCronJobs = () => {
     console.log("clearing all requests in db", cronstrue.toString(every3Hours));
     cron.schedule(every3Hours, () => clearRequests());
 
-    const activeGameDelay = `*/${process.env.CRON_ACTIVE_GAME_DELAY_MIN || 5} * * * *`;
-    console.log("checking active games", cronstrue.toString(activeGameDelay));
-    cron.schedule(activeGameDelay, () => getInGameSummoners());
+    // const activeGameDelay = `*/${process.env.CRON_ACTIVE_GAME_DELAY_MIN || 5} * * * *`;
+    // console.log("checking active games", cronstrue.toString(activeGameDelay));
+    // cron.schedule(activeGameDelay, () => getInGameSummoners());
 };
