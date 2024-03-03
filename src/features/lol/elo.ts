@@ -99,17 +99,7 @@ export const getCheckEloEmbedAndButton = async ({
 }) => {
     const lastGame = await getNewLastGameIfExists(summ);
 
-    const detailsButton = new ButtonBuilder()
-        .setLabel("Details")
-        .setCustomId(`details-${lastGame.metadata.matchId}`)
-        .setStyle(ButtonStyle.Secondary);
-
-    const damageButton = new ButtonBuilder()
-        .setLabel("Damages")
-        .setCustomId(`damages-${lastGame.metadata.matchId}`)
-        .setStyle(ButtonStyle.Danger);
-
-    const row = new ActionRowBuilder().addComponents(detailsButton, damageButton);
+    const row = getComponentsRow(lastGame.metadata.matchId);
 
     if (!lastRank) {
         const embed = await getFirstRankEmbed(summ, newRank, elo, lastGame);
@@ -120,6 +110,20 @@ export const getCheckEloEmbedAndButton = async ({
     const embed = await getRankDifferenceEmbed({ summ, rankDifference, elo, lastGame });
 
     return { embed, lastGame, row };
+};
+
+export const getComponentsRow = (matchId: string, additionalComponents?: ButtonBuilder[]) => {
+    const detailsButton = new ButtonBuilder()
+        .setLabel("Details")
+        .setCustomId(`details-${matchId}`)
+        .setStyle(ButtonStyle.Secondary);
+
+    const damageButton = new ButtonBuilder()
+        .setLabel("Damages")
+        .setCustomId(`damages-${matchId}`)
+        .setStyle(ButtonStyle.Secondary);
+
+    return new ActionRowBuilder().addComponents(detailsButton, damageButton, ...(additionalComponents || []));
 };
 
 export const checkBets = async () => {
