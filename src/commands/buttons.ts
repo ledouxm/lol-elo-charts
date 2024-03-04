@@ -8,9 +8,9 @@ import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { eq } from "drizzle-orm";
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {
-    if (interaction.customId.startsWith("details")) {
-        const matchId = interaction.customId.split("-")[1];
+    const [command, matchId, participantIndex] = interaction.customId.split("-");
 
+    if (command === "details") {
         if (!matchId) {
             return void console.log("No matchId found in customId", interaction.customId);
         }
@@ -20,8 +20,10 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
             return void console.log("No game found for matchId", matchId);
         }
 
-        const { details, participantIndex } = game[0];
-        const participant = details.info.participants[participantIndex];
+        const { details, participantIndex: pIndex } = game[0];
+        const index = participantIndex ?? pIndex;
+
+        const participant = details.info.participants[index];
 
         const file = await createMatchDetailsFile(details, participant);
 
@@ -30,19 +32,18 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
             .setLabel("Close")
             .setStyle(ButtonStyle.Danger);
 
-        const row = getComponentsRow(matchId, [closeButton]);
+        const row = getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: pIndex });
 
         await interaction.message.edit({
             files: [file],
+            // @ts-ignore - discordjs typings are wrong
             components: [row],
         });
 
         return void interaction.deferUpdate();
     }
 
-    if (interaction.customId.startsWith("damages")) {
-        const matchId = interaction.customId.split("-")[1];
-
+    if (command === "damages") {
         if (!matchId) {
             return void console.log("No matchId found in customId", interaction.customId);
         }
@@ -52,8 +53,10 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
             return void console.log("No game found for matchId", matchId);
         }
 
-        const { details, participantIndex } = game[0];
-        const participant = details.info.participants[participantIndex];
+        const { details, participantIndex: pIndex } = game[0];
+        const index = participantIndex ?? pIndex;
+
+        const participant = details.info.participants[index];
 
         const file = await createMatchDamageFile(details, participant);
 
@@ -62,27 +65,27 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
             .setLabel("Close")
             .setStyle(ButtonStyle.Danger);
 
-        const row = getComponentsRow(matchId, [closeButton]);
+        const row = getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: pIndex });
 
         await interaction.message.edit({
             files: [file],
+            // @ts-ignore - discordjs typings are wrong
             components: [row],
         });
 
         return void interaction.deferUpdate();
     }
 
-    if (interaction.customId.startsWith("close")) {
-        const matchId = interaction.customId.split("-")[1];
-
+    if (command === "close") {
         if (!matchId) {
             return void console.log("No matchId found in customId", interaction.customId);
         }
 
-        const row = getComponentsRow(matchId);
+        const row = getComponentsRow({ matchId, participantIndex });
 
         await interaction.message.edit({
             files: [],
+            // @ts-ignore - discordjs typings are wrong
             components: [row],
         });
 
