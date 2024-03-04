@@ -17,6 +17,11 @@ export const getItemIconUrl = async (itemId: string | number) => {
     return `https://ddragon.leagueoflegends.com/cdn/${ddVersion}/img/item/${itemId}.png`;
 };
 
+export const getSummonerSpellIconUrl = async (spellId: string | number) => {
+    const ddVersion = await getDDVersion();
+    return `https://ddragon.leagueoflegends.com/cdn/${ddVersion}/img/spell/${spellId}`;
+};
+
 export const getChampionById = async (id: string | number) => {
     const ddVersion = await getDDVersion();
     if (ref.champions) return ref.champions[id];
