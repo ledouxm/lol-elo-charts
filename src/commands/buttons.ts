@@ -34,7 +34,7 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
             .setLabel("Close")
             .setStyle(ButtonStyle.Danger);
 
-        const row = getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: pIndex });
+        const row = getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: index });
 
         await interaction.message.edit({
             files: [file],
@@ -68,7 +68,7 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
             .setLabel("Close")
             .setStyle(ButtonStyle.Danger);
 
-        const row = getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: pIndex });
+        const row = getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: index });
 
         await interaction.message.edit({
             files: [file],
