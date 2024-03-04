@@ -8,7 +8,11 @@ const ref = {
 export const getBrowser = async () => {
     if (ref.browser) return ref.browser;
 
-    ref.browser = await puppeteer.launch({ headless: "new", executablePath: "/usr/bin/google-chrome" });
+    ref.browser = await puppeteer.launch({
+        headless: "new",
+        executablePath: "/usr/bin/google-chrome",
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     return ref.browser;
 };
 
