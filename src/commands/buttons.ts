@@ -23,7 +23,8 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         const { details, participantIndex: pIndex } = game[0];
         const index = participantIndex ?? pIndex;
 
-        const participant = details.info.participants[index];
+        console.log({ index, participantIndex, pIndex, id: interaction.customId });
+        const participant = details.info.participants[Number(index)];
 
         const file = await createMatchDetailsFile(details, participant);
 
@@ -56,7 +57,7 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         const { details, participantIndex: pIndex } = game[0];
         const index = participantIndex ?? pIndex;
 
-        const participant = details.info.participants[index];
+        const participant = details.info.participants[Number(index)];
 
         const file = await createMatchDamageFile(details, participant);
 
