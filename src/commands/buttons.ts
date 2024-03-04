@@ -8,7 +8,8 @@ import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { eq } from "drizzle-orm";
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {
-    const [command, matchId, participantIndex] = interaction.customId.split("-");
+    const [command, matchId, participantIndexRaw] = interaction.customId.split("-");
+    const participantIndex = participantIndexRaw === "undefined" ? undefined : participantIndexRaw;
 
     if (command === "details") {
         if (!matchId) {
@@ -57,6 +58,7 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         const { details, participantIndex: pIndex } = game[0];
         const index = participantIndex ?? pIndex;
 
+        console.log({ index, participantIndex, pIndex, id: interaction.customId });
         const participant = details.info.participants[Number(index)];
 
         const file = await createMatchDamageFile(details, participant);
