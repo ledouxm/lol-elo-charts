@@ -8,7 +8,7 @@ const ref = {
 export const getBrowser = async () => {
     if (ref.browser) return ref.browser;
 
-    ref.browser = await puppeteer.launch({ headless: "new" });
+    ref.browser = await puppeteer.launch({ headless: "new", executablePath: "/usr/bin/google-chrome" });
     return ref.browser;
 };
 
