@@ -25,6 +25,9 @@ importers:
       '@discordx/importer':
         specifier: ^1.2.2
         version: 1.3.0
+      '@lol-elo-charts/templates':
+        specifier: workspace:*
+        version: link:../templates
       axios:
         specifier: ^1.4.0
         version: 1.6.7(debug@4.3.4)
@@ -52,9 +55,6 @@ importers:
       date-fns:
         specifier: ^2.30.0
         version: 2.30.0
-      debug:
-        specifier: ^4.3.2
-        version: 4.3.4
       discord.js:
         specifier: ^14.11.0
         version: 14.14.1
@@ -106,9 +106,6 @@ importers:
       reflect-metadata:
         specifier: ^0.1.13
         version: 0.1.14
-      templates:
-        specifier: workspace:*
-        version: link:../templates
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@16.18.86)(typescript@4.9.5)
