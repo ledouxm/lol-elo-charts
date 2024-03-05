@@ -1,13 +1,15 @@
 import "../styled-system/styles.css";
 import "./App.css";
 import props from "./mock.json";
-import { MatchDamage } from "./components/MatchDamage";
+import * as components from "./components";
 import { DefaultProps } from "./components/utils";
 
 export function App() {
     return (
         <>
-            <MatchDamage {...(props as any as DefaultProps)} />
+            {Object.values(components).map((Component, index) => (
+                <Component key={index} {...(props as any as DefaultProps)} />
+            ))}
         </>
     );
 }

@@ -1,12 +1,13 @@
 {
-  "name": "lol-elo-charts",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "name": "lol-elo-charts",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "core": "pnpm --filter @lol-elo-charts/core",
+        "templates": "pnpm --filter @lol-elo-charts/templates"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
 }

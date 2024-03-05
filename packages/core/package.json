@@ -1,5 +1,5 @@
 {
-    "name": "core",
+    "name": "@lol-elo-charts/core",
     "type": "module",
     "scripts": {
         "dev-start": "pnpm vite-node ./src/main.ts",

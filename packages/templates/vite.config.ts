@@ -6,7 +6,7 @@ export default defineConfig({
     plugins: [react()],
     build: {
         lib: {
-            entry: "src/lib.tsx",
+            entry: "src/components/index.tsx",
             name: "templates",
         },
     },
