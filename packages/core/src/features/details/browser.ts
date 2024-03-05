@@ -1,3 +1,4 @@
+import { isDev } from "@/utils";
 import puppeteer, { Page, ScreenshotClip } from "puppeteer";
 
 const ref = {
@@ -5,13 +6,17 @@ const ref = {
     page: null,
 };
 
+const productionOptions = {
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+};
+
 export const getBrowser = async () => {
     if (ref.browser) return ref.browser;
 
     ref.browser = await puppeteer.launch({
         headless: "new",
-        // executablePath: "/usr/bin/google-chrome",
-        // args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        ...(isDev ? {} : productionOptions),
     });
     return ref.browser;
 };
