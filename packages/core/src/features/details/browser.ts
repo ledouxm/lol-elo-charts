@@ -36,7 +36,6 @@ export const getScreenshotBuffer = async ({
     const page = await getPage();
 
     await page.setContent(html);
-    console.log("aaaa", !!css);
     if (css) {
         await injectCss(page, css);
     }

@@ -16,13 +16,11 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
-    "imports": {
-        "#styled-system/*": "./styled-system/*"
-    },
     "exports": {
         ".": "./src/components/index.tsx"
     },
     "devDependencies": {
+        "@pandabox/panda-plugins": "^0.0.6",
         "@pandacss/dev": "^0.33.0",
         "@types/react": "^18.2.56",
         "@types/react-dom": "^18.2.19",

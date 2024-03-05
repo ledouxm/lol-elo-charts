@@ -19,11 +19,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
-        "baseUrl": ".",
-
-        "paths": {
-            "#styled-system/*": ["./styled-system/*"]
-        }
+        "baseUrl": "."
     },
     "include": ["src", "styled-system", "vite.config.ts"]
 }

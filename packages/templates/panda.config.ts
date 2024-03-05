@@ -1,5 +1,5 @@
 import { defineConfig } from "@pandacss/dev";
-
+import {  } from '@pandabox/panda-plugins'
 export default defineConfig({
     // Whether to use css reset
     preflight: true,
@@ -9,6 +9,7 @@ export default defineConfig({
     outExtension: "js",
     // Files to exclude
     exclude: [],
+    jsxFramework: "react",
 
     // Useful for theme customization
     theme: {
@@ -40,4 +41,7 @@ export default defineConfig({
 
     // The output directory for your css system
     outdir: "styled-system",
+    plugins: [
+        
+    ]
 });

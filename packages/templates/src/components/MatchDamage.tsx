@@ -1,4 +1,13 @@
-import { DefaultProps, Participant, getChampionImage, setContext, sortPlayersByTeamAndRole } from "./utils";
+import {
+    AnySide,
+    DefaultProps,
+    Participant,
+    blueSide,
+    getChampionImage,
+    redSide,
+    setContext,
+    sortPlayersByTeamAndRole,
+} from "./utils";
 import { css, sva } from "../../styled-system/css";
 
 export const MatchDamage = (props: DefaultProps) => {
@@ -21,14 +30,14 @@ export const MatchDamage = (props: DefaultProps) => {
         >
             <Team
                 players={sortedParticipants[100]}
-                side="blue"
+                side={blueSide}
                 participant={participant}
                 getDamagePercentage={getDamagePercentage}
             />
 
             <Team
                 players={sortedParticipants[200]}
-                side="red"
+                side={redSide}
                 participant={participant}
                 getDamagePercentage={getDamagePercentage}
             />
@@ -43,7 +52,7 @@ const Team = ({
     getDamagePercentage,
 }: {
     players: Participant[];
-    side: "blue" | "red";
+    side: AnySide;
     participant: Participant;
     getDamagePercentage: (p: Participant) => number;
 }) => {
@@ -100,15 +109,15 @@ const playerRow = sva({
     },
     variants: {
         side: {
-            red: {
+            200: {
                 damage: { bg: "red" },
             },
-            blue: {
+            100: {
                 damage: { bg: "blue" },
             },
         },
         isPlayer: {
-            true: { champion: { outline: "4px" } },
+            true: { champion: { outline: "4px solid", outlineColor: "yellow" } },
         },
     },
 });

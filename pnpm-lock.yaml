@@ -262,6 +262,9 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
+      '@pandabox/panda-plugins':
+        specifier: ^0.0.6
+        version: 0.0.6
       '@pandacss/dev':
         specifier: ^0.33.0
         version: 0.33.0(typescript@5.3.3)
@@ -2898,6 +2901,21 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
+    dev: true
+
+  /@pandabox/panda-plugins@0.0.6:
+    resolution: {integrity: sha512-QbFz211YDc3F/hyU/kkBOxp99KmSrjTSfbyXClxTT10JrYo0dL7CypVlCpCCo5huUIDjEv9+qo+V7JlIQ9wnXA==}
+    dependencies:
+      '@pandabox/postcss-plugins': 0.0.2(postcss@8.4.35)
+      postcss: 8.4.35
+    dev: true
+
+  /@pandabox/postcss-plugins@0.0.2(postcss@8.4.35):
+    resolution: {integrity: sha512-sOhfLohVcjPmA6mgYElLiNwnolEiM7Wqk4OBPSYC/k1Rpx2QyNenwBuB4mRtN9oV21N29fgfNZfTqMbT/fwQpw==}
+    peerDependencies:
+      postcss: ^8.4.35
+    dependencies:
+      postcss: 8.4.35
     dev: true
 
   /@pandacss/config@0.33.0:

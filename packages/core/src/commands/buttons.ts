@@ -2,6 +2,7 @@ import { db } from "@/db/db";
 import { match } from "@/db/schema";
 import { createMatchDamageFile } from "@/features/details/matchDamage";
 import { createMatchDetailsFile } from "@/features/details/matchDetails";
+import { generateTemplateBuffer } from "@/features/details/templates";
 import { getComponentsRow } from "@/features/lol/elo";
 import { ButtonBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle } from "discord.js";
@@ -27,7 +28,11 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         console.log({ index, participantIndex, pIndex, id: interaction.customId });
         const participant = details.info.participants[Number(index)];
 
-        const file = await createMatchDetailsFile(details, participant);
+        const file = await generateTemplateBuffer({
+            match: details,
+            participant,
+            template: "MatchDetails",
+        });
 
         const closeButton = new ButtonBuilder()
             .setCustomId(`close-${matchId}`)
@@ -61,7 +66,11 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         console.log({ index, participantIndex, pIndex, id: interaction.customId });
         const participant = details.info.participants[Number(index)];
 
-        const file = await createMatchDamageFile(details, participant);
+        const file = await generateTemplateBuffer({
+            match: details,
+            participant,
+            template: "MatchDamage",
+        });
 
         const closeButton = new ButtonBuilder()
             .setCustomId(`close-${matchId}`)
