@@ -33,7 +33,7 @@ const dimensions: Record<Templates, { width: number; height: number }> = {
     MatchDetails: { width: 700, height: 516 },
 };
 
-type Templates = keyof typeof components;
+export type Templates = keyof typeof components;
 
 const getTemplateProps = async ({
     match,
