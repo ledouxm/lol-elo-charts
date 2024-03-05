@@ -1,7 +1,5 @@
 import { db } from "@/db/db";
 import { match } from "@/db/schema";
-import { createMatchDamageFile } from "@/features/details/matchDamage";
-import { createMatchDetailsFile } from "@/features/details/matchDetails";
 import { generateTemplateBuffer } from "@/features/details/templates";
 import { getComponentsRow } from "@/features/lol/elo";
 import { ButtonBuilder } from "@discordjs/builders";
