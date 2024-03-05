@@ -65,7 +65,7 @@ export const createMatchDetailsFile = async (match: Galeforce.dto.MatchDTO, part
         redSideText: hasBlueSideWon ? "Defeat" : "Victory",
     });
 
-    return getScreenshotBuffer(html, { x: 0, y: 0, width: 700, height: 464 });
+    return getScreenshotBuffer({ html, clip: { x: 0, y: 0, width: 700, height: 464 } });
 };
 
 export const sortPlayersByTeamAndRole = (players: Participant[]) => {

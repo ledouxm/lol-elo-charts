@@ -32,5 +32,5 @@ export const createMatchDamageFile = async (match: Galeforce.dto.MatchDTO, parti
         redSidePlayers,
     });
 
-    return getScreenshotBuffer(html, { x: 0, y: 0, width: 700, height: 562 });
+    return getScreenshotBuffer({ html, clip: { x: 0, y: 0, width: 700, height: 562 } });
 };

@@ -2,6 +2,19 @@ import axios from "axios";
 import { CanvasRenderingContext2D, Image, loadImage } from "canvas";
 import { assign, createActor, createMachine, fromPromise, setup } from "xstate";
 
+export const getChampionAndSpellIconStaticData = async () => {
+    const ddVersion = await getDDVersion();
+    const [champions, summoners] = await Promise.all([
+        axios.get(`https://ddragon.leagueoflegends.com/cdn/${ddVersion}/data/en_US/champion.json`),
+        axios.get(`https://ddragon.leagueoflegends.com/cdn/${ddVersion}/data/en_US/summoner.json`),
+    ]);
+
+    return {
+        champions: champions.data.data,
+        summoners: summoners.data.data,
+    };
+};
+
 export const getProfileIconUrl = async (icon: string | number) => {
     const ddVersion = await getDDVersion();
     return `https://ddragon.leagueoflegends.com/cdn/${ddVersion}/img/profileicon/${icon}.png`;

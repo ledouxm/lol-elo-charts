@@ -4,6 +4,7 @@
         "module": "CommonJS",
         "lib": ["es6", "DOM"],
         "target": "ESNext",
+        "jsx": "preserve",
         "removeComments": true,
         "noImplicitAny": false,
         "experimentalDecorators": true,
