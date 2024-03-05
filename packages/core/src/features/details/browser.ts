@@ -3,7 +3,7 @@ import puppeteer, { Page, ScreenshotClip } from "puppeteer";
 
 const ref = {
     browser: null,
-    page: null,
+    page: null as any as Page,
 };
 
 const productionOptions = {
@@ -25,7 +25,6 @@ export const getPage = async () => {
     if (ref.page) return ref.page;
 
     ref.page = await (await getBrowser()).newPage();
-    ref.page.setViewport({ width: 700, height: 600 });
     return ref.page;
 };
 
@@ -40,7 +39,9 @@ export const getScreenshotBuffer = async ({
 }) => {
     const page = await getPage();
 
+    await page.setViewport(clip);
     await page.setContent(html);
+
     if (css) {
         await injectCss(page, css);
     }
