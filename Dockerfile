@@ -15,7 +15,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/core/package.json ./packages/core/
 COPY packages/templates/package.json ./packages/templates/
-COPY packages/templates/panda.config.ts.json ./packages/templates/
+COPY packages/templates/panda.config.ts ./packages/templates/
 COPY packages/core/vite.config.ts ./packages/core/
 COPY packages/templates/vite.config.ts ./packages/templates/
 
@@ -34,12 +34,15 @@ RUN apt-get update && apt-get install gnupg wget -y && \
 
 FROM with-puppeteer AS core
 WORKDIR /usr/src/app
+
 COPY ./packages/core/ ./packages/core/
+COPY ./packages/templates/ ./packages/templates/
+
 COPY --from=with-deps /usr/src/app/packages/core/node_modules ./packages/core/node_modules
+COPY --from=with-deps /usr/src/app/packages/templates/node_modules ./packages/templates/node_modules
 
 RUN pnpm --filter core build
-CMD ["pnpm", "--filter core", "start"]
-# # syntax=docker/dockerfile:1
+CMD NODE_ENV=production HTTP_PORT=8080 pnpm core start
 # # install pnpm
 # FROM nikolaik/python-nodejs:latest AS with-pnpm
 

@@ -5,7 +5,7 @@ import { startDiscordBot } from "./features/discord/discord";
 import { getAndSaveApex } from "./features/lol/apex";
 import { makeRouter } from "./features/router";
 import { startCronJobs } from "./startCronJobs";
-import { MatchDamage } from "templates";
+import { MatchDamage } from "@lol-elo-charts/templates";
 import { renderToString } from "react-dom/server";
 import ts from "typescript";
 

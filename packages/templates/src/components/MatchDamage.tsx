@@ -1,5 +1,5 @@
 import { DefaultProps, Participant, getChampionImage, setContext, sortPlayersByTeamAndRole } from "./utils";
-import { css, sva } from "#styled-system/css";
+import { css, sva } from "../../styled-system/css";
 
 export const MatchDamage = (props: DefaultProps) => {
     setContext(props);
