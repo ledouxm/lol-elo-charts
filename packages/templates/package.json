@@ -3,9 +3,10 @@
     "private": true,
     "version": "0.0.0",
     "type": "module",
+    "main": "dist/templates.js",
     "scripts": {
         "dev": "vite",
-        "build": "tsc && vite build",
+        "build": "vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
         "prepare": "panda codegen",
@@ -15,6 +16,9 @@
         "pastable": "^2.2.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
+    },
+    "imports": {
+        "#styled-system/*": "./styled-system/*"
     },
     "devDependencies": {
         "@pandacss/dev": "^0.33.0",
@@ -27,6 +31,7 @@
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-react-refresh": "^0.4.5",
         "galeforce": "^0.6.1",
+        "tsup": "^7.1.0",
         "typescript": "^5.2.2",
         "vite": "^5.1.4"
     }

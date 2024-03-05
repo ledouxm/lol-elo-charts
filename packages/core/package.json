@@ -1,0 +1,95 @@
+{
+    "name": "core",
+    "type": "module",
+    "scripts": {
+        "dev-start": "pnpm vite-node ./src/main.ts",
+        "dev": "vite-node --watch ./src/main.tsx",
+        "build": "tsup src/main.tsx --format esm",
+        "start": "cross-env NODE_ENV=production node dist/main.js",
+        "migration:create": "drizzle-kit generate:pg",
+        "migration:up": "pnpm mikro-orm migration:up",
+        "prettier": "prettier --write \"./{src,tests}/**/*\"",
+        "test": "cross-env NODE_ENV=test vitest"
+    },
+    "dependencies": {
+        "@discordjs/builders": "^1.6.3",
+        "@discordjs/core": "^0.6.0",
+        "@discordjs/rest": "^1.7.1",
+        "@discordjs/ws": "^0.8.3",
+        "@discordx/importer": "^1.2.2",
+        "axios": "^1.4.0",
+        "canvas": "^2.11.2",
+        "chart.js": "^4.3.0",
+        "chartjs-plugin-autocolors": "^0.2.2",
+        "chartjs-plugin-datalabels": "^2.2.0",
+        "cors": "^2.8.5",
+        "cronstrue": "^2.28.0",
+        "data-dragon": "^0.0.2",
+        "date-fns": "^2.30.0",
+        "discord.js": "^14.11.0",
+        "discordx": "^11.7.6",
+        "dotenv": "^16.3.1",
+        "drizzle-orm": "^0.27.2",
+        "execa": "^8.0.1",
+        "express": "^4.18.2",
+        "galeforce": "^0.6.1",
+        "jsx-template-engine": "^1.0.1",
+        "mustache": "^4.2.0",
+        "node-cron": "^3.0.2",
+        "node-html-to-image": "^4.0.0",
+        "pastable": "^2.2.0",
+        "postgres": "^3.3.5",
+        "puppeteer": "^20.9.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "reflect-metadata": "^0.1.13",
+        "templates": "workspace:*",
+        "ts-node": "^10.9.2",
+        "xstate": "^5.9.0"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "^8.0.2",
+        "@mikro-orm/cli": "^5.3.1",
+        "@types/cors": "^2.8.13",
+        "@types/debug": "^4.1.7",
+        "@types/express": "^4.17.17",
+        "@types/mustache": "^4.2.5",
+        "@types/node": "^16.4.1",
+        "@types/node-cron": "^3.0.7",
+        "@types/react": "^18.2.61",
+        "@types/react-dom": "^18.2.19",
+        "@vitejs/plugin-react": "^4.2.1",
+        "cross-env": "^7.0.3",
+        "drizzle-kit": "^0.19.8",
+        "nodemon": "^2.0.12",
+        "prettier": "^2.4.0",
+        "prettier-plugin-sorted": "^2.0.0",
+        "rimraf": "^3.0.2",
+        "tsup": "^7.1.0",
+        "typescript": "^4.7.4",
+        "vite": "^4.4.5",
+        "vite-node": "^0.33.0",
+        "vite-tsconfig-paths": "^4.2.0",
+        "vitest": "^0.33.0"
+    },
+    "engines": {
+        "node": "^16.x"
+    },
+    "mikro-orm": {
+        "useTsNode": true,
+        "configPaths": [
+            "./src/mikro-orm.config.ts",
+            "./dist/mikro-orm.config.js"
+        ]
+    },
+    "importSort": {
+        ".js, jsx, .ts, .tsx": {
+            "options": {
+                "ignoreTsConfig": true,
+                "extraAliases": [
+                    "@/*"
+                ]
+            }
+        }
+    }
+}

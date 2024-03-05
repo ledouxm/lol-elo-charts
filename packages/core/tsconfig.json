@@ -1,10 +1,11 @@
 {
     "compilerOptions": {
         "outDir": "./dist",
-        "module": "CommonJS",
+        "module": "ESNext",
         "lib": ["es6", "DOM"],
         "target": "ESNext",
-        "jsx": "preserve",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
         "removeComments": true,
         "noImplicitAny": false,
         "experimentalDecorators": true,
@@ -20,5 +21,6 @@
         "paths": {
             "@/*": ["./src/*"]
         }
-    }
+    },
+    "include": ["src/**/*"]
 }

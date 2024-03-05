@@ -18,8 +18,12 @@
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "noFallthroughCasesInSwitch": true
+        "noFallthroughCasesInSwitch": true,
+        "baseUrl": ".",
+
+        "paths": {
+            "#styled-system/*": ["./styled-system/*"]
+        }
     },
-    "include": ["src", "styled-system"],
-    "references": [{ "path": "./tsconfig.node.json" }]
+    "include": ["src", "styled-system", "vite.config.ts"]
 }

@@ -10,8 +10,8 @@ export const getChampionAndSpellIconStaticData = async () => {
     ]);
 
     return {
-        champions: champions.data.data,
-        summoners: summoners.data.data,
+        champions: champions.data,
+        summoners: summoners.data,
     };
 };
 

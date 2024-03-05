@@ -5,20 +5,19 @@ import { startDiscordBot } from "./features/discord/discord";
 import { getAndSaveApex } from "./features/lol/apex";
 import { makeRouter } from "./features/router";
 import { startCronJobs } from "./startCronJobs";
-
+import { MatchDamage } from "templates";
 import { renderToString } from "react-dom/server";
 import ts from "typescript";
 
 import jsx from "jsx-template-engine";
 import fs from "fs/promises";
 import { Test } from "./features/details/test";
-import { App } from "../templates/src/App";
-import { MatchDamage } from "templates/src/components/MatchDamage";
 import { getChampionAndSpellIconStaticData } from "./features/lol/icons";
 import { match } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { ReactNode } from "react";
 import { getScreenshotBuffer } from "./features/details/browser";
+
 const start = async () => {
     try {
         const { champions, summoners } = await getChampionAndSpellIconStaticData();
@@ -67,7 +66,7 @@ const start = async () => {
 };
 
 const loadCss = async () => {
-    const css = await fs.readFile("./templates/styled-system/styles.css", "utf-8");
+    const css = await fs.readFile("../templates/styled-system/styles.css", "utf-8");
     return css;
 };
 

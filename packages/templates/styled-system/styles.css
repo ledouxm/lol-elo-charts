@@ -637,7 +637,6 @@
 }
 
 @layer utilities{
-
   .d_flex {
     display: flex;
 }
@@ -646,16 +645,16 @@
     width: 100%;
 }
 
-  .gap_20px {
-    gap: 20px;
+  .gap_10px {
+    gap: 10px;
 }
 
   .m_5px_0_5px_5px {
     margin: 5px 0 5px 5px;
 }
 
-  .gap_5px {
-    gap: 5px;
+  .gap_4px {
+    gap: 4px;
 }
 
   .w_50px {
@@ -684,18 +683,6 @@
 
   .text_white {
     color: var(--colors-white);
-}
-
-  .gap_10px {
-    gap: 10px;
-}
-
-  .gap_3px {
-    gap: 3px;
-}
-
-  .gap_4px {
-    gap: 4px;
 }
 
   .flex_column {

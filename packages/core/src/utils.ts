@@ -1,7 +1,4 @@
-import { debug } from "debug";
 import { InsertRank } from "./db/schema";
-
-export const makeDebug = (suffix: string) => debug("backend-with-ci").extend(suffix);
 
 export function rainbow(step: number, numOfSteps = 1000) {
     // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
