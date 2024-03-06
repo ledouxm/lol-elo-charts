@@ -303,14 +303,14 @@ export const getDamageDealtPercent = (match: Galeforce.dto.MatchDTO, participant
     const participantsInTeam = match.info.participants.filter((p) => p.teamId === participant.teamId);
     const totalDamage = participantsInTeam.reduce((acc, p) => acc + p.totalDamageDealtToChampions, 0);
 
-    return ((participant.totalDamageDealtToChampions / totalDamage) * 100).toFixed(2);
+    return Math.round((participant.totalDamageDealtToChampions / totalDamage) * 100);
 };
 
 export const getKillParticipation = (match: Galeforce.dto.MatchDTO, participant: Participant) => {
     const participantsInTeam = match.info.participants.filter((p) => p.teamId === participant.teamId);
     const teamKills = participantsInTeam.reduce((acc, p) => acc + p.kills, 0);
 
-    return (((participant.kills + participant.assists) / teamKills) * 100).toFixed(2);
+    return Math.round(((participant.kills + participant.assists) / teamKills) * 100);
 };
 
 const getMatchDescription = async (match: Galeforce.dto.MatchDTO, participant: Participant) => {
