@@ -39,11 +39,12 @@ const spellStyles = sva({
             display: "flex",
             flexDirection: "column",
             gap: "5px",
+            pr: "5px",
         },
         container: {
             display: "flex",
             alignItems: "center",
-            gap: "15px",
+            gap: "10px",
         },
         image: {
             width: "40px",
