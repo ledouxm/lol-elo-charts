@@ -1,6 +1,6 @@
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, lte, not, sql } from "drizzle-orm";
 import { db } from "../db/db";
-import { Summoner, apex, bet, gambler, match, rank, summoner } from "../db/schema";
+import { Summoner, apex, bet, gambler, match, playerOfTheDay, rank, summoner } from "../db/schema";
 import { formatRank } from "../utils";
 import { getTotalLpFromRank, makeTierData } from "./lol/lps";
 import { getSummonersWithChannels } from "./summoner";
@@ -17,7 +17,7 @@ export const generate24hRecaps = async () => {
 
 export const generate24hRankRecap = async () => {
     const summoners = await getSummonersWithChannels();
-    const recap = [] as (RecapItem & { channelId: string })[];
+    const recap = [] as (RecapItem & { channelId: string; summoner: Summoner })[];
 
     const lastApex = (await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1))?.[0];
 
@@ -46,6 +46,7 @@ export const generate24hRankRecap = async () => {
                 diff,
                 description: `${formatRank(startRank)} ⮞ ${formatRank(endRank)}`,
                 channelId: channelId,
+                summoner: summ,
             });
         });
     }
@@ -56,11 +57,113 @@ export const generate24hRankRecap = async () => {
     );
 
     for (const [channelId, items] of Object.entries(byChannelId)) {
-        const embed = getRecapMessageEmbed(items);
+        const streaksAndCounts = await getWinnerAndLoserStreakAndCount({
+            winner: items[0].summoner,
+            loser: items[items.length - 1].summoner,
+        });
+
+        const embed = getRecapMessageEmbed(items, streaksAndCounts);
         const file = await generateRankGraph(channelId, lastApex);
 
         await sendToChannelId({ channelId, embed, file });
     }
+};
+
+const getWinnerAndLoserStreakAndCount = async ({ winner, loser }: { winner: Summoner; loser: Summoner }) => {
+    const winnerStreak = await getStreak({ summoner: winner, channelId: winner.channelId, type: "winner" });
+    const loserStreak = await getStreak({ summoner: loser, channelId: loser.channelId, type: "loser" });
+
+    const winnerCount = await getNbPlayerOfTheDay({ summoner: winner, channelId: winner.channelId, type: "winner" });
+    const loserCount = await getNbPlayerOfTheDay({ summoner: loser, channelId: loser.channelId, type: "loser" });
+
+    return { winnerStreak, loserStreak, winnerCount, loserCount };
+};
+
+const storePlayersOfTheDay = async ({
+    items,
+    channelId,
+}: {
+    items: (RecapItem & { summoner: Summoner })[];
+    channelId: string;
+}) => {
+    const winner = items[0].summoner;
+    const loser = items[items.length - 1].summoner;
+
+    const winStreak = await db
+        .select({
+            winStreak: sql<number>`COUNT(*)`,
+        })
+        .from(match)
+        .where(and(eq(match.summonerId, winner.puuid), eq(match.isWin, true)));
+
+    await db.insert(playerOfTheDay).values([
+        { summonerId: items[0].summoner.puuid, type: "winner", channelId },
+        { summonerId: items[items.length - 1].summoner.puuid, type: "loser", channelId },
+    ]);
+};
+
+export const getNbPlayerOfTheDay = async ({
+    summoner,
+    channelId,
+    type,
+}: {
+    summoner: Summoner;
+    channelId: string;
+    type: "winner" | "loser";
+}) => {
+    const nbPlayersOfTheDay = await db
+        .select({
+            nbPlayersOfTheDay: sql<string>`COUNT(*)`,
+        })
+        .from(playerOfTheDay)
+        .where(
+            and(
+                eq(playerOfTheDay.channelId, channelId),
+                eq(playerOfTheDay.type, type),
+                eq(playerOfTheDay.summonerId, summoner.puuid)
+            )
+        );
+
+    return Number(nbPlayersOfTheDay[0].nbPlayersOfTheDay) + 1;
+};
+
+export const getStreak = async ({
+    summoner,
+    channelId,
+    type,
+}: {
+    summoner: Summoner;
+    channelId: string;
+    type: "winner" | "loser";
+}) => {
+    const channelPlayersOfTheDay = db
+        .select()
+        .from(playerOfTheDay)
+        .where(and(eq(playerOfTheDay.channelId, channelId), eq(playerOfTheDay.type, type)))
+        .orderBy(desc(playerOfTheDay.createdAt))
+        .as("channelPlayersOfTheDay");
+
+    const lastTimePlayerOfTheDayWasntSummoner = await db
+        .select({
+            lastLost: sql<Date>`MAX(created_at)`,
+        })
+        .from(channelPlayersOfTheDay)
+        .where(not(eq(channelPlayersOfTheDay.summonerId, summoner.puuid)));
+
+    const nbPlayersOfTheDayBetweenLastTimeAndNow = await db
+        .select({
+            nbPlayersOfTheDay: sql<string>`COUNT(*)`,
+        })
+        .from(channelPlayersOfTheDay)
+        .where(
+            and(
+                eq(channelPlayersOfTheDay.channelId, channelId),
+                eq(channelPlayersOfTheDay.type, type),
+                gt(channelPlayersOfTheDay.createdAt, lastTimePlayerOfTheDayWasntSummoner[0].lastLost)
+            )
+        );
+
+    return Number(nbPlayersOfTheDayBetweenLastTimeAndNow[0].nbPlayersOfTheDay) + 1;
 };
 
 export const getYesterdayWinRate = async (summ: Summoner) => {

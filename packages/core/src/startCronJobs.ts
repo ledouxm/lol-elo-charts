@@ -3,7 +3,6 @@ import { checkBets, checkElo } from "./features/lol/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
 import { clearRequests } from "./features/router";
-import { getInGameSummoners } from "./features/activity";
 
 export const startCronJobs = () => {
     const eloDelay = `*/${process.env.CRON_RANK_DELAY_MIN || 5} * * * *`;
@@ -16,7 +15,7 @@ export const startCronJobs = () => {
 
     const everydayAtMidnight = "0 0 * * *";
     console.log("getting apex and generating recaps", cronstrue.toString(everydayAtMidnight));
-    cron.schedule(everydayAtMidnight, () => getAndSaveApex());
+    cron.schedule(everydayAtMidnight, () => getAndSaveApex(), { timezone: "Europe/Paris" });
 
     const every3Hours = "0 */3 * * *";
     console.log("clearing all requests in db", cronstrue.toString(every3Hours));

@@ -1,0 +1,1 @@
+ALTER TABLE "player_of_the_day" ADD COLUMN "channel_id" varchar(100) NOT NULL;

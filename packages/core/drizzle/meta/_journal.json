@@ -57,6 +57,27 @@
       "when": 1709386401840,
       "tag": "0007_sticky_unus",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1709690539545,
+      "tag": "0008_normal_ghost_rider",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1709691173926,
+      "tag": "0009_fearless_starjammers",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1709693032129,
+      "tag": "0010_nasty_oracle",
+      "breakpoints": true
     }
   ]
 }

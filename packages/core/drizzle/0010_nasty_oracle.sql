@@ -1,0 +1,1 @@
+ALTER TABLE "player_of_the_day" ALTER COLUMN "created_at" SET DATA TYPE date;

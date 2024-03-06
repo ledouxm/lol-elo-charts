@@ -10,6 +10,7 @@ import {
     integer,
     primaryKey,
     jsonb,
+    date,
 } from "drizzle-orm/pg-core";
 import Galeforce from "galeforce";
 
@@ -139,4 +140,18 @@ export const matchRelations = relations(match, ({ one }) => {
     return {
         summoner: one(summoner, { fields: [match.summonerId], references: [summoner.puuid] }),
     };
+});
+
+export const playerOfTheDayTypeEnum = pgEnum("player_of_the_day_type", ["winner", "loser"]);
+
+export const playerOfTheDay = pgTable("player_of_the_day", {
+    id: serial("id").primaryKey(),
+    summonerId: varchar("summoner_id", { length: 100 }).notNull(),
+    channelId: varchar("channel_id", { length: 100 }).notNull(),
+    createdAt: date("created_at", { mode: "date" }).defaultNow(),
+    type: playerOfTheDayTypeEnum("type"),
+});
+
+export const playerOfTheDayRelations = relations(playerOfTheDay, ({ one }) => {
+    return { summoner: one(summoner, { fields: [playerOfTheDay.summonerId], references: [summoner.puuid] }) };
 });

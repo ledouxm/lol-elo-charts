@@ -68,9 +68,29 @@ const getAchievedBetString = (b: AchievedBet) => {
     } (${formatDistanceToNow(new Date(match.info.gameEndTimestamp), { addSuffix: true })})`;
 };
 
-export const getRecapMessageEmbed = (items: RecapItem[]) => {
+export const getRecapMessageEmbed = (
+    items: (RecapItem & { summoner: Summoner })[],
+    streaksAndCounts: {
+        winnerStreak: number;
+        loserStreak: number;
+        winnerCount: number;
+        loserCount: number;
+    }
+) => {
+    const winner = items[0];
+    const loser = items[items.length - 1];
+
     const embed = new EmbedBuilder()
         .setTitle("24h Recap")
+        .setDescription(
+            `🥇 **${winner.summoner.currentName}** is the best player of the day for the **${ordinal_suffix_of(
+                streaksAndCounts.winnerCount
+            )}** time (**${streaksAndCounts.winnerStreak}** in a row)\n🦶 **${
+                loser.summoner.currentName
+            }** is the worst player of the day for the **${ordinal_suffix_of(streaksAndCounts.loserCount)}** time (**${
+                streaksAndCounts.loserStreak
+            }** in a row)`
+        )
         .setFields(items.map((i) => ({ name: i.name, value: i.description })));
 
     return embed;
@@ -81,3 +101,18 @@ export type RecapItem = {
     diff: number;
     description: string;
 };
+
+function ordinal_suffix_of(i: number) {
+    let j = i % 10,
+        k = i % 100;
+    if (j === 1 && k !== 11) {
+        return i + "st";
+    }
+    if (j === 2 && k !== 12) {
+        return i + "nd";
+    }
+    if (j === 3 && k !== 13) {
+        return i + "rd";
+    }
+    return i + "th";
+}
