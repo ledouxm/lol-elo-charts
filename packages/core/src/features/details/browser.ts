@@ -39,6 +39,8 @@ export const getScreenshotBuffer = async ({
 }) => {
     const page = await getPage();
 
+    console.log(clip);
+
     await page.setViewport(clip);
     await page.setContent(html);
 
