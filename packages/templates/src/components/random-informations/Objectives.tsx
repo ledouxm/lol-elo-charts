@@ -16,6 +16,7 @@ export const Objectives = ({ match }: DefaultProps) => {
         gap: "10px",
         fontWeight: "bold",
         fontSize: "25px",
+        whiteSpace: "nowrap",
         px: "20px",
     });
 
@@ -26,7 +27,7 @@ export const Objectives = ({ match }: DefaultProps) => {
     const td2 = css({
         color: "white",
         fontSize: "20px",
-        fontWeight: "semibold",
+        fontWeight: "light",
         mx: "60px",
     });
 

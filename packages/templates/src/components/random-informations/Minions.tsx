@@ -55,6 +55,7 @@ export const Minions = ({ participant }: DefaultProps) => {
 
 export const tableRow = cva({
     base: {
+        whiteSpace: "nowrap",
         textAlign: "left",
         "& > td": {
             fontSize: "20px",

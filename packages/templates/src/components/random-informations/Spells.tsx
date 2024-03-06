@@ -51,6 +51,7 @@ const spellStyles = sva({
         },
         nb: {
             fontSize: "20px",
+            fontWeight: "bold",
         },
     },
 });
