@@ -9,5 +9,10 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "pnpm": {
+        "patchedDependencies": {
+            "galeforce@0.6.1": "patches/galeforce@0.6.1.patch"
+        }
+    }
 }
