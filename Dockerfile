@@ -18,6 +18,7 @@ COPY packages/templates/package.json ./packages/templates/
 COPY packages/templates/panda.config.ts ./packages/templates/
 COPY packages/core/vite.config.ts ./packages/core/
 COPY packages/templates/vite.config.ts ./packages/templates/
+COPY patches/ ./patches/
 
 RUN pnpm install --frozen-lockfile
 
