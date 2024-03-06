@@ -17,6 +17,7 @@ export const MatchDetails = (props: DefaultProps) => {
     setContext(props);
 
     const { match, participant } = props;
+
     const sortedParticipants = sortPlayersByTeamAndRole(match.info.participants);
 
     const hasBlueSideWon = match.info.teams[0].win;

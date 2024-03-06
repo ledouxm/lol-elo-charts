@@ -31,6 +31,7 @@ export const generateTemplateBuffer = async ({
 const dimensions: Record<Templates, { width: number; height: number }> = {
     MatchDamage: { width: 700, height: 562 },
     MatchDetails: { width: 700, height: 516 },
+    MatchRandomInformations: { width: 800, height: 703 },
 };
 
 export type Templates = keyof typeof components;

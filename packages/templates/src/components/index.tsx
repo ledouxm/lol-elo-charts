@@ -1,3 +1,4 @@
 import { MatchDamage } from "./MatchDamage";
 import { MatchDetails } from "./MatchDetails";
-export { MatchDetails, MatchDamage };
+import { MatchRandomInformations } from "./MatchRandomInformations";
+export { MatchRandomInformations, MatchDetails, MatchDamage };

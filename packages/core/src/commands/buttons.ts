@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 const commandToTemplateName: Record<string, Templates> = {
     details: "MatchDetails",
     damages: "MatchDamage",
+    stats: "MatchRandomInformations",
 };
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {

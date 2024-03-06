@@ -233,12 +233,18 @@ importers:
 
   packages/templates:
     dependencies:
+      chart.js:
+        specifier: ^4.3.0
+        version: 4.4.2
       pastable:
         specifier: ^2.2.0
         version: 2.2.1(react@18.2.0)(xstate@5.9.1)
       react:
         specifier: ^18.2.0
         version: 18.2.0
+      react-chartjs-2:
+        specifier: ^5.2.0
+        version: 5.2.0(chart.js@4.4.2)(react@18.2.0)
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)

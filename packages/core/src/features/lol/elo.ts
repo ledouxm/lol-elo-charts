@@ -134,7 +134,17 @@ export const getComponentsRow = ({
         .setCustomId(`damages-${matchId}-${participantIndex}`)
         .setStyle(ButtonStyle.Secondary);
 
-    return new ActionRowBuilder().addComponents(detailsButton, damageButton, ...(additionalComponents || []));
+    const statsButton = new ButtonBuilder()
+        .setLabel("Stats")
+        .setCustomId(`stats-${matchId}-${participantIndex}`)
+        .setStyle(ButtonStyle.Secondary);
+
+    return new ActionRowBuilder().addComponents(
+        detailsButton,
+        damageButton,
+        statsButton,
+        ...(additionalComponents || [])
+    );
 };
 
 export const checkBets = async () => {

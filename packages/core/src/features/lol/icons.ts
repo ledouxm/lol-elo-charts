@@ -4,14 +4,16 @@ import { CanvasRenderingContext2D, Image, loadImage } from "canvas";
 export const getChampionAndSpellIconStaticData = async () => {
     if (!ref.templateProps) {
         const ddVersion = await getDDVersion();
-        const [champions, summoners] = await Promise.all([
+        const [champions, summoners, championFull] = await Promise.all([
             axios.get(`https://ddragon.leagueoflegends.com/cdn/${ddVersion}/data/en_US/champion.json`),
             axios.get(`https://ddragon.leagueoflegends.com/cdn/${ddVersion}/data/en_US/summoner.json`),
+            axios.get(`https://ddragon.leagueoflegends.com/cdn/${ddVersion}/data/en_US/championFull.json`),
         ]);
 
         ref.templateProps = {
             champion: champions.data.data,
             summoner: summoners.data.data,
+            championFull: championFull.data.data,
             version: ddVersion,
         };
     }
