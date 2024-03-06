@@ -17,9 +17,7 @@ export const MatchRandomInformations = (props: DefaultProps) => {
     setContext(props);
 
     const { participant, championFull } = props;
-    console.log(!!championFull);
     const spells = championFull[participant.championName]?.spells;
-
     const styles = randomInformations({});
 
     return (
