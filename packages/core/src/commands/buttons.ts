@@ -14,7 +14,7 @@ const commandToTemplateName: Record<string, Templates> = {
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {
     const [command, matchId, participantIndexRaw] = interaction.customId.split("-");
-    const participantIndex = participantIndexRaw === "undefined" ? undefined : participantIndexRaw;
+    const participantIndex = participantIndexRaw === "undefined" ? undefined : Number(participantIndexRaw);
 
     if (command === "close") {
         const row = getComponentsRow({ matchId, participantIndex });

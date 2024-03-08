@@ -5,7 +5,7 @@ import { getTodaysRanks } from "../generate24hRecap";
 import { getMinifiedRank, getRankFromTotalLp, getTotalLpFromRank, makeTierData } from "../lol/lps";
 
 import { db } from "@/db/db";
-import { endOfYesterday, format, startOfYesterday } from "date-fns";
+import { endOfToday, endOfYesterday, format, startOfToday, startOfYesterday } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import autocolors from "chartjs-plugin-autocolors";
@@ -25,9 +25,9 @@ export const generateRankGraph = async (channelId: string, apex: Apex) => {
 
         if (!startRank || !endRank) continue;
         const ranks = [
-            { ...startRank, createdAt: startOfYesterday() },
+            { ...startRank, createdAt: startOfToday() },
             ...dayRanks.reverse(),
-            { ...endRank, createdAt: endOfYesterday() },
+            { ...endRank, createdAt: endOfToday() },
         ];
         ranksBySummoner[summ.currentName] = ranks.map((r) => ({ ...r, total: getTotalLpFromRank(r, tierData) }));
     }
