@@ -37,7 +37,7 @@ export const generate24hRankRecap = async () => {
         const diff = endLp - startLp;
         const isLoss = diff < 0;
 
-        const winRate = await getYesterdayWinRate(summ);
+        const winRate = await getTodaysWinRate(summ);
         const winRateString = winRate ? ` (${winRate.wins}W/${winRate.losses}L)` : "";
 
         summ.channels.forEach((channelId) => {
@@ -61,6 +61,8 @@ export const generate24hRankRecap = async () => {
             winner: items[0].summoner,
             loser: items[items.length - 1].summoner,
         });
+
+        await storePlayersOfTheDay({ items, channelId });
 
         const embed = getRecapMessageEmbed(items, streaksAndCounts);
         const file = await generateRankGraph(channelId, lastApex);
@@ -86,16 +88,6 @@ const storePlayersOfTheDay = async ({
     items: (RecapItem & { summoner: Summoner })[];
     channelId: string;
 }) => {
-    const winner = items[0].summoner;
-    const loser = items[items.length - 1].summoner;
-
-    const winStreak = await db
-        .select({
-            winStreak: sql<number>`COUNT(*)`,
-        })
-        .from(match)
-        .where(and(eq(match.summonerId, winner.puuid), eq(match.isWin, true)));
-
     await db.insert(playerOfTheDay).values([
         { summonerId: items[0].summoner.puuid, type: "winner", channelId },
         { summonerId: items[items.length - 1].summoner.puuid, type: "loser", channelId },
@@ -166,9 +158,9 @@ export const getStreak = async ({
     return Number(nbPlayersOfTheDayBetweenLastTimeAndNow[0].nbPlayersOfTheDay) + 1;
 };
 
-export const getYesterdayWinRate = async (summ: Summoner) => {
-    const start = DateFns.startOfYesterday();
-    const end = DateFns.endOfYesterday();
+export const getTodaysWinRate = async (summ: Summoner) => {
+    const start = DateFns.startOfToday();
+    const end = DateFns.endOfToday();
 
     const wins = await db
         .select({
@@ -183,8 +175,8 @@ export const getYesterdayWinRate = async (summ: Summoner) => {
 };
 
 export const getTodaysRanks = async (additionnalWhereStatements?: any) => {
-    const startOfYesterday = DateFns.startOfYesterday();
-    const endOfYesterday = DateFns.endOfYesterday();
+    const startOfToday = DateFns.startOfToday();
+    const endOfToday = DateFns.endOfToday();
 
     const select = {
         id: rank.id,
@@ -200,7 +192,7 @@ export const getTodaysRanks = async (additionnalWhereStatements?: any) => {
     const startRanks = await db
         .select(select)
         .from(rank)
-        .where(and(lte(rank.createdAt, startOfYesterday), additionnalWhereStatements))
+        .where(and(lte(rank.createdAt, startOfToday), additionnalWhereStatements))
         .orderBy(desc(rank.createdAt))
         .leftJoin(summoner, eq(summoner.puuid, rank.summonerId))
         .limit(1);
@@ -208,9 +200,7 @@ export const getTodaysRanks = async (additionnalWhereStatements?: any) => {
     const dayRanks = await db
         .select(select)
         .from(rank)
-        .where(
-            and(lte(rank.createdAt, endOfYesterday), gte(rank.createdAt, startOfYesterday), additionnalWhereStatements)
-        )
+        .where(and(lte(rank.createdAt, endOfToday), gte(rank.createdAt, startOfToday), additionnalWhereStatements))
         .leftJoin(summoner, eq(summoner.puuid, rank.summonerId))
         .orderBy(desc(rank.createdAt));
 
@@ -227,10 +217,10 @@ GROUP BY gambler_id;
  */
 
 export const generate24hBetsRecap = async () => {
-    const startOfYesterday = DateFns.addHours(DateFns.startOfYesterday(), 2);
-    const endOfYesterday = DateFns.addHours(DateFns.endOfYesterday(), 2);
+    const startOfToday = DateFns.addHours(DateFns.startOfToday(), 2);
+    const endOfToday = DateFns.addHours(DateFns.endOfToday(), 2);
 
-    const allEndedBets = (await getAllEndedBets({ startDate: startOfYesterday, endDate: endOfYesterday })).sort(
+    const allEndedBets = (await getAllEndedBets({ startDate: startOfToday, endDate: endOfToday })).sort(
         (a, b) => b.result - a.result
     );
 
