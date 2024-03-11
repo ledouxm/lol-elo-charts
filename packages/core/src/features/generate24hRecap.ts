@@ -57,41 +57,50 @@ export const generate24hRankRecap = async () => {
     );
 
     for (const [channelId, items] of Object.entries(byChannelId)) {
+        const winner = items[0].summoner;
+        const loser =
+            items[items.length - 1].summoner.puuid === winner.puuid ? undefined : items[items.length - 1].summoner;
+
         const streaksAndCounts = await getWinnerAndLoserStreakAndCount({
-            winner: items[0].summoner,
-            loser: items[items.length - 1].summoner,
+            winner,
+            loser,
         });
 
-        await storePlayersOfTheDay({ items, channelId });
+        await storePlayersOfTheDay({ winner, loser, channelId });
 
-        const embed = getRecapMessageEmbed(items, streaksAndCounts);
+        const embed = getRecapMessageEmbed({ winner, loser, items, streaksAndCounts });
         const file = await generateRankGraph(channelId, lastApex);
 
         await sendToChannelId({ channelId, embed, file });
     }
 };
 
-const getWinnerAndLoserStreakAndCount = async ({ winner, loser }: { winner: Summoner; loser: Summoner }) => {
+const getWinnerAndLoserStreakAndCount = async ({ winner, loser }: { winner: Summoner; loser?: Summoner }) => {
     const winnerStreak = await getStreak({ summoner: winner, channelId: winner.channelId, type: "winner" });
-    const loserStreak = await getStreak({ summoner: loser, channelId: loser.channelId, type: "loser" });
-
     const winnerCount = await getNbPlayerOfTheDay({ summoner: winner, channelId: winner.channelId, type: "winner" });
+
+    if (!loser) return { winnerStreak, winnerCount };
+
+    const loserStreak = await getStreak({ summoner: loser, channelId: loser.channelId, type: "loser" });
     const loserCount = await getNbPlayerOfTheDay({ summoner: loser, channelId: loser.channelId, type: "loser" });
 
     return { winnerStreak, loserStreak, winnerCount, loserCount };
 };
 
 const storePlayersOfTheDay = async ({
-    items,
+    winner,
+    loser,
     channelId,
 }: {
-    items: (RecapItem & { summoner: Summoner })[];
+    winner: Summoner;
+    loser?: Summoner;
     channelId: string;
 }) => {
-    await db.insert(playerOfTheDay).values([
-        { summonerId: items[0].summoner.puuid, type: "winner", channelId },
-        { summonerId: items[items.length - 1].summoner.puuid, type: "loser", channelId },
-    ]);
+    await db.insert(playerOfTheDay).values([{ summonerId: winner.puuid, type: "winner", channelId }]);
+
+    if (loser) {
+        await db.insert(playerOfTheDay).values([{ summonerId: loser.puuid, type: "loser", channelId }]);
+    }
 };
 
 export const getNbPlayerOfTheDay = async ({

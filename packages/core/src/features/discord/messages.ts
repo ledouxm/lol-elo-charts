@@ -68,29 +68,35 @@ const getAchievedBetString = (b: AchievedBet) => {
     } (${formatDistanceToNow(new Date(match.info.gameEndTimestamp), { addSuffix: true })})`;
 };
 
-export const getRecapMessageEmbed = (
-    items: (RecapItem & { summoner: Summoner })[],
+export const getRecapMessageEmbed = ({
+    winner,
+    loser,
+    items,
+    streaksAndCounts,
+}: {
+    winner: Summoner;
+    loser?: Summoner;
+    items: RecapItem[];
     streaksAndCounts: {
         winnerStreak: number;
-        loserStreak: number;
+        loserStreak?: number;
         winnerCount: number;
-        loserCount: number;
+        loserCount?: number;
+    };
+}) => {
+    let str = `🥇 **${winner.currentName}** is the best player of the day for the **${ordinal_suffix_of(
+        streaksAndCounts.winnerCount
+    )}** time (**${streaksAndCounts.winnerStreak}** in a row)`;
+
+    if (loser) {
+        str += `\n🦶 **${loser.currentName}** is the worst player of the day for the **${ordinal_suffix_of(
+            streaksAndCounts.loserCount
+        )}** time (**${streaksAndCounts.loserStreak}** in a row)`;
     }
-) => {
-    const winner = items[0];
-    const loser = items[items.length - 1];
 
     const embed = new EmbedBuilder()
         .setTitle("24h Recap")
-        .setDescription(
-            `🥇 **${winner.summoner.currentName}** is the best player of the day for the **${ordinal_suffix_of(
-                streaksAndCounts.winnerCount
-            )}** time (**${streaksAndCounts.winnerStreak}** in a row)\n🦶 **${
-                loser.summoner.currentName
-            }** is the worst player of the day for the **${ordinal_suffix_of(streaksAndCounts.loserCount)}** time (**${
-                streaksAndCounts.loserStreak
-            }** in a row)`
-        )
+        .setDescription(str)
         .setFields(items.map((i) => ({ name: i.name, value: i.description })));
 
     return embed;
