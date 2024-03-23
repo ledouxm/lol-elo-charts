@@ -49,7 +49,7 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
     });
 
     const closeButton = new ButtonBuilder()
-        .setCustomId(`close-${matchId}`)
+        .setCustomId(`close-${matchId}-${index}`)
         .setLabel("Close")
         .setStyle(ButtonStyle.Danger);
 
