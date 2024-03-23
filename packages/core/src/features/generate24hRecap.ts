@@ -3,11 +3,11 @@ import { db } from "../db/db";
 import { Summoner, apex, bet, gambler, match, playerOfTheDay, rank, summoner } from "../db/schema";
 import { formatRank } from "../utils";
 import { getTotalLpFromRank, makeTierData } from "./lol/lps";
-import { getSummonersWithChannels } from "./summoner";
+import { SummonerWithChannels, getSummonersWithChannels } from "./summoner";
 import { groupBy } from "pastable";
 import { sendToChannelId } from "./discord/discord";
 import * as DateFns from "date-fns";
-import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed } from "./discord/messages";
+import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed, getRecapItemsEmbed } from "./discord/messages";
 import { generateRankGraph } from "./chart/generateGraph";
 
 export const generate24hRecaps = async () => {
@@ -15,8 +15,7 @@ export const generate24hRecaps = async () => {
     await generate24hBetsRecap();
 };
 
-export const generate24hRankRecap = async () => {
-    const summoners = await getSummonersWithChannels();
+const get24hData = async ({ summoners }: { summoners: SummonerWithChannels[] }) => {
     const recap = [] as (RecapItem & { channelId: string; summoner: Summoner })[];
 
     const lastApex = (await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1))?.[0];
@@ -50,6 +49,21 @@ export const generate24hRankRecap = async () => {
             });
         });
     }
+
+    return { recap, lastApex };
+};
+
+export const getCurrentDayRecap = async ({ channelId }: { channelId: string }) => {
+    const summoners = await getSummonersWithChannels(channelId);
+    const { recap } = await get24hData({ summoners });
+
+    const embed = getRecapItemsEmbed(recap);
+    return embed;
+};
+
+export const generate24hRankRecap = async () => {
+    const summoners = await getSummonersWithChannels();
+    const { recap, lastApex } = await get24hData({ summoners });
 
     const byChannelId = groupBy(
         recap.sort((a, b) => b.diff - a.diff),

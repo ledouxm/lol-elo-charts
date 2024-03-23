@@ -1,12 +1,12 @@
 import { apex, rank, summoner } from "@/db/schema";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
-import { ApplicationCommandOptionType, ButtonStyle, CommandInteraction } from "discord.js";
+import { getCurrentDayRecap } from "@/features/generate24hRecap";
+import { getTotalLpFromRank, makeTierData } from "@/features/lol/lps";
+import { EmbedBuilder } from "@discordjs/builders";
+import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import { desc, eq } from "drizzle-orm";
 import { db } from "../db/db";
-import { addSummoner, galeforce, getSummonerByName, removeSummoner } from "../features/summoner";
-import { getInGameSummoners } from "@/features/activity";
-import { getTotalLpFromRank, makeTierData } from "@/features/lol/lps";
+import { addSummoner, getSummonerByName, removeSummoner } from "../features/summoner";
 
 @Discord()
 export class ManageSummoner {
@@ -112,25 +112,10 @@ export class ManageSummoner {
 
         interaction.reply({ embeds: [embed] });
     }
-    // @Slash({ name: "register", description: "Register yourself as gambler" })
-    // async registerAsGamber(interaction: CommandInteraction) {
-    //     const gamb = await getOrCreateGambler(interaction);
 
-    //     interaction.reply("Test");
-    // }
-
-    // @Slash({ name: "test", description: "TEST" })
-    // async test(interaction: CommandInteraction) {
-    //     const detailsButton = new ButtonBuilder()
-    //         .setLabel("Details")
-    //         .setCustomId("details-EUW1_6839577079")
-    //         .setStyle(ButtonStyle.Secondary);
-
-    //     const row = new ActionRowBuilder().addComponents(detailsButton);
-
-    //     await interaction.reply({
-    //         content: "test",
-    //         components: [row],
-    //     });
-    // }
+    @Slash({ name: "today", description: "Show the activity of the summoners today" })
+    async today(interaction: CommandInteraction) {
+        const embed = await getCurrentDayRecap({ channelId: interaction.channelId });
+        interaction.reply({ embeds: [embed] });
+    }
 }

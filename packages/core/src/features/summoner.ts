@@ -115,8 +115,11 @@ export const giveEveryone500Points = async () => {
     }
 };
 
-export const getSummonersWithChannels = async () => {
-    const allSummoners = await db.select().from(summoner).where(eq(summoner.isActive, true));
+export const getSummonersWithChannels = async (channelId?: string) => {
+    const baseWhere = eq(summoner.isActive, true);
+    const where = channelId ? and(baseWhere, eq(summoner.channelId, channelId)) : baseWhere;
+
+    const allSummoners = await db.select().from(summoner).where(where);
     const summoners = allSummoners.reduce((acc, s) => {
         const index = acc.findIndex((a) => a.puuid === s.puuid);
         if (index !== -1) {

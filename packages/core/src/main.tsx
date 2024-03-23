@@ -5,18 +5,14 @@ import { startDiscordBot } from "./features/discord/discord";
 import { getAndSaveApex } from "./features/lol/apex";
 import { makeRouter } from "./features/router";
 import { startCronJobs } from "./startCronJobs";
-import { getNbPlayerOfTheDay, getStreak } from "./features/generate24hRecap";
-import { match, summoner } from "./db/schema";
-import { eq } from "drizzle-orm";
-import { generateTemplateBuffer } from "./features/details/templates";
 
 const start = async () => {
     try {
         await initDb();
-
         await startDiscordBot();
         startCronJobs();
         makeRouter();
+
         if (process.env.FORCE_RECAPS) {
             await getAndSaveApex();
         }
