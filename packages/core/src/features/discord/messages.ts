@@ -94,13 +94,13 @@ export const getRecapMessageEmbed = ({
         )}** time (**${streaksAndCounts.loserStreak}** in a row)`;
     }
 
-    const embed = getRecapItemsEmbed(items).setDescription(str);
+    const embed = getRecapItemsEmbed(items).setDescription(str).setTitle("24h Recap");
 
     return embed;
 };
 
 export const getRecapItemsEmbed = (items: RecapItem[]) => {
-    const embed = new EmbedBuilder().setTitle("24h Recap").setFields(
+    const embed = new EmbedBuilder().setFields(
         items.map((i) => ({
             name: i.name,
             value: i.description,

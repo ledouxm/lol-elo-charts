@@ -57,7 +57,9 @@ export const getCurrentDayRecap = async ({ channelId }: { channelId: string }) =
     const summoners = await getSummonersWithChannels(channelId);
     const { recap } = await get24hData({ summoners });
 
-    const embed = getRecapItemsEmbed(recap);
+    const sorted = recap.sort((a, b) => b.diff - a.diff);
+
+    const embed = getRecapItemsEmbed(sorted).setTitle("Today's recap");
     return embed;
 };
 
