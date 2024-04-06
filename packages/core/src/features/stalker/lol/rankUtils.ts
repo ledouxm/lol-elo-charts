@@ -47,8 +47,10 @@ export const getRankDifference = (oldRank: InsertRank, newRank: LoLRankWithWinsL
 
 export type RankDifference = ReturnType<typeof getRankDifference>;
 
-export const formatRank = (ranking: Pick<InsertRank, "tier" | "division" | "leaguePoints">) =>
-    `${ranking.tier}${ranking.division !== "NA" ? ` ${ranking.division}` : ""} - ${ranking.leaguePoints} LP`;
+export const formatRank = (ranking: Pick<InsertRank, "tier" | "division" | "leaguePoints">) => {
+    if (!ranking) return "";
+    return `${ranking.tier}${ranking.division !== "NA" ? ` ${ranking.division}` : ""} - ${ranking.leaguePoints} LP`;
+};
 
 export const areRanksEqual = (oldRank: InsertRank, newRank: LoLRankWithWinsLosses) => {
     return (

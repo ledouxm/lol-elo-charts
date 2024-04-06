@@ -2,12 +2,12 @@ import { InsertRank } from "@/db/schema";
 import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
 import { Stalker, StalkerChange, StalkerMessage } from "../stalker";
 import { getComponentsRow, getFirstRankEmbed, getRankDifferenceEmbed } from "./embeds";
-import { getLastGameAndStoreIfNecessary } from "./match";
+import { getLastGameAndStoreIfNecessary, persistLastGameId } from "./match";
 import { LoLRankWithWinsLosses, getLoLLastRank, getLoLNewRank, storeNewLoLRank } from "./rank";
 import { areRanksEqual, getRankDifference } from "./rankUtils";
 import { SummonerWithChannels, getSummonersWithChannels, updateName } from "./summoner";
 
-export const lolStalker = new Stalker({
+export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWithWinsLosses, InsertRank>({
     debugNamespace: "lol",
     getPlayers: async () => {
         const summoners = await getSummonersWithChannels();
@@ -17,26 +17,31 @@ export const lolStalker = new Stalker({
         const rank = await getLoLNewRank(player.id);
         return rank;
     },
-    storeNewRank: async ({ player, newRank }) => {
-        await storeNewLoLRank(player.puuid, newRank);
+    persistChanges: async ({ changes, debug }) => {
+        for (const { player, lastMatch, newRank } of changes) {
+            debug("Storing new rank");
+            await storeNewLoLRank(player.puuid, newRank);
+
+            if (lastMatch) {
+                await persistLastGameId(player, lastMatch.metadata.matchId);
+            }
+
+            // update player name if needed
+            const playerInGame = lastMatch?.info.participants.find((p) => p.puuid === player.puuid);
+            if (playerInGame && player.currentName !== `${playerInGame.summonerName}#${playerInGame.riotIdTagline}`) {
+                await updateName(player.puuid, `${playerInGame.summonerName}#${playerInGame.riotIdTagline}`);
+            }
+        }
     },
     getLastMatch: async ({ player }) => {
         const lastGame = await getLastGameAndStoreIfNecessary(player);
-
-        // if no new game
-        if (lastGame.metadata.matchId === player.lastGameId) return null;
-
-        // update player name if needed
-        const playerInGame = lastGame.info.participants.find((p) => p.puuid === player.puuid);
-        if (playerInGame && player.currentName !== `${playerInGame.summonerName}#${playerInGame.riotIdTagline}`) {
-            await updateName(player.puuid, `${playerInGame.summonerName}#${playerInGame.riotIdTagline}`);
-        }
+        if (lastGame?.metadata.matchId === player.lastGameId) return null;
 
         return lastGame;
     },
     getLastRank: async ({ player }) => {
         const lastRank = await getLoLLastRank(player.puuid);
-        return lastRank;
+        return lastRank as InsertRank;
     },
     areRanksEqual: ({ lastRank, newRank }) => {
         return areRanksEqual(lastRank, newRank);

@@ -5,7 +5,7 @@
         "dev-start": "pnpm vite-node ./src/main.ts",
         "dev": "vite-node --watch ./src/main.tsx",
         "build": "tsup",
-        "start": "cross-env NODE_ENV=production DEBUG=elo-stalker* node dist/main.js",
+        "start": "cross-env NODE_ENV=production node dist/main.js",
         "migration:create": "drizzle-kit generate:pg",
         "migration:up": "pnpm mikro-orm migration:up",
         "prettier": "prettier --write \"./{src,tests}/**/*\"",

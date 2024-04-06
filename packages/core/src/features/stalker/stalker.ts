@@ -73,9 +73,6 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
         const shouldSkip = this.options.areRanksEqual({ lastRank, newRank: rank });
         if (shouldSkip) return;
 
-        playerDebug("Storing new rank");
-        await this.options.storeNewRank({ player, newRank: rank });
-
         this.currentChanges.push({
             player,
             lastMatch: match,
@@ -102,6 +99,10 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
         for (const message of messages) {
             await this.sendToChannelId({ channelId: message.channelId, message });
         }
+
+        this.debug("Persisting changes");
+        await this.options.persistChanges({ changes: this.currentChanges, debug: this.debug });
+        this.currentChanges = [];
     }
 
     async sendToChannelId({ channelId, message }: { channelId: string; message: MessageCreateOptions }) {
@@ -139,8 +140,14 @@ interface StalkerOptions<Player extends StalkerPlayer, Match, RemoteRank, DbRank
         changes,
     }: {
         changes: StalkerChange<Player, Match, RemoteRank, DbRank>[];
-    }) => Awaitable<StalkerMessage[] | null>;
-    storeNewRank: ({ player, newRank }: { player: Player; newRank: RemoteRank }) => Awaitable<void>;
+    }) => Awaitable<StalkerMessage[]>;
+    persistChanges: ({
+        changes,
+        debug,
+    }: {
+        changes: StalkerChange<Player, Match, RemoteRank, DbRank>[];
+        debug: debug.Debugger;
+    }) => Awaitable<void>;
     getPlayerName: ({ player }: { player: Player }) => string;
 
     debugNamespace: string;

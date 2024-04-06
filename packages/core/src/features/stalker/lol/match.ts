@@ -69,8 +69,6 @@ export const storeLoLMatch = async ({ player, lastMatch }: { player: Summoner; l
     const isWin = participant.win;
     const kda = `${participant.kills}/${participant.deaths}/${participant.assists}`;
 
-    await db.update(summoner).set({ lastGameId: lastMatch.metadata.matchId });
-
     return db.insert(match).values({
         startedAt: new Date(lastMatch.info.gameStartTimestamp),
         matchId: lastMatch.metadata.matchId,
@@ -82,6 +80,10 @@ export const storeLoLMatch = async ({ player, lastMatch }: { player: Summoner; l
         summonerId: player.puuid,
         details: lastMatch,
     });
+};
+
+export const persistLastGameId = async (player: Summoner, gameId: string) => {
+    await db.update(summoner).set({ lastGameId: gameId }).where(eq(summoner.puuid, player.puuid));
 };
 
 export type Participant = Galeforce.dto.MatchDTO["info"]["participants"][0];
