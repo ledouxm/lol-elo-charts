@@ -7,7 +7,6 @@
         "build": "tsup",
         "start": "cross-env NODE_ENV=production DEBUG=elo-stalker* node dist/main.js",
         "migration:create": "drizzle-kit generate:pg",
-        "migration:up": "pnpm mikro-orm migration:up",
         "prettier": "prettier --write \"./{src,tests}/**/*\"",
         "test": "cross-env NODE_ENV=test vitest"
     },
