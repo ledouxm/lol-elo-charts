@@ -1,4 +1,7 @@
+import { db } from "@/db/db";
 import { addRequest, galeforce } from "../summoner";
+import { InsertRank, rank, summoner } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export const getSummonerData = async (puuid: string) => {
     const summonerData = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).puuid(puuid).exec();
@@ -7,21 +10,14 @@ export const getSummonerData = async (puuid: string) => {
     return { ...summonerData, fullname: `${account.gameName}#${account.tagLine}` };
 };
 
-export const getElos = async (id: string) => {
-    const result = await galeforce.lol.league
-        .entries()
-        .summonerId(id)
-        .region(galeforce.region.lol.EUROPE_WEST)
-        .queue(galeforce.queue.lol.RANKED_SOLO)
-        .exec();
-    await addRequest();
-    return result;
-};
+export const getLastRank = async (puuid: string) => {
+    const lastRanks = await db
+        .select()
+        .from(rank)
+        .where(eq(rank.summonerId, puuid))
+        .orderBy(desc(rank.createdAt))
+        .limit(1);
 
-export const getSoloQElo = async (id: string) => {
-    const elos = await getElos(id);
-    const elo = elos.find((e) => e.queueType === "RANKED_SOLO_5x5");
-    if (!elo) return null;
-
-    return elo;
+    const lastRank = lastRanks?.[0] as InsertRank;
+    return lastRank;
 };

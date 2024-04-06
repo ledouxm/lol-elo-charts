@@ -88,4 +88,4 @@ const divisionToNumber = (division: InsertRank["division"]) => {
     }
 };
 export const getMinifiedRank = (rank: MinimalRank) =>
-    `${rank.tier[0]}${divisionToNumber(rank.division)}-${rank.leaguePoints}LP` as string;
+    `${rank.tier[0]}${divisionToNumber(rank.division as any)}-${rank.leaguePoints}LP` as string;

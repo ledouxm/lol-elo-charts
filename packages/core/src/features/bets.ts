@@ -2,8 +2,9 @@ import { InferModel, and, eq, isNull } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { Bet, Gambler, Summoner, bet, gambler, match, summoner } from "../db/schema";
-import { Participant, addRequest, galeforce } from "./summoner";
+import { addRequest, galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
+import { Participant } from "./stalker/lol/match";
 
 export const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 2;
 
@@ -196,24 +197,6 @@ const getGameFromCacheOrFetch = async (gameId: string, gameCache?: GameCache) =>
     return game;
 };
 
-const isMatchRemake = (game: Galeforce.dto.MatchDTO) => {
+export const isMatchRemake = (game: Galeforce.dto.MatchDTO) => {
     return game.info.participants.some((p) => p.teamEarlySurrendered);
-};
-
-export const getLastGame = async (summoner: Summoner) => {
-    const lastGames = await galeforce.lol.match
-        .list()
-        .region(galeforce.region.riot.EUROPE)
-        .puuid(summoner.puuid)
-        .query({ count: 1, queue: 420 })
-        .exec();
-    await addRequest();
-
-    if (!lastGames?.[0]) return null;
-
-    const match = await galeforce.lol.match.match().region(galeforce.region.riot.EUROPE).matchId(lastGames[0]).exec();
-    await addRequest();
-    if (match?.info.participants.some((p) => p.teamEarlySurrendered)) return null;
-
-    return match;
 };

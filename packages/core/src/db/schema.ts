@@ -63,6 +63,7 @@ export const rank = pgTable("rank", {
     createdAt: timestamp("created_at").defaultNow(),
 });
 export type InsertRank = InferModel<typeof rank, "insert">;
+export type InsertRankWithoutLiterals = Omit<InsertRank, "division" | "tier"> & { tier: string; division: string };
 
 export const rankRelations = relations(rank, ({ one }) => {
     return { summoner: one(summoner, { fields: [rank.summonerId], references: [summoner.puuid] }) };

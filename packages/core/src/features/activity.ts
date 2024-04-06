@@ -35,6 +35,7 @@ export const getInGameSummoners = async () => {
                     .setThumbnail(championUrl)
                     .setTimestamp(new Date(activeGame.gameStartTime))
                     .setURL(`https://porofessor.gg/live/euw/${summ.currentName}`);
+
                 await sendToChannelId({ embed, channelId });
             }
         } catch (e) {

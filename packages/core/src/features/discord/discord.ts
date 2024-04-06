@@ -1,18 +1,12 @@
-import type {
-    AnyComponentBuilder,
-    AttachmentBuilder,
-    ComponentBuilder,
-    EmbedBuilder,
-    Interaction,
-    Message,
-    TextChannel,
-} from "discord.js";
+import { executeButtonInteraction } from "@/commands/buttons";
+import type { Interaction, Message, MessageCreateOptions, TextChannel } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 import "../../commands/bets";
 import "../../commands/manageSummoners";
-import { executeButtonInteraction } from "@/commands/buttons";
-import { ActionRowBuilder } from "@discordjs/builders";
+import { makeDebug } from "@/utils";
+
+const debug = makeDebug("discord");
 
 export const bot = new Client({
     // To use only guild command
@@ -27,7 +21,7 @@ export const bot = new Client({
     ],
 
     // Debug logs are disabled in silent mode
-    silent: false,
+    silent: true,
 });
 
 bot.once("ready", async () => {
@@ -45,14 +39,16 @@ bot.once("ready", async () => {
     //    ...bot.guilds.cache.map((g) => g.id)
     //  );
 
-    console.log("Bot started");
+    debug("Bot started");
 });
 
 bot.on("interactionCreate", (interaction: Interaction) => {
     if (interaction.isButton()) {
+        debug("Button interaction", interaction.customId, interaction.user.username);
         return void executeButtonInteraction(interaction);
     }
     if (interaction.isCommand()) {
+        debug("Command interaction", interaction.commandName, interaction.user.username);
         return void bot.executeInteraction(interaction);
     }
 });
@@ -72,45 +68,17 @@ export const startDiscordBot = async () => {
     await bot.login(process.env.BOT_TOKEN);
 };
 
-export const sendToChannelId = async ({
-    channelId,
-    embed,
-    file,
-    components,
-    content,
-    retry = true,
-}: {
-    channelId: string;
-    embed?: EmbedBuilder | string;
-    file?: AttachmentBuilder | Buffer;
-    components?: any[];
-    retry?: boolean;
-    content?: string;
-}) => {
+export const sendToChannelId = async ({ channelId, message }: { channelId: string; message: MessageCreateOptions }) => {
     try {
         const channel = bot.channels.cache.get(channelId);
         if (!channel) {
             console.log("Could not find channel", channelId);
-            if (retry) {
-                await bot.channels.fetch(channelId, { cache: true, force: true });
-                await sendToChannelId({ channelId, embed, file, content });
-            }
             return;
         }
 
         console.log("Sending to channel", channelId, channel.type);
 
-        if (typeof embed === "string") {
-            await (channel as TextChannel).send(embed);
-            return;
-        }
-
-        return (channel as TextChannel).send({
-            embeds: embed ? [embed] : undefined,
-            files: file ? [file] : undefined,
-            components,
-            content,
-        });
+        return (channel as TextChannel).send(message);
     } catch (e) {
         console.log("Error sending to channel", channelId, e);
     }
