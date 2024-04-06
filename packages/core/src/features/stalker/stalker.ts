@@ -39,7 +39,7 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
     }
 
     async appendPlayersToFetch() {
-        const newPlayers = await this.options.getPlayers();
+        const newPlayers = (await this.options.getPlayers()).filter((p) => !this.playersPool.includes(p));
         this.debug(
             `Adding ${newPlayers.length} players to the pool (total: ${this.playersPool.length + newPlayers.length})`
         );

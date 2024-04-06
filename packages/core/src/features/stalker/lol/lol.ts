@@ -57,8 +57,11 @@ export const lolStalker = new Stalker({
         return messages;
     },
     getPlayerName: ({ player }) => player.currentName,
-    discordNotificationInterval: 1000 * 60,
-    playerRequestInterval: 5000,
+    discordNotificationInterval:
+        1000 *
+        (process.env.DISCORD_NOTIFICATION_INTERVAL_SEC ? Number(process.env.DISCORD_NOTIFICATION_INTERVAL_SEC) : 10),
+    playerRequestInterval:
+        1000 * (process.env.PLAYER_REQUEST_INTERVAL_SEC ? Number(process.env.PLAYER_REQUEST_INTERVAL_SEC) : 10),
 });
 
 const getRankChangeComponents = ({ lastMatch, player }: LoLStalkerChange) => {

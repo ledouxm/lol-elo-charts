@@ -18,6 +18,8 @@ services:
             ENABLE_BETS: ${ENABLE_BETS}
             FORCE_RECAPS: ${FORCE_RECAPS}
             HTTP_PORT: ${HTTP_PORT}
+            PLAYER_REQUEST_INTERVAL_SEC: ${PLAYER_REQUEST_INTERVAL_SEC}
+            DISCORD_NOTIFICATION_INTERVAL_SEC: ${DISCORD_NOTIFICATION_INTERVAL_SEC}
         restart: always
         depends_on:
             - postgresql
