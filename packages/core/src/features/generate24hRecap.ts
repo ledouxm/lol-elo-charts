@@ -1,14 +1,14 @@
 import { and, desc, eq, gt, gte, lte, not, sql } from "drizzle-orm";
 import { db } from "../db/db";
 import { Summoner, apex, bet, gambler, match, playerOfTheDay, rank, summoner } from "../db/schema";
-import { formatRank } from "../utils";
 import { getTotalLpFromRank, makeTierData } from "./lol/lps";
-import { SummonerWithChannels, getSummonersWithChannels } from "./summoner";
 import { groupBy } from "pastable";
 import { sendToChannelId } from "./discord/discord";
 import * as DateFns from "date-fns";
 import { RecapItem, getRecapMessageEmbed, getBetsRecapMessageEmbed, getRecapItemsEmbed } from "./discord/messages";
 import { generateRankGraph } from "./chart/generateGraph";
+import { SummonerWithChannels, getSummonersWithChannels } from "./stalker/lol/summoner";
+import { formatRank } from "./stalker/lol/rankUtils";
 
 export const generate24hRecaps = async () => {
     await generate24hRankRecap();
@@ -43,7 +43,7 @@ const get24hData = async ({ summoners }: { summoners: SummonerWithChannels[] }) 
             recap.push({
                 name: summ.currentName + ": " + (isLoss ? "-" : "+") + Math.abs(diff) + winRateString,
                 diff,
-                description: `${formatRank(startRank)} ⮞ ${formatRank(endRank)}`,
+                description: `${formatRank(startRank)} > ${formatRank(endRank)}`,
                 channelId: channelId,
                 summoner: summ,
             });
@@ -66,7 +66,7 @@ export const getCurrentDayRecap = async ({ channelId }: { channelId: string }) =
 export const generate24hRankRecap = async () => {
     const summoners = await getSummonersWithChannels();
     const { recap, lastApex } = await get24hData({ summoners });
-
+    console.log(summoners.length, recap);
     const byChannelId = groupBy(
         recap.sort((a, b) => b.diff - a.diff),
         (r) => r.channelId
@@ -87,7 +87,7 @@ export const generate24hRankRecap = async () => {
         const embed = getRecapMessageEmbed({ winner, loser, items, streaksAndCounts });
         const file = await generateRankGraph(channelId, lastApex);
 
-        await sendToChannelId({ channelId, embed, file });
+        await sendToChannelId({ channelId, message: { embeds: [embed], files: [file] } });
     }
 };
 
@@ -253,7 +253,7 @@ export const generate24hBetsRecap = async () => {
 
     for (const [channelId, bets] of Object.entries(groupedByChannelId)) {
         const embed = getBetsRecapMessageEmbed(bets);
-        await sendToChannelId({ channelId, embed });
+        await sendToChannelId({ channelId, message: { embeds: [embed] } });
     }
 };
 

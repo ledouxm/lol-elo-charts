@@ -4,6 +4,9 @@ import { db } from "@/db/db";
 import { request } from "@/db/schema";
 import { subMinutes } from "date-fns";
 import { and, asc, gte, lte, sql } from "drizzle-orm";
+import { makeDebug } from "@/utils";
+
+const debug = makeDebug("router");
 
 export const makeRouter = () => {
     const app = express();
@@ -15,7 +18,7 @@ export const makeRouter = () => {
     const port = process.env.HTTP_PORT || 3000;
 
     app.listen(port, () => {
-        console.log(`Listening on port ${port}`);
+        debug(`Listening on port ${port}`);
     });
 };
 

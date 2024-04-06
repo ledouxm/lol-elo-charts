@@ -1,7 +1,7 @@
 import { db } from "@/db/db";
 import { match } from "@/db/schema";
 import { Templates, generateTemplateBuffer } from "@/features/details/templates";
-import { getComponentsRow } from "@/features/lol/elo";
+import { getComponentsRow } from "@/features/stalker/lol/embeds";
 import { ButtonBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { eq } from "drizzle-orm";

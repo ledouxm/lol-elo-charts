@@ -3,6 +3,7 @@ import { db } from "../../db/db";
 import { apex } from "../../db/schema";
 import { generate24hRecaps } from "../generate24hRecap";
 import { galeforce, getQueueRank } from "../summoner";
+import { desc } from "drizzle-orm";
 
 const getApex = async () => {
     const masters = await getQueueRank(galeforce.tier.MASTER);
@@ -17,10 +18,14 @@ const getApex = async () => {
 };
 
 export const getAndSaveApex = async () => {
-    console.log("retrieving apex at ", new Date().toISOString());
     const riotApex = await getApex();
 
     await db.insert(apex).values(riotApex);
 
     return generate24hRecaps();
+};
+
+export const getLastApex = async () => {
+    const lastApex = await db.select().from(apex).orderBy(desc(apex.createdAt)).limit(1);
+    return lastApex?.[0];
 };

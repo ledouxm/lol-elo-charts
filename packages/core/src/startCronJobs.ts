@@ -1,14 +1,10 @@
 import { getAndSaveApex } from "./features/lol/apex";
-import { checkBets, checkElo } from "./features/lol/elo";
+import { checkBets } from "./features/lol/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
 import { clearRequests } from "./features/router";
 
 export const startCronJobs = () => {
-    const eloDelay = `*/${process.env.CRON_RANK_DELAY_MIN || 5} * * * *`;
-    console.log("checking elo", cronstrue.toString(eloDelay));
-    cron.schedule(eloDelay, () => checkElo());
-
     const betDelay = `*/${process.env.CRON_BETS_DELAY_MIN || 5} * * * *`;
     console.log("checking bets", cronstrue.toString(betDelay));
     cron.schedule(betDelay, () => checkBets());
