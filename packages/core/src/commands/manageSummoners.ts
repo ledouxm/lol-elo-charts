@@ -18,7 +18,7 @@ export class ManageSummoner {
             required: true,
             type: ApplicationCommandOptionType.String,
         })
-        name: string,
+        nameWithMaybeTag: string,
         @SlashOption({
             description: "Tag",
             name: "tag",
@@ -29,11 +29,12 @@ export class ManageSummoner {
         interaction: CommandInteraction
     ) {
         try {
-            console.log("addSummoner", name);
-            const riotSummoner = await getSummonerByName(name, tag || "EUW");
+            console.log("addSummoner", nameWithMaybeTag);
+            const [name, maybeTag] = nameWithMaybeTag.split("#");
+            const riotSummoner = await getSummonerByName(name, maybeTag || tag || "EUW");
 
             await addSummoner(riotSummoner, interaction.channelId);
-            interaction.reply("Added summoner " + name + "#" + (tag || "EUW"));
+            interaction.reply("Added summoner " + name + "#" + maybeTag || tag || "EUW");
         } catch (e) {
             console.log(e);
             interaction.reply("Summoner not found");
