@@ -76,6 +76,12 @@ export class ManagePlayers {
     async leaderboard(
         @SlashChoice({ name: "LoL", value: "lol" })
         @SlashChoice({ name: "Valorant", value: "valorant" })
+        @SlashOption({
+            name: "game",
+            description: "Game to list the players for",
+            required: true,
+            type: ApplicationCommandOptionType.String,
+        })
         game: Game,
         interaction: CommandInteraction
     ) {
