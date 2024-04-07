@@ -2,7 +2,13 @@ import { createApiClient } from "./valorantApi.gen";
 import { ofetch } from "ofetch";
 
 export const valorantApi = createApiClient((method, url, parameters) => {
-    return ofetch("https://api.henrikdev.xyz" + url, {
+    const withPathVariables = (url: string, path: Record<string, any>) => {
+        return url.replace(/{([^}]+)}/g, (_, key) => {
+            return path[key];
+        });
+    };
+
+    return ofetch("https://api.henrikdev.xyz" + withPathVariables(url, parameters.path), {
         method,
         query: parameters?.query,
         body: parameters?.body as any,
@@ -10,7 +16,3 @@ export const valorantApi = createApiClient((method, url, parameters) => {
         params: parameters?.path,
     });
 });
-type A = "/valorant/v1/account/{name}/{tag}"
-type B = "/valorant/v1/account/{name}/oui"
-type Aa = ReplaceBrackets<A>
-type ReplaceBrackets<T, Current = ""> = T extends `${infer Before}{${string}}${infer After}` ? ReplaceBrackets<`${Before}${string}${After}`, Current> : T

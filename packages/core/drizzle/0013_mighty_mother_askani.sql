@@ -1,0 +1,1 @@
+ALTER TABLE "valorant_player" ALTER COLUMN "last_game_id" SET DATA TYPE varchar(100);

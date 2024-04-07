@@ -8,7 +8,7 @@ import { getMyBetsMessageEmbed } from "@/features/discord/messages";
 import { getSummonerCurrentGame } from "@/features/summoner";
 import { groupBy } from "pastable";
 import { addMinutes, isSameDay } from "date-fns";
-import { betDelayInMinutes } from "@/features/bets";
+import { ENV } from "@/envVars";
 
 @Discord()
 export class Bets {
@@ -37,7 +37,7 @@ export class Bets {
         win: boolean,
         interaction: CommandInteraction
     ) {
-        if (!process.env.ENABLE_BETS) {
+        if (!ENV.ENABLE_BETS) {
             return sendErrorToChannelId(
                 interaction.channelId,
                 "Bets are disabled, contact the owner of the bot to enable them",
@@ -112,7 +112,7 @@ export class Bets {
         const currentGame = await getSummonerCurrentGame(currentSummoner.id);
         console.log(currentSummoner.id);
         console.log("current game", !!currentGame);
-        if (currentGame && addMinutes(new Date(currentGame.gameStartTime), betDelayInMinutes) > new Date()) {
+        if (currentGame && addMinutes(new Date(currentGame.gameStartTime), ENV.CRON_BETS_DELAY_MIN) > new Date()) {
             const shouldCreateBet = await sendBetConfirmation({ summ: currentSummoner, points, win, interaction });
             if (!shouldCreateBet) return interaction.editReply("Bet cancelled");
         }
@@ -326,7 +326,9 @@ export const sendErrorToChannelId = async (channelId: string, error: string, int
     console.error(error, channelId);
     const embed = new EmbedBuilder().setTitle("Error").setDescription(error).setColor(0xff0000);
 
-    return interaction ? interaction.reply({ embeds: [embed] }) : sendToChannelId({ channelId, embed });
+    return interaction
+        ? interaction.reply({ embeds: [embed] })
+        : sendToChannelId({ channelId, message: { embeds: [embed] } });
 };
 
 export const sendBetConfirmation = async ({

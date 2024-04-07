@@ -4,7 +4,9 @@ import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 import "../../commands/bets";
 import "../../commands/manageSummoners";
+import "../../commands/manageValorantPlayers";
 import { makeDebug } from "@/utils";
+import { ENV } from "@/envVars";
 
 const debug = makeDebug("discord");
 
@@ -21,7 +23,7 @@ export const bot = new Client({
     ],
 
     // Debug logs are disabled in silent mode
-    silent: true,
+    silent: false,
 });
 
 bot.once("ready", async () => {
@@ -58,14 +60,7 @@ bot.on("messageCreate", (message: Message) => {
 });
 
 export const startDiscordBot = async () => {
-    // The following syntax should be used in the ECMAScript environment
-    // Let's start the bot
-    if (!process.env.BOT_TOKEN) {
-        throw Error("Could not find BOT_TOKEN in your environment");
-    }
-
-    // Log in with your bot token
-    await bot.login(process.env.BOT_TOKEN);
+    await bot.login(ENV.BOT_TOKEN);
 };
 
 export const sendToChannelId = async ({ channelId, message }: { channelId: string; message: MessageCreateOptions }) => {

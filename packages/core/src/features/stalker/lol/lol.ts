@@ -4,11 +4,13 @@ import { Stalker, StalkerChange, StalkerMessage } from "../stalker";
 import { getComponentsRow, getFirstRankEmbed, getRankDifferenceEmbed } from "./embeds";
 import { getLastGameAndStoreIfNecessary, persistLastGameId } from "./match";
 import { LoLRankWithWinsLosses, getLoLLastRank, getLoLNewRank, storeNewLoLRank } from "./rank";
-import { areRanksEqual, getRankDifference } from "./rankUtils";
+import { areRanksEqual, formatRank, getRankDifference } from "./rankUtils";
 import { SummonerWithChannels, getSummonersWithChannels, updateName } from "./summoner";
+import { ENV } from "@/envVars";
 
 export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWithWinsLosses, InsertRank>({
     debugNamespace: "lol",
+    formatRank: (rank) => formatRank(rank),
     getPlayers: async () => {
         const summoners = await getSummonersWithChannels();
         return summoners;
@@ -62,11 +64,8 @@ export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWit
         return messages;
     },
     getPlayerName: ({ player }) => player.currentName,
-    discordNotificationInterval:
-        1000 *
-        (process.env.DISCORD_NOTIFICATION_INTERVAL_SEC ? Number(process.env.DISCORD_NOTIFICATION_INTERVAL_SEC) : 10),
-    playerRequestInterval:
-        1000 * (process.env.PLAYER_REQUEST_INTERVAL_SEC ? Number(process.env.PLAYER_REQUEST_INTERVAL_SEC) : 10),
+    discordNotificationInterval: 1000 * ENV.DISCORD_NOTIFICATION_INTERVAL_SEC,
+    playerRequestInterval: 1000 * ENV.PLAYER_REQUEST_INTERVAL_SEC,
 });
 
 const getRankChangeComponents = ({ lastMatch, player }: LoLStalkerChange) => {

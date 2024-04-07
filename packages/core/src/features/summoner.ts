@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import Galeforce from "galeforce";
 import { db } from "../db/db";
 import { Summoner, gambler, request, summoner } from "../db/schema";
+import { ENV } from "@/envVars";
 
 export const addRequest = async () => {
     try {
@@ -11,7 +12,7 @@ export const addRequest = async () => {
         console.log("cant insert request", e);
     }
 };
-export const galeforce = new Galeforce({ "riot-api": { key: process.env.RG_API_KEY } });
+export const galeforce = new Galeforce({ "riot-api": { key: ENV.RG_API_KEY } });
 
 export const getSummonerByName = async (name: string, tag: string) => {
     const account = await galeforce.riot.account

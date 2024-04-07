@@ -7,7 +7,6 @@
         "build": "tsup",
         "start": "cross-env NODE_ENV=production DEBUG=elo-stalker* node dist/main.js",
         "migration:create": "drizzle-kit generate:pg",
-        "migration:up": "pnpm mikro-orm migration:up",
         "prettier": "prettier --write \"./{src,tests}/**/*\"",
         "test": "cross-env NODE_ENV=test vitest"
     },
@@ -44,7 +43,8 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "reflect-metadata": "^0.1.13",
-        "xstate": "^5.9.0"
+        "xstate": "^5.9.0",
+        "zod": "^3.22.4"
     },
     "devDependencies": {
         "@faker-js/faker": "^8.0.2",
