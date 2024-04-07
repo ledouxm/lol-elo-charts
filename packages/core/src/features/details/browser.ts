@@ -37,7 +37,7 @@ export const getScreenshotBuffer = async ({
     clip: ScreenshotClip;
     css?: string;
 }) => {
-    const page = await getPage();
+    const page = await (await getBrowser()).newPage();
 
     await page.setViewport(clip);
     await page.setContent(html);
@@ -46,7 +46,10 @@ export const getScreenshotBuffer = async ({
         await injectCss(page, css);
     }
 
-    return page.screenshot({ clip, path: "screenshot.png" });
+    const result = await page.screenshot({ clip, path: "screenshot.png" });
+    await page.close();
+
+    return result;
 };
 
 const injectCss = async (page: Page, css: string) => {
