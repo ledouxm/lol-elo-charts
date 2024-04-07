@@ -10,7 +10,6 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_HOST: ${POSTGRES_HOST}
             POSTGRES_USER: ${POSTGRES_USER}
-            POSTGRES_PORT: ${POSTGRES_PORT}
             RG_API_KEY: ${RG_API_KEY}
             BOT_TOKEN: ${BOT_TOKEN}
             CRON_BETS_DELAY_MIN: ${CRON_BETS_DELAY_MIN}
