@@ -4,7 +4,7 @@ import { EmbedBuilder } from "@discordjs/builders";
 import { formatValorantMmr } from "./valorant";
 import { getColor } from "@/utils";
 import { Schemas } from "@/valorantApi.gen";
-import { valorantTiers } from "@/features/valorant/rank";
+import { valorantTiers } from "./mmr";
 
 export const getValorantFirstRankEmbed = ({
     player,
