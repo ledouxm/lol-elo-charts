@@ -1,4 +1,4 @@
-import { isDev } from "@/utils";
+import { isDev } from "@/envVars";
 import puppeteer, { Page, ScreenshotClip } from "puppeteer";
 
 const ref = {

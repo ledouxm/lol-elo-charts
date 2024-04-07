@@ -1,14 +1,15 @@
+import { ENV } from "@/envVars";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-const dbName = process.env.TEST ? "test" : process.env.POSTGRES_DB;
+const dbName = process.env.TEST ? "test" : ENV.POSTGRES_DB;
 
-const connectionString = `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${
-    process.env.POSTGRES_HOST
-}${process.env.POSTGRES_PORT ? ":" + process.env.POSTGRES_PORT : ""}/${dbName}`;
+const connectionString = `postgresql://${ENV.POSTGRES_USER}:${ENV.POSTGRES_PASSWORD}@${ENV.POSTGRES_HOST}${
+    ENV.POSTGRES_PORT ? ":" + ENV.POSTGRES_PORT : ""
+}/${dbName}`;
 
-if (!process.env.POSTGRES_HOST) throw new Error("POSTGRES_HOST not found in environment");
+if (!ENV.POSTGRES_HOST) throw new Error("POSTGRES_HOST not found in environment");
 
 console.log("connecting to", connectionString);
 

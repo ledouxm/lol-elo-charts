@@ -1,33 +1,26 @@
-import "./envVars";
 import { initDb } from "./db/db";
+import "./envVars";
+import { ENV } from "./envVars";
 import { startDiscordBot } from "./features/discord/discord";
 import { getAndSaveApex } from "./features/lol/apex";
 import { makeRouter } from "./features/router";
 import { lolStalker } from "./features/stalker/lol/lol";
+import { valorantStalker } from "./features/stalker/valorant/valorant";
 import { startCronJobs } from "./startCronJobs";
-import { valorantApi } from "./valorantApi";
-import { ValorantService } from "./features/stalker/valorant/ValorantService";
-import fs from "fs/promises";
+
 const start = async () => {
-    // const content = await ValorantService.getContent();
-    const player = await ValorantService.getPlayerByName("MENACE DE MORT#QLF");
-    const mmr = await ValorantService.getPlayerCurrentMmr(player.puuid);
-    const lastGame = await ValorantService.getLastGame(player.puuid);
-    // const winrate = await ValorantService.getWinrate(player.puuid);
-    const result = { player, mmr, lastGame };
-    // console.log(result);
-    await fs.writeFile("valorant.json", JSON.stringify(result, null, 2));
+    await initDb();
+    await startDiscordBot();
 
-    console.log("done");
-    // await initDb();
-    // await startDiscordBot();
-    // startCronJobs();
-    // makeRouter();
-    // await lolStalker.start();
+    startCronJobs();
+    makeRouter();
 
-    // if (process.env.FORCE_RECAPS) {
-    //     await getAndSaveApex();
-    // }
+    await lolStalker.start();
+    await valorantStalker.start();
+
+    if (ENV.FORCE_RECAPS) {
+        await getAndSaveApex();
+    }
 };
 
 try {

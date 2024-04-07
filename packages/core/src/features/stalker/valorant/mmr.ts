@@ -1,5 +1,4 @@
 import { db } from "@/db/db";
-import { rank } from "@/db/schema";
 import { valorantRank } from "@/db/valorantSchema";
 import { desc, eq } from "drizzle-orm";
 import { ValorantMmr } from "./ValorantService";

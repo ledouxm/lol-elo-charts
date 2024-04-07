@@ -5,8 +5,7 @@ import { Bet, Gambler, Summoner, bet, gambler, match, summoner } from "../db/sch
 import { addRequest, galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
 import { Participant } from "./stalker/lol/match";
-
-export const betDelayInMinutes = process.env.BET_DELAY_IN_MINUTES ? Number(process.env.BET_DELAY_IN_MINUTES) : 2;
+import { ENV } from "@/envVars";
 
 export const checkBetsAndGetLastGame = async () => {
     const bets = await db
@@ -112,8 +111,8 @@ const getGameMatchingBet = async (
     activeBet: { bet: Bet; gambler: Gambler; summoner: Summoner },
     gameCache?: GameCache
 ) => {
-    const betDate = subMinutes(activeBet.bet.createdAt, betDelayInMinutes);
-    console.log("bet createdAt", activeBet.bet.createdAt, betDelayInMinutes);
+    const betDate = subMinutes(activeBet.bet.createdAt, ENV.CRON_BETS_DELAY_MIN);
+    console.log("bet createdAt", activeBet.bet.createdAt, ENV.CRON_BETS_DELAY_MIN);
     console.log("betDate", betDate);
 
     console.log(

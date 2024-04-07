@@ -63,12 +63,12 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
 
         const rank = await this.options.getRank({ player });
         if (!rank) return void playerDebug("No rank");
-        playerDebug("Current rank", formatRank(rank));
+        playerDebug("Current rank", this.options.formatRank(rank));
 
         const match = await this.options.getLastMatch({ player });
 
         const lastRank = await this.options.getLastRank({ player });
-        playerDebug(formatRank(lastRank), " > ", formatRank(rank));
+        playerDebug(this.options.formatRank(lastRank), " > ", this.options.formatRank(rank));
 
         const shouldSkip = this.options.areRanksEqual({ lastRank, newRank: rank });
         if (shouldSkip) return;
@@ -149,6 +149,7 @@ interface StalkerOptions<Player extends StalkerPlayer, Match, RemoteRank, DbRank
         debug: debug.Debugger;
     }) => Awaitable<void>;
     getPlayerName: ({ player }: { player: Player }) => string;
+    formatRank: (rank: RemoteRank | DbRank) => string;
 
     debugNamespace: string;
     playerRequestInterval: number;

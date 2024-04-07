@@ -5,6 +5,7 @@ import { request } from "@/db/schema";
 import { subMinutes } from "date-fns";
 import { and, asc, gte, lte, sql } from "drizzle-orm";
 import { makeDebug } from "@/utils";
+import { ENV } from "@/envVars";
 
 const debug = makeDebug("router");
 
@@ -15,7 +16,7 @@ export const makeRouter = () => {
     app.use(cors());
     app.use("/api", router);
 
-    const port = process.env.HTTP_PORT || 3000;
+    const port = ENV.HTTP_PORT;
 
     app.listen(port, () => {
         debug(`Listening on port ${port}`);

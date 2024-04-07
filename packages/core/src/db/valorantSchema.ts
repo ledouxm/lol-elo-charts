@@ -10,7 +10,7 @@ export const valorantPlayer = pgTable(
         picture: text("picture"),
         card: text("card"),
         isActive: boolean("is_active").default(true),
-        lastGameId: varchar("last_game_id", { length: 25 }),
+        lastGameId: varchar("last_game_id", { length: 100 }),
         channelId: varchar("channel_id", { length: 100 }).notNull(),
     },
     (table) => {

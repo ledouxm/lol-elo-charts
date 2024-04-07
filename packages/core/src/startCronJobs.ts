@@ -3,9 +3,10 @@ import { checkBets } from "./features/lol/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
 import { clearRequests } from "./features/router";
+import { ENV } from "./envVars";
 
 export const startCronJobs = () => {
-    const betDelay = `*/${process.env.CRON_BETS_DELAY_MIN || 5} * * * *`;
+    const betDelay = `*/${ENV.CRON_BETS_DELAY_MIN} * * * *`;
     console.log("checking bets", cronstrue.toString(betDelay));
     cron.schedule(betDelay, () => checkBets());
 
