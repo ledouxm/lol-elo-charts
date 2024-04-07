@@ -46,4 +46,4 @@ export const valorantTiers = [
     "Immortal 2",
     "Immortal 3",
     "Radiant",
-];
+].map((str) => str.toUpperCase());

@@ -185,5 +185,5 @@ const getMatchLink = (lastMatch: ValorantMatch) => {
 
 export const getTier = (rank: ValorantMmr) => {
     const index = Math.floor(rank.elo / 100);
-    return valorantTiers[index].toUpperCase();
+    return valorantTiers[index];
 };
