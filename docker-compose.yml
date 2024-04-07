@@ -27,12 +27,6 @@ services:
             - lol-charts-network
         profiles:
             - production
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.lol-elo-charts.rule=Host(`lol-elo-charts.mledoux.fr`)"
-            - "traefik.http.routers.lol-elo-charts.entrypoints=web"
-            - "traefik.http.routers.lol-elo-charts.tls=true"
-            - "traefik.http.routers.lol-elo-charts.tls.certresolver=letsencrypt"
 
     postgresql:
         image: postgres:12.5
@@ -55,12 +49,6 @@ services:
             - "8080"
         networks:
             - lol-charts-network
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.adminer.rule=Host(`adminer.mledoux.fr`)"
-            - "traefik.http.routers.adminer.entrypoints=web"
-            - "traefik.http.routers.adminer.tls=true"
-            - "traefik.http.routers.adminer.tls.certresolver=letsencrypt"
 
 volumes:
     postgresql:
