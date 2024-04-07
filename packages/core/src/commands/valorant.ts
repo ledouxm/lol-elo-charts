@@ -4,6 +4,7 @@ import { InsertValorantRank, ValorantPlayer, valorantPlayer, valorantRank } from
 import { desc, eq, and } from "drizzle-orm";
 import { db } from "@/db/db";
 import { EmbedBuilder } from "discord.js";
+import { formatValorantMmr } from "@/features/stalker/valorant/valorant";
 
 export const valorantConfig: GameConfig = {
     addPlayer: async ({ name, tag, channelId }) => {
@@ -60,7 +61,7 @@ export const valorantConfig: GameConfig = {
             if (!playersWithRanks.length) return "No player watched";
             return playersWithRanks
                 .sort((a, b) => b.rank.elo - a.rank.elo)
-                .map((s, index) => `${index + 1}) ${s.player.currentName} - ${s.rank.elo} RR`)
+                .map((s, index) => `${index + 1}) **${s.player.currentName}** ${formatValorantMmr(s.rank)} RR`)
                 .join("\n");
         };
 

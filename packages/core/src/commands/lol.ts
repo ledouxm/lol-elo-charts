@@ -65,7 +65,7 @@ export const lolConfig: GameConfig = {
                 .sort((a, b) => b.totalLp - a.totalLp)
                 .map(
                     (s, index) =>
-                        `${index + 1}) ${s.summoner.currentName} - ${s.rank.tier} ${s.rank.division} ${
+                        `${index + 1}) **${s.summoner.currentName}** ${s.rank.tier} ${s.rank.division} ${
                             s.rank.leaguePoints
                         } LP`
                 )
