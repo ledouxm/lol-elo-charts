@@ -8,8 +8,6 @@ import { lolStalker } from "./features/stalker/lol/lol";
 import { valorantStalker } from "./features/stalker/valorant/valorant";
 import { startCronJobs } from "./startCronJobs";
 
-// INVITE https://discord.com/oauth2/authorize?client_id=1131711269074899064&permissions=2147485760&scope=bot
-
 const start = async () => {
     await initDb();
     await startDiscordBot();

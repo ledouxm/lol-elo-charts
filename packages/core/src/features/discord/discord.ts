@@ -4,8 +4,8 @@ import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 import "../../commands/bets";
 import "../../commands/manageSummoners";
-import "../../commands/manageValorantPlayers";
 import "../../commands/players";
+
 import { makeDebug } from "@/utils";
 import { ENV } from "@/envVars";
 
