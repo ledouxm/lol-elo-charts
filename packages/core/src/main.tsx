@@ -1,6 +1,5 @@
-import { initDb } from "./db/db";
-import "./envVars";
 import { ENV } from "./envVars";
+import { initDb } from "./db/db";
 import { startDiscordBot } from "./features/discord/discord";
 import { getAndSaveApex } from "./features/lol/apex";
 import { makeRouter } from "./features/router";

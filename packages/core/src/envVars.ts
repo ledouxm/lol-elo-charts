@@ -28,6 +28,8 @@ const envSchema = z.object({
 
     VALORANT_DISCORD_NOTIFICATION_INTERVAL_SEC: stringOrNumberAsNumber.default(120),
     VALORANT_PLAYER_REQUEST_INTERVAL_SEC: stringOrNumberAsNumber.default(5),
+
+    DEBUG: z.string().default("elo-stalker*"),
 });
 
 export const ENV = envSchema.parse(process.env);

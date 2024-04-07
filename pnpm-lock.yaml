@@ -36,13 +36,13 @@ importers:
         version: 1.3.0
       '@liamcottle/valorant.js':
         specifier: ^1.5.1
-        version: 1.5.1(debug@3.2.7)
+        version: 1.5.1(debug@4.3.4)
       '@lol-elo-charts/templates':
         specifier: workspace:*
         version: link:../templates
       axios:
         specifier: ^1.4.0
-        version: 1.6.7(debug@3.2.7)
+        version: 1.6.7(debug@4.3.4)
       axios-cookiejar-support:
         specifier: ^5.0.0
         version: 5.0.0(axios@1.6.7)(tough-cookie@4.1.3)
@@ -68,8 +68,8 @@ importers:
         specifier: ^2.30.0
         version: 2.30.0
       debug:
-        specifier: ^3
-        version: 3.2.7
+        specifier: ^4.3.4
+        version: 4.3.4
       discord.js:
         specifier: ^14.11.0
         version: 14.14.1
@@ -2911,10 +2911,10 @@ packages:
     resolution: {integrity: sha512-fuscdXJ9G1qb7W8VdHi+IwRqij3lBkosAm4ydQtEmbY58OzHXqQhvlxqEkoz0yssNVn38bcpRWgA9PP+OGoisw==}
     dev: false
 
-  /@liamcottle/valorant.js@1.5.1(debug@3.2.7):
+  /@liamcottle/valorant.js@1.5.1(debug@4.3.4):
     resolution: {integrity: sha512-bSpVs1Rew49U3Eb9gjclO/EX7R8uUIWKY1h5/a9lKGxl06OaocibaM7Ykv0FlQovrRKhA18LpREhujLxpHsiMw==}
     dependencies:
-      axios: 0.21.4(debug@3.2.7)
+      axios: 0.21.4(debug@4.3.4)
     transitivePeerDependencies:
       - debug
     dev: false
@@ -4408,7 +4408,7 @@ packages:
       axios: '>=0.20.0'
       tough-cookie: '>=4.0.0'
     dependencies:
-      axios: 1.6.7(debug@3.2.7)
+      axios: 1.6.7(debug@4.3.4)
       http-cookie-agent: 6.0.3(tough-cookie@4.1.3)
       tough-cookie: 4.1.3
     transitivePeerDependencies:
@@ -4417,20 +4417,10 @@ packages:
       - undici
     dev: false
 
-  /axios@0.21.4(debug@3.2.7):
+  /axios@0.21.4(debug@4.3.4):
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
     dependencies:
-      follow-redirects: 1.15.5(debug@3.2.7)
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
-  /axios@1.6.7(debug@3.2.7):
-    resolution: {integrity: sha512-/hDJGff6/c7u0hDkvkGxR/oy6CbCs8ziCsC7SqmhjfozqiJGc8Z11wrv9z9lYfY4K8l+H9TpjcMDX0xOZmx+RA==}
-    dependencies:
-      follow-redirects: 1.15.5(debug@3.2.7)
-      form-data: 4.0.0
-      proxy-from-env: 1.1.0
+      follow-redirects: 1.15.5(debug@4.3.4)
     transitivePeerDependencies:
       - debug
     dev: false
@@ -5094,17 +5084,6 @@ packages:
         optional: true
     dependencies:
       ms: 2.0.0
-    dev: false
-
-  /debug@3.2.7:
-    resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-    dependencies:
-      ms: 2.1.3
     dev: false
 
   /debug@4.3.4:
@@ -6087,18 +6066,6 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       tslib: 2.6.2
-    dev: false
-
-  /follow-redirects@1.15.5(debug@3.2.7):
-    resolution: {integrity: sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dependencies:
-      debug: 3.2.7
     dev: false
 
   /follow-redirects@1.15.5(debug@4.3.4):

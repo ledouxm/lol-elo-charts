@@ -1,8 +1,10 @@
-import "./envVars";
+import { ENV } from "./envVars";
 import { InsertRank } from "./db/schema";
 import debug from "debug";
 
+debug.enable(ENV.DEBUG);
 const baseDebug = debug("elo-stalker");
+
 export const makeDebug = (suffix: string) => baseDebug.extend(suffix);
 
 export function rainbow(step: number, numOfSteps = 1000) {

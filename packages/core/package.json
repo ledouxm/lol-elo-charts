@@ -5,7 +5,7 @@
         "dev-start": "pnpm vite-node ./src/main.ts",
         "dev": "vite-node --watch ./src/main.tsx",
         "build": "tsup",
-        "start": "cross-env NODE_ENV=production DEBUG=elo-stalker* node dist/main.js",
+        "start": "cross-env NODE_ENV=production node dist/main.js",
         "migration:create": "drizzle-kit generate:pg",
         "prettier": "prettier --write \"./{src,tests}/**/*\"",
         "test": "cross-env NODE_ENV=test vitest"
@@ -27,7 +27,7 @@
         "cors": "^2.8.5",
         "cronstrue": "^2.28.0",
         "date-fns": "^2.30.0",
-        "debug": "^3",
+        "debug": "^4.3.4",
         "discord.js": "^14.11.0",
         "discordx": "^11.7.6",
         "dotenv": "^16.3.1",
