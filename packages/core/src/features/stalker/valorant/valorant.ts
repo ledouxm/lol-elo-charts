@@ -1,7 +1,7 @@
 import { InsertValorantRank } from "@/db/valorantSchema";
 import { Stalker, StalkerMessage } from "../stalker";
 import { ValorantMatch, ValorantMmr, ValorantPlayerWithChannels, ValorantService } from "./ValorantService";
-import { getValorantPlayersWithChannels, persistLastValorantGameId } from "./player";
+import { getValorantPlayersWithChannels, persistLastValorantGameId, updateValorantPlayerName } from "./player";
 import { getValorantLastRank, storeNewValorantRank, valorantTiers } from "./mmr";
 import { getValorantRankDifferenceEmbed } from "./embeds";
 import { getLastValorantGameAndStoreIfNecessary } from "./match";
@@ -23,8 +23,15 @@ export const valorantStalker = new Stalker<ValorantPlayerWithChannels, ValorantM
             debug("Storing new rank");
             await storeNewValorantRank(player.puuid, newRank);
 
-            if (lastMatch) {
-                await persistLastValorantGameId(player.puuid, lastMatch.metadata.matchid);
+            if (!lastMatch) return;
+
+            await persistLastValorantGameId(player.puuid, lastMatch.metadata.matchid);
+
+            const playerInGame = lastMatch.players.all_players.find((p) => p.puuid === player.puuid);
+
+            const newName = `${playerInGame.name}#${playerInGame.tag}`;
+            if (playerInGame && player.currentName !== newName) {
+                await updateValorantPlayerName(player.puuid, newName);
             }
         }
     },

@@ -20,7 +20,7 @@ export const getSummonersWithChannels = async (channelId?: string) => {
     return summoners;
 };
 
-export const updateName = async (puuid: string, name: string) => {
+export const updateSummonerName = async (puuid: string, name: string) => {
     await db.update(summoner).set({ currentName: name }).where(eq(summoner.puuid, puuid));
 };
 

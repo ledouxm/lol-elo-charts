@@ -23,3 +23,7 @@ export const getValorantPlayersWithChannels = async (channelId?: string) => {
 export const persistLastValorantGameId = async (puuid: string, gameId: string) => {
     await db.update(valorantPlayer).set({ lastGameId: gameId }).where(eq(valorantPlayer.puuid, puuid));
 };
+
+export const updateValorantPlayerName = async (puuid: string, name: string) => {
+    await db.update(valorantPlayer).set({ currentName: name }).where(eq(valorantPlayer.puuid, puuid));
+};

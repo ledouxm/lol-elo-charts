@@ -5,7 +5,7 @@ import { getComponentsRow, getFirstRankEmbed, getRankDifferenceEmbed } from "./e
 import { getLastGameAndStoreIfNecessary, persistLastGameId } from "./match";
 import { LoLRankWithWinsLosses, getLoLLastRank, getLoLNewRank, storeNewLoLRank } from "./rank";
 import { areRanksEqual, formatRank, getRankDifference } from "./rankUtils";
-import { SummonerWithChannels, getSummonersWithChannels, updateName } from "./summoner";
+import { SummonerWithChannels, getSummonersWithChannels, updateSummonerName } from "./summoner";
 import { ENV } from "@/envVars";
 
 export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWithWinsLosses, InsertRank>({
@@ -24,14 +24,15 @@ export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWit
             debug("Storing new rank");
             await storeNewLoLRank(player.puuid, newRank);
 
-            if (lastMatch) {
-                await persistLastGameId(player, lastMatch.metadata.matchId);
-            }
+            if (!lastMatch) return;
+
+            await persistLastGameId(player, lastMatch.metadata.matchId);
 
             // update player name if needed
             const playerInGame = lastMatch?.info.participants.find((p) => p.puuid === player.puuid);
-            if (playerInGame && player.currentName !== `${playerInGame.summonerName}#${playerInGame.riotIdTagline}`) {
-                await updateName(player.puuid, `${playerInGame.summonerName}#${playerInGame.riotIdTagline}`);
+            const newName = `${playerInGame.riotIdGameName}#${playerInGame.riotIdTagline}`;
+            if (playerInGame && player.currentName !== newName) {
+                await updateSummonerName(player.puuid, newName);
             }
         }
     },

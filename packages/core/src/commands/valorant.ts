@@ -61,7 +61,7 @@ export const valorantConfig: GameConfig = {
             if (!playersWithRanks.length) return "No player watched";
             return playersWithRanks
                 .sort((a, b) => b.rank.elo - a.rank.elo)
-                .map((s, index) => `${index + 1}) **${s.player.currentName}** ${formatValorantMmr(s.rank)} RR`)
+                .map((s, index) => `${index + 1}) **${s.player.currentName}** ${formatValorantMmr(s.rank)}`)
                 .join("\n");
         };
 
