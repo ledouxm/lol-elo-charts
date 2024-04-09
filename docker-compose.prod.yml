@@ -29,8 +29,6 @@ services:
         restart: always
         depends_on:
             - postgresql
-        ports:
-            - "8080"
         networks:
             - lol-charts-network
 
