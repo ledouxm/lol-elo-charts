@@ -4,23 +4,6 @@ services:
         build: .
         ports:
             - "${BACKEND_PORT}:8080"
-        environment:
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-            POSTGRES_DB: ${POSTGRES_DB}
-            POSTGRES_HOST: ${POSTGRES_HOST}
-            POSTGRES_USER: ${POSTGRES_USER}
-            POSTGRES_PORT: 5432
-            RG_API_KEY: ${RG_API_KEY}
-            BOT_TOKEN: ${BOT_TOKEN}
-            CRON_BETS_DELAY_MIN: ${CRON_BETS_DELAY_MIN}
-            ENABLE_BETS: ${ENABLE_BETS}
-            FORCE_RECAPS: ${FORCE_RECAPS}
-            HTTP_PORT: ${HTTP_PORT}
-            DISCORD_NOTIFICATION_INTERVAL_SEC: ${DISCORD_NOTIFICATION_INTERVAL_SEC}
-            PLAYER_REQUEST_INTERVAL_SEC: ${PLAYER_REQUEST_INTERVAL_SEC}
-            VALORANT_DISCORD_NOTIFICATION_INTERVAL_SEC: ${VALORANT_DISCORD_NOTIFICATION_INTERVAL_SEC}
-            VALORANT_PLAYER_REQUEST_INTERVAL_SEC: ${VALORANT_PLAYER_REQUEST_INTERVAL_SEC}
-            DEBUG: ${DEBUG}
         restart: always
         depends_on:
             - postgresql
@@ -30,7 +13,7 @@ services:
     postgresql:
         image: postgres:12.5
         ports:
-            - "${POSTGRES_PORT}:5432"
+            - "5432"
         environment:
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_USER: ${POSTGRES_USER}
@@ -45,7 +28,7 @@ services:
         image: adminer
         restart: always
         ports:
-            - "${ADMINER_PORT}:8080"
+            - "8080"
         networks:
             - lol-charts-network
 
