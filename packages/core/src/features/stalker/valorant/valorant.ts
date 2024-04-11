@@ -1,9 +1,9 @@
 import { InsertValorantRank } from "@/db/valorantSchema";
-import { Stalker, StalkerMessage } from "../stalker";
+import { Stalker, StalkerChange, StalkerMessage } from "../stalker";
 import { ValorantMatch, ValorantMmr, ValorantPlayerWithChannels, ValorantService } from "./ValorantService";
 import { getValorantPlayersWithChannels, persistLastValorantGameId, updateValorantPlayerName } from "./player";
 import { getValorantLastRank, storeNewValorantRank, valorantTiers } from "./mmr";
-import { getValorantRankDifferenceEmbed } from "./embeds";
+import { getComponentsRow, getValorantRankDifferenceEmbed } from "./embeds";
 import { getLastValorantGameAndStoreIfNecessary } from "./match";
 import { ENV } from "@/envVars";
 
@@ -50,11 +50,10 @@ export const valorantStalker = new Stalker<ValorantPlayerWithChannels, ValorantM
         for (const change of changes) {
             for (const channel of change.player.channels) {
                 const embed = getValorantRankDifferenceEmbed(change);
+                const components = getRankChangeComponents(change);
 
-                messages.push({
-                    channelId: channel,
-                    embeds: [embed],
-                });
+                // @ts-ignore - discordjs typings are wrong
+                messages.push({ channelId: channel, embeds: [embed], components: components });
             }
         }
 
@@ -72,3 +71,16 @@ export const formatValorantMmr = (rank: ValorantMmr) => {
 
     return `${valorantTiers[index]} - ${rr} RR`;
 };
+
+const getRankChangeComponents = ({ lastMatch, player }: ValorantStalkerChange) => {
+    if (!lastMatch) return [];
+
+    const participantIndex = lastMatch.players.all_players.findIndex((p) => p.puuid === player.puuid);
+    const row = getComponentsRow({ matchId: lastMatch.metadata.matchid, participantIndex });
+
+    return [row];
+};
+
+
+
+type ValorantStalkerChange = StalkerChange<ValorantPlayerWithChannels, ValorantMatch, ValorantMmr, InsertValorantRank>;

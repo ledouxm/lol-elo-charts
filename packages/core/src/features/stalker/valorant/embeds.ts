@@ -1,10 +1,11 @@
 import { InsertValorantRank, ValorantPlayer } from "@/db/valorantSchema";
 import { ValorantMatch, ValorantMmr, ValorantPlayerWithChannels } from "./ValorantService";
-import { EmbedBuilder } from "@discordjs/builders";
+import { ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { formatValorantMmr } from "./valorant";
 import { getColor } from "@/utils";
 import { Schemas } from "@/valorantApi.gen";
 import { valorantTiers } from "./mmr";
+import { ActionRowBuilder, ButtonStyle } from "discord.js";
 
 export const getValorantFirstRankEmbed = ({
     player,
@@ -186,4 +187,36 @@ const getMatchLink = (lastMatch: ValorantMatch) => {
 export const getTier = (rank: ValorantMmr) => {
     const index = Math.floor(rank.elo / 100);
     return valorantTiers[index];
+};
+
+export const getComponentsRow = ({
+    matchId,
+    additionalComponents,
+    participantIndex,
+}: {
+    matchId: string;
+    additionalComponents?: ButtonBuilder[];
+    participantIndex: number | string;
+}) => {
+    const detailsButton = new ButtonBuilder()
+            .setLabel("Details")
+            .setCustomId(`valorant_MatchDetails_${matchId}_${participantIndex}`)
+            .setStyle(ButtonStyle.Secondary);
+
+    // const damageButton = new ButtonBuilder()
+    //     .setLabel("Damages")
+    //     .setCustomId(`damages-${matchId}-${participantIndex}`)
+    //     .setStyle(ButtonStyle.Secondary);
+
+    // const statsButton = new ButtonBuilder()
+    //     .setLabel("Stats")
+    //     .setCustomId(`stats-${matchId}-${participantIndex}`)
+    //     .setStyle(ButtonStyle.Secondary);
+
+    return new ActionRowBuilder().addComponents(
+        detailsButton,
+        // damageButton,
+        // statsButton,
+        ...(additionalComponents || [])
+    );
 };
