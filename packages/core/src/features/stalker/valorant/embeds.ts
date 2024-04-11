@@ -200,7 +200,7 @@ export const getComponentsRow = ({
 }) => {
     const detailsButton = new ButtonBuilder()
             .setLabel("Details")
-            .setCustomId(`valorant_MatchDetails_${matchId}_${participantIndex}`)
+            .setCustomId(`valorant.MatchDetails.${matchId}.${participantIndex}`)
             .setStyle(ButtonStyle.Secondary);
 
     // const damageButton = new ButtonBuilder()

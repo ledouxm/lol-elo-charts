@@ -16,7 +16,7 @@ const commandToTemplateName: Record<string, Templates> = {
 };
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {
-    const [game, command, matchId, participantIndexRaw] = interaction.customId.split("_");
+    const [game, command, matchId, participantIndexRaw] = interaction.customId.split(".");
     const participantIndex = participantIndexRaw === "undefined" ? undefined : Number(participantIndexRaw);
     const isValorant = game == "valorant";
     if (command === "close") {
@@ -46,7 +46,9 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         
     const index = participantIndex; //?? pIndex;
 
+
     const participant = isValorant ? details.players.all_players[index] : details.info.participants[index];
+
     console.log(game+command)
     const file = await generateTemplateBuffer({
         match: details,
@@ -55,7 +57,7 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
     });
 
     const closeButton = new ButtonBuilder()
-        .setCustomId(`${game}_close_${matchId}_${index}`)
+        .setCustomId(`${game}.close.${matchId}.${index}`)
         .setLabel("Close")
         .setStyle(ButtonStyle.Danger);
 
