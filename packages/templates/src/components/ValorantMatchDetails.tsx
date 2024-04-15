@@ -18,14 +18,17 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
     const premades = markPremades(match.players.all_players);
     const sortedPlayers = sortByCombatScore(premades);
     const hasBlueSideWon = match.teams.blue.has_won;
-    const rounds = match.teams.red.rounds_won + match.teams.blue.rounds_won;
+    const rounds = {
+        "red": match.teams.red.rounds_won,
+        "blue": match.teams.blue.rounds_won
+    };
 
 
-    // console.log(match);
+    console.log(match);
     // console.log(participant);
     // console.log(players);
     // console.log(sortedPlayers);
-    console.log(premades);
+    // console.log(premades);
     return (
         <Flex flexDirection="column" justifyContent="space-between" w="700px" p="5px">
             <Team
@@ -54,7 +57,7 @@ const Team = ({
     players: ValorantParticipant[];
     participant: ValorantParticipant;
     isWinner: boolean;
-    rounds: number;
+    rounds: any;
 }) => {
     return (
         <div
@@ -73,7 +76,9 @@ const Team = ({
                     alignSelf: "flex-middle",
                 })}
             >
-                {isWinner ? "Victory" : "Defeat"}
+                {isWinner ? "Victory - " : "Defeat - "} 
+
+                {isWinner ? rounds.blue : rounds.red}
             </div>
             {players.map((p) => {
                 const styles = playerRow({ isPlayer: p.puuid === participant.puuid });
@@ -93,7 +98,7 @@ const Team = ({
                                         <span className={styles.assists}>{p.stats.assists}</span>
                                     </div>
                                     <div className={styles.acs}>
-                                        {computeAverageCombatScore(p.stats.score, rounds).toFixed(0)} ACS
+                                        {computeAverageCombatScore(p.stats.score, rounds.red + rounds.blue).toFixed(0)} ACS
                                     </div>
                                     <div className={styles.hsp}>
                                         {computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)}% HS
