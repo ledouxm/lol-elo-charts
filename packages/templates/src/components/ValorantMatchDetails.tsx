@@ -7,7 +7,8 @@ import {
     computeAverageCombatScore,
     markPremades,
     computeHsPercentage,
-    computeEconRating
+    computeEconRating,
+    getValorantRankImage
 } from "./utils";
 
 export const ValorantMatchDetails = (props: DefaultValorantProps) => {
@@ -80,31 +81,36 @@ const Team = ({
                 const name = p.name;
                 return (
                     <div className={styles.row} key={p.puuid} style={{ backgroundColor: p.isPremade }}>
-                        <div className={styles.agentDiv}>
+                        <div className={styles.agentScores}>
                             <img className={styles.agent} src={p.assets.agent.small} />
-                        </div>
-                        <div className={styles.scoresAndItems}>
-                            <div className={styles.name}>{name}</div>
+
                             <div className={styles.scores}>
-                                <div className={styles.kda}>
-                                    <span className={styles.kills}>{p.stats.kills}</span>/
-                                    <span className={styles.deaths}>{p.stats.deaths}</span>/
-                                    <span className={styles.assists}>{p.stats.assists}</span>
-                                </div>
-                                <div className={styles.acs}>
-                                    {computeAverageCombatScore(p.stats.score, rounds).toFixed(0)} ACS
-                                </div>
-                                <div className={styles.hsp}>
-                                    {computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)}% HS
+                                <div className={styles.name}>{name}</div>
+                                <div className={styles.stats}>
+                                    <div className={styles.kda}>
+                                        <span className={styles.kills}>{p.stats.kills}</span>/
+                                        <span className={styles.deaths}>{p.stats.deaths}</span>/
+                                        <span className={styles.assists}>{p.stats.assists}</span>
+                                    </div>
+                                    <div className={styles.acs}>
+                                        {computeAverageCombatScore(p.stats.score, rounds).toFixed(0)} ACS
+                                    </div>
+                                    <div className={styles.hsp}>
+                                        {computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)}% HS
+                                    </div>
+                                    <div className={styles.econRating}>
+                                        {computeEconRating(p.damage_made, p.economy.spent.overall)} ER
                                     </div>
 
-                                <div className={styles.econRating}>
-                                    {computeEconRating(p.damage_made, p.economy.spent.overall)} ER
-                                    </div>  
-                                
+                                </div>
+
                             </div>
                         </div>
+                        <img className={styles.rank} src={getValorantRankImage(p.currenttier)} />
+
+
                     </div>
+
                 );
             })}
 
@@ -128,7 +134,8 @@ const playerRow = sva({
         "row",
         "agentDiv",
         "agent",
-        "scoresAndItems",
+        "stats",
+        "agentScores",
         "name",
         "scores",
         "kda",
@@ -138,26 +145,33 @@ const playerRow = sva({
         "acs",
         "hsp",
         "econRating",
+        "rank"
     ],
     base: {
         row: {
             display: "flex",
             flexDirection: "row",
             gap: "10px",
-        },
-        agentDiv: {
-            display: "flex",
-            flexDirection: "column",
             alignItems: "center",
+            justifyContent: "space-between",
+
         },
+
         agent: {
             width: "60px",
             height: "60px",
         },
-        scoresAndItems: {
+        agentScores: {
+            display: "flex",
+            flexDirection: "row",
+            gap: "10px",
+            alignItems: "center",
+
+        },
+        scores: {
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
+            justifyContent: "flex-start",
             color: "gray",
         },
         name: {
@@ -171,7 +185,7 @@ const playerRow = sva({
             textOverflow: "ellipsis",
             maxW: "200px",
         },
-        scores: {
+        stats: {
             display: "flex",
             gap: "8px",
         },
@@ -200,7 +214,13 @@ const playerRow = sva({
             color: "white",
             fontSize: "20px",
         },
+        rank: {
+            width: "50px",
+            height: "50px",
+
+        }
     },
+
     variants: {
         isPlayer: {
             true: {

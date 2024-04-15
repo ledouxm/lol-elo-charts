@@ -102,6 +102,10 @@ export const getSpellImage = (spell: Spell) => {
     return `https://ddragon.leagueoflegends.com/cdn/${ref.context.version}/img/spell/${spell.image.full}`;
 };
 
+export const getValorantRankImage = (rank: number) => {
+    return `https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${rank}/largeicon.png`;
+}
+
 export type DefaultProps = {
     match: Galeforce.dto.MatchDTO;
     participant: Participant;
