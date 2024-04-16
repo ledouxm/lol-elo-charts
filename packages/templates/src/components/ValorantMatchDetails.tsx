@@ -8,27 +8,22 @@ import {
     markPremades,
     computeHsPercentage,
     computeEconRating,
-    getValorantRankImage
+    getValorantRankImage,
+    getFirstBloodCounts
 } from "./utils";
 
 export const ValorantMatchDetails = (props: DefaultValorantProps) => {
     setValorantContext(props);
 
     const { match, participant } = props;
-    const premades = markPremades(match.players.all_players);
+    const players_with_fb = getFirstBloodCounts(match.kills, match.players.all_players);
+    const premades = markPremades(players_with_fb);
     const sortedPlayers = sortByCombatScore(premades);
     const hasBlueSideWon = match.teams.blue.has_won;
     const rounds = {
         "red": match.teams.red.rounds_won,
         "blue": match.teams.blue.rounds_won
-    };
-
-
-    console.log(match);
-    // console.log(participant);
-    // console.log(players);
-    // console.log(sortedPlayers);
-    // console.log(premades);
+    };    
     return (
         <Flex flexDirection="column" justifyContent="space-between" w="700px" p="5px">
             <Team
@@ -103,26 +98,16 @@ const Team = ({
                                     <div className={styles.hsp}>
                                         {computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)}% HS
                                     </div>
-                                    <div className={styles.econRating}>
-                                        {computeEconRating(p.damage_made, p.economy.spent.overall)} ER
+                                    <div className={styles.firstBloods}>
+                                        {p.first_blood_count} FB
                                     </div>
-
                                 </div>
-
                             </div>
                         </div>
                         <img className={styles.rank} src={getValorantRankImage(p.currenttier)} />
-
-
                     </div>
-
                 );
             })}
-
-
-
-
-
         </div>
     );
 
@@ -149,7 +134,7 @@ const playerRow = sva({
         "assists",
         "acs",
         "hsp",
-        "econRating",
+        "firstBloods",
         "rank"
     ],
     base: {
@@ -215,7 +200,7 @@ const playerRow = sva({
             color: "white",
             fontSize: "20px",
         },
-        econRating: {
+        firstBloods: {
             color: "white",
             fontSize: "20px",
         },

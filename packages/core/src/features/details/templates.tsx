@@ -5,13 +5,14 @@ import * as components from "@lol-elo-charts/templates";
 import { renderToString } from "react-dom/server";
 import fs from "fs/promises";
 import { getScreenshotBuffer } from "./browser";
+import { Schemas } from "@/valorantApi.gen";
 
 export const generateTemplateBuffer = async ({
     match,
     participant,
     template,
 }: {
-    match: Galeforce.dto.MatchDTO;
+    match: Galeforce.dto.MatchDTO | Schemas.match;
     participant: Participant;
     template: Templates;
 }) => {
@@ -41,7 +42,7 @@ const getTemplateProps = async ({
     match,
     participant,
 }: {
-    match: Galeforce.dto.MatchDTO;
+    match: Galeforce.dto.MatchDTO | Schemas.match;
     participant: Participant;
 }) => {
     const staticProps = await getChampionAndSpellIconStaticData();

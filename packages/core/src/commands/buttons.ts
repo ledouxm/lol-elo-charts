@@ -7,6 +7,8 @@ import { getComponentsRow as getValorantComponentsRow} from "@/features/stalker/
 import { ButtonBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { eq } from "drizzle-orm";
+import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
+import { Schemas } from "../valorantApi.gen"
 
 const commandToTemplateName: Record<string, Templates> = {
     leagueDetails: "MatchDetails",
@@ -46,10 +48,8 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         
     const index = participantIndex; //?? pIndex;
 
+    const participant = isValorant ? (details as Schemas.match ).players.all_players[index] : (details as MatchDTO).info.participants[index];
 
-    const participant = isValorant ? details.players.all_players[index] : details.info.participants[index];
-
-    console.log(game+command)
     const file = await generateTemplateBuffer({
         match: details,
         participant,

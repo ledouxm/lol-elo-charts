@@ -41,7 +41,7 @@ export const sortPlayersByTeamAndRole = (players: Participant[]) => {
 
 export const sortByCombatScore = (players: ValorantParticipant[]) => {
 
-    const sortedByScore =  players.sort((a, b) => b.stats.score - a.stats.score);
+    const sortedByScore = players.sort((a, b) => b.stats.score - a.stats.score);
     const sortedByTeam = groupBy(sortedByScore, "team");
 
     return sortedByTeam as Record<ValorantSide, ValorantParticipant[]>;
@@ -61,13 +61,13 @@ export const markPremades = (players: ValorantParticipant[]) => {
     const stringToColor = (str: string) => {
         let hash = 0;
         str.split('').forEach(char => {
-          hash = char.charCodeAt(0) + ((hash << 5) - hash)
+            hash = char.charCodeAt(0) + ((hash << 5) - hash)
         })
         let colour = '#'
         for (let i = 0; i < 3; i++) {
-          let value = (hash >> (i * 8)) & 0xff;
-          value = Math.floor(value * 0.5);
-          colour += value.toString(16).padStart(2, '0');
+            let value = (hash >> (i * 8)) & 0xff;
+            value = Math.floor(value * 0.5);
+            colour += value.toString(16).padStart(2, '0');
         }
         return colour;
     }
@@ -105,6 +105,68 @@ export const getSpellImage = (spell: Spell) => {
 export const getValorantRankImage = (rank: number) => {
     return `https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${rank}/largeicon.png`;
 }
+
+export function getFirstBloodCounts(killEvents: KillEvent[], players: ValorantParticipant[]) {
+    const firstBloodCounts: { [key: string]: number } = {};
+
+    players.forEach((player) => {
+        firstBloodCounts[player.puuid] = 0;
+    });
+    let currentRound = -1;
+    let killerPuuid = "";
+  
+    killEvents.forEach(killEvent => {
+      if (killEvent.round !== currentRound) {
+        currentRound = killEvent.round;
+        killerPuuid = killEvent.killer_puuid;
+        firstBloodCounts[killerPuuid]++;
+      }
+    });
+    players.forEach(player => {
+      player.first_blood_count = firstBloodCounts[player.puuid];
+    });
+    return players;
+}
+
+export type KillEvent = {
+    kill_time_in_round: number
+    kill_time_in_match: number
+    round: number
+    killer_puuid: string
+    killer_display_name: string
+    killer_team: string
+    victim_puuid: string
+    victim_display_name: string
+    victim_team: string
+    victim_death_location: {
+      x: number
+      y: number
+    }
+    damage_weapon_id: string
+    damage_weapon_name: string
+    damage_weapon_assets: {
+      display_icon: string
+      killfeed_icon: string
+    }
+    secondary_fire_mode: boolean
+    player_locations_on_kill: Array<{
+      player_puuid: string
+      player_display_name: string
+      player_team: string
+      location: {
+        x: number
+        y: number
+      }
+      view_radians: number
+    }>
+    assistants: Array<{
+      assistant_puuid: string
+      assistant_display_name: string
+      assistant_team: string
+    }>
+  }
+  
+
 
 export type DefaultProps = {
     match: Galeforce.dto.MatchDTO;
