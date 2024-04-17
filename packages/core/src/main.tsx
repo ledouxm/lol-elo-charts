@@ -6,6 +6,7 @@ import { makeRouter } from "./features/router";
 import { lolStalker } from "./features/stalker/lol/lol";
 import { valorantStalker } from "./features/stalker/valorant/valorant";
 import { startCronJobs } from "./startCronJobs";
+import { valorantApi } from "./valorantApi";
 
 const start = async () => {
     await initDb();
