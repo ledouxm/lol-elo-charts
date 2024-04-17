@@ -60,7 +60,11 @@ export const valorantStalker = new Stalker<ValorantPlayerWithChannels, ValorantM
 
         return messages;
     },
+    getPlayerId: ({ player }) => player.puuid,
     getPlayerName: ({ player }) => player.currentName,
+    isPlayerInGame: ({ player, match }) => {
+        return match.players.all_players.some((p) => p.puuid === player.puuid);
+    },
     discordNotificationInterval: 1000 * ENV.VALORANT_DISCORD_NOTIFICATION_INTERVAL_SEC,
     playerRequestInterval: 1000 * ENV.VALORANT_PLAYER_REQUEST_INTERVAL_SEC,
 });

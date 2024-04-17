@@ -12,4 +12,5 @@ export const createMockSummoner = async () => {
         revisionDate: 1,
         summonerLevel: 31,
     };
+    return data;
 };

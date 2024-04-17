@@ -64,6 +64,10 @@ export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWit
 
         return messages;
     },
+    getPlayerId: ({ player }) => player.puuid,
+    isPlayerInGame: ({ player, match }) => {
+        return match.info.participants.some((p) => p.puuid === player.puuid);
+    },
     getPlayerName: ({ player }) => player.currentName,
     discordNotificationInterval: 1000 * ENV.DISCORD_NOTIFICATION_INTERVAL_SEC,
     playerRequestInterval: 1000 * ENV.PLAYER_REQUEST_INTERVAL_SEC,

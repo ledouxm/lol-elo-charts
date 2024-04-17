@@ -1,13 +1,13 @@
 import { Awaitable, Message, MessageCreateOptions, MessagePayload, TextChannel } from "discord.js";
 import { bot, sendToChannelId } from "../discord/discord";
 import { makeDebug } from "@/utils";
-import { formatRank } from "./lol/rankUtils";
 
 export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
     private interval1: NodeJS.Timeout | null = null;
     private interval2: NodeJS.Timeout | null = null;
 
     private playersPool: Player[] = [];
+    private allPlayers = new Map<string, Player>();
     private hasLoggedEnd = false;
     private currentChanges: StalkerChange<Player, Match, RemoteRank, DbRank>[] = [];
 
@@ -18,7 +18,6 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
     }
 
     async start() {
-        console.log("START");
         this.debug("Stalker start");
 
         await this.appendPlayersToFetch();
@@ -26,7 +25,7 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
         const nbIterations = Math.floor(this.options.discordNotificationInterval / this.options.playerRequestInterval);
         this.debug("Fetching players every", Math.round(this.options.playerRequestInterval / 1000), "s");
         this.debug("Sending notifications every", Math.round(this.options.discordNotificationInterval / 1000), "s");
-        this.debug(`=> Will fetch ${nbIterations} players per notification`);
+        this.debug(`=> Can fetch up to ${nbIterations} players per notification`);
 
         if (this.playersPool.length > nbIterations) {
             this.debug(
@@ -38,8 +37,25 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
         this.interval2 = setInterval(() => this.commitChanges(), this.options.discordNotificationInterval);
     }
 
+    saveAllPlayers(players: Player[]) {
+        for (const player of players) {
+            this.allPlayers.set(this.options.getPlayerId({ player }), player);
+        }
+
+        this.debug(this.allPlayers);
+    }
+
+    private areSamePlayers = (p1: Player, p2: Player) =>
+        this.options.getPlayerId({ player: p1 }) === this.options.getPlayerId({ player: p2 });
+
     async appendPlayersToFetch() {
-        const newPlayers = (await this.options.getPlayers()).filter((p) => !this.playersPool.includes(p));
+        const allPlayers = await this.options.getPlayers();
+        this.debug(allPlayers);
+
+        this.saveAllPlayers(allPlayers);
+
+        const newPlayers = allPlayers.filter((p) => !this.playersPool.find((p2) => this.areSamePlayers(p, p2)));
+
         this.debug(
             `Adding ${newPlayers.length} players to the pool (total: ${this.playersPool.length + newPlayers.length})`
         );
@@ -58,7 +74,12 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
             return;
         }
 
+        this.getPlayerNewRank({ player });
+    }
+
+    async getPlayerNewRank({ player }: { player: Player; ignoredPlayerIds?: Set<string> }) {
         const playerDebug = this.debug.extend(this.options.getPlayerName({ player }));
+
         playerDebug("Fetching new rank");
 
         const rank = await this.options.getRank({ player });
@@ -66,6 +87,10 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
         playerDebug("Current rank", this.options.formatRank(rank));
 
         const match = await this.options.getLastMatch({ player });
+
+        if (match) {
+            await this.addOtherParticipantsInGameToPool({ currentPlayer: player, match, playerDebug });
+        }
 
         const lastRank = await this.options.getLastRank({ player });
         playerDebug(this.options.formatRank(lastRank), " > ", this.options.formatRank(rank));
@@ -79,6 +104,40 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
             lastRank,
             newRank: rank,
         });
+    }
+
+    async addOtherParticipantsInGameToPool({
+        currentPlayer,
+        match,
+        playerDebug,
+    }: {
+        currentPlayer: Player;
+        match: Match;
+        playerDebug: debug.Debugger;
+    }) {
+        for (const player of Object.values(Object.fromEntries(this.allPlayers))) {
+            if (this.areSamePlayers(currentPlayer, player)) continue;
+
+            // not in game, skipping
+            if (!this.options.isPlayerInGame({ player, match })) continue;
+
+            const playerName = this.options.getPlayerName({ player });
+            // already going to be fetched, moving to front
+            if (this.playersPool.find((p) => this.areSamePlayers(p, player))) {
+                playerDebug(`Player ${playerName} already in pool, moving to front`);
+                this.playersPool = [player, ...this.playersPool.filter((p) => !this.areSamePlayers(p, player))];
+                continue;
+            }
+
+            // already fetched, skipping
+            if (this.currentChanges.find((c) => this.areSamePlayers(c.player, player))) {
+                playerDebug(`Player ${playerName} already in changes, skipping`);
+                continue;
+            }
+
+            playerDebug(`[DUOQ] Adding player ${playerName} to pool`);
+            this.playersPool.push(player);
+        }
     }
 
     async commitChanges() {
@@ -150,6 +209,8 @@ interface StalkerOptions<Player extends StalkerPlayer, Match, RemoteRank, DbRank
     }) => Awaitable<void>;
     getPlayerName: ({ player }: { player: Player }) => string;
     formatRank: (rank: RemoteRank | DbRank) => string;
+    getPlayerId: ({ player }: { player: Player }) => string;
+    isPlayerInGame: ({ player, match }: { player: Player; match: Match }) => boolean;
 
     debugNamespace: string;
     playerRequestInterval: number;
