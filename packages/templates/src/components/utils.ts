@@ -2,12 +2,18 @@ import Galeforce from "galeforce";
 import { groupBy, sortArrayOfObjectByPropFromArray } from "pastable";
 import { ChampionFullDTO, Spell } from "../types";
 import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
-
+import { ValorantMatch, ValorantMmr } from "../../../core/src/features/stalker/valorant/ValorantService";
 const ref = { context: null as any } as { context: DefaultProps };
+const refValorant = { context: null as any } as { context: DefaultValorantProps };
 
 export const setContext = (props: DefaultProps) => {
     if (ref.context) return;
     ref.context = props;
+};
+
+export const setValorantContext = (props: DefaultValorantProps) => {
+    if (ref.context) return;
+    refValorant.context = props;
 };
 
 export const ordinalSuffixOf = (i: number) => {
@@ -32,6 +38,53 @@ export const sortPlayersByTeamAndRole = (players: Participant[]) => {
     return sortedByTeam as Record<AnySide, Participant[]>;
 };
 
+
+export const sortByCombatScore = (players: ValorantParticipant[]) => {
+
+    const sortedByScore = players.sort((a, b) => b.stats.score - a.stats.score);
+    const sortedByTeam = groupBy(sortedByScore, "team");
+
+    return sortedByTeam as Record<ValorantSide, ValorantParticipant[]>;
+}
+
+export const computeAverageCombatScore = (score: number, rounds: number) => {
+    return score / rounds;
+};
+
+export const computeHsPercentage = (bs: number, hs: number, ls: number) => {
+    const total = bs + hs + ls;
+    return Math.round((hs / total) * 100);
+}
+
+export const markPremades = (players: ValorantParticipant[]) => {
+    const premades = groupBy(players, "party_id");
+    const stringToColor = (str: string) => {
+        let hash = 0;
+        str.split('').forEach(char => {
+            hash = char.charCodeAt(0) + ((hash << 5) - hash)
+        })
+        let colour = '#'
+        for (let i = 0; i < 3; i++) {
+            let value = (hash >> (i * 8)) & 0xff;
+            value = Math.floor(value * 0.5);
+            colour += value.toString(16).padStart(2, '0');
+        }
+        return colour;
+    }
+    for (const [partyId, premade] of Object.entries(premades)) {
+        if (premade.length > 1) {
+            const color = stringToColor(partyId);
+            premade.forEach((p) => (p.isPremade = color));
+        }
+    }
+    return players;
+}
+
+export const computeEconRating = (damage_made: number, economy_spent: number) => {
+    return Math.round((damage_made / economy_spent) * 1000);
+}
+
+
 export const getChampionImage = (championName: string) => {
     return `https://ddragon.leagueoflegends.com/cdn/${ref.context.version}/img/champion/${championName}.png`;
 };
@@ -49,6 +102,72 @@ export const getSpellImage = (spell: Spell) => {
     return `https://ddragon.leagueoflegends.com/cdn/${ref.context.version}/img/spell/${spell.image.full}`;
 };
 
+export const getValorantRankImage = (rank: number) => {
+    return `https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${rank}/largeicon.png`;
+}
+
+export function getFirstBloodCounts(killEvents: KillEvent[], players: ValorantParticipant[]) {
+    const firstBloodCounts: { [key: string]: number } = {};
+
+    players.forEach((player) => {
+        firstBloodCounts[player.puuid] = 0;
+    });
+    let currentRound = -1;
+    let killerPuuid = "";
+  
+    killEvents.forEach(killEvent => {
+      if (killEvent.round !== currentRound) {
+        currentRound = killEvent.round;
+        killerPuuid = killEvent.killer_puuid;
+        firstBloodCounts[killerPuuid]++;
+      }
+    });
+    players.forEach(player => {
+      player.first_blood_count = firstBloodCounts[player.puuid];
+    });
+    return players;
+}
+
+export type KillEvent = {
+    kill_time_in_round: number
+    kill_time_in_match: number
+    round: number
+    killer_puuid: string
+    killer_display_name: string
+    killer_team: string
+    victim_puuid: string
+    victim_display_name: string
+    victim_team: string
+    victim_death_location: {
+      x: number
+      y: number
+    }
+    damage_weapon_id: string
+    damage_weapon_name: string
+    damage_weapon_assets: {
+      display_icon: string
+      killfeed_icon: string
+    }
+    secondary_fire_mode: boolean
+    player_locations_on_kill: Array<{
+      player_puuid: string
+      player_display_name: string
+      player_team: string
+      location: {
+        x: number
+        y: number
+      }
+      view_radians: number
+    }>
+    assistants: Array<{
+      assistant_puuid: string
+      assistant_display_name: string
+      assistant_team: string
+    }>
+  }
+  
+
+
 export type DefaultProps = {
     match: Galeforce.dto.MatchDTO;
     participant: Participant;
@@ -58,6 +177,15 @@ export type DefaultProps = {
     championFull: ChampionFullDTO["data"];
 };
 
+
+export type DefaultValorantProps = {
+    match: ValorantMatch;
+    participant: ValorantParticipant;
+    mmr: ValorantMmr;
+};
+
+export type ValorantParticipant = ValorantMatch["players"][0];
+
 export type Participant = Galeforce.dto.MatchDTO["info"]["participants"][0];
 
 export const roleOrder = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
@@ -66,6 +194,7 @@ export const redSide = 200 as const;
 
 export type AnySide = typeof blueSide | typeof redSide;
 
+export type ValorantSide = "Red" | "Blue";
 export const pingKeys = [
     "holdPings",
     "pushPings",

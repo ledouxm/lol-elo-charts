@@ -1,24 +1,28 @@
 import { db } from "@/db/db";
 import { match } from "@/db/schema";
+import { valorantMatch } from "@/db/valorantSchema";
 import { Templates, generateTemplateBuffer } from "@/features/details/templates";
 import { getComponentsRow } from "@/features/stalker/lol/embeds";
+import { getComponentsRow as getValorantComponentsRow} from "@/features/stalker/valorant/embeds";
 import { ButtonBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle } from "discord.js";
 import { eq } from "drizzle-orm";
+import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
+import { Schemas } from "../valorantApi.gen"
 
 const commandToTemplateName: Record<string, Templates> = {
-    details: "MatchDetails",
-    damages: "MatchDamage",
-    stats: "MatchRandomInformations",
+    leagueDetails: "MatchDetails",
+    leagueDamages: "MatchDamage",
+    leagueStats: "MatchRandomInformations",
+    valorantMatchDetails: "ValorantMatchDetails",
 };
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {
-    const [command, matchId, participantIndexRaw] = interaction.customId.split("-");
+    const [game, command, matchId, participantIndexRaw] = interaction.customId.split(".");
     const participantIndex = participantIndexRaw === "undefined" ? undefined : Number(participantIndexRaw);
-
+    const isValorant = game == "valorant";
     if (command === "close") {
-        const row = getComponentsRow({ matchId, participantIndex });
-
+        const row =  isValorant ? getValorantComponentsRow({ matchId, participantIndex }) : getComponentsRow({ matchId, participantIndex });
         await interaction.message.edit({
             files: [],
             // @ts-ignore - discordjs typings are wrong
@@ -32,28 +36,32 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
         return void console.log("No matchId found in customId", interaction.customId);
     }
 
-    const game = await db.select().from(match).where(eq(match.matchId, matchId)).limit(1);
-    if (!game[0]) {
+    const matchObject = isValorant ? await db.select().from(valorantMatch).where(eq(valorantMatch.id, matchId)).limit(1) : await db.select().from(match).where(eq(match.matchId, matchId)).limit(1);
+    if (!matchObject[0]) {
         return void console.log("No game found for matchId", matchId);
     }
+    
+    
 
-    const { details, participantIndex: pIndex } = game[0];
-    const index = participantIndex ?? pIndex;
+    const { details } = matchObject[0]; //TODO
+        //, participantIndex: pIndex
+        
+    const index = participantIndex; //?? pIndex;
 
-    const participant = details.info.participants[Number(index)];
+    const participant = isValorant ? (details as Schemas.match ).players.all_players[index] : (details as MatchDTO).info.participants[index];
 
     const file = await generateTemplateBuffer({
         match: details,
         participant,
-        template: commandToTemplateName[command],
+        template: commandToTemplateName[game+command],
     });
 
     const closeButton = new ButtonBuilder()
-        .setCustomId(`close-${matchId}-${index}`)
+        .setCustomId(`${game}.close.${matchId}.${index}`)
         .setLabel("Close")
         .setStyle(ButtonStyle.Danger);
 
-    const row = getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: index });
+    const row = isValorant ? getValorantComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: index }) : getComponentsRow({ matchId, additionalComponents: [closeButton], participantIndex: index });
 
     await interaction.message.edit({
         files: [file],

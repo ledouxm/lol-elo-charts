@@ -200,17 +200,17 @@ export const getComponentsRow = ({
 }) => {
     const detailsButton = new ButtonBuilder()
         .setLabel("Details")
-        .setCustomId(`details-${matchId}-${participantIndex}`)
+        .setCustomId(`league.Details.${matchId}.${participantIndex}`)
         .setStyle(ButtonStyle.Secondary);
 
     const damageButton = new ButtonBuilder()
         .setLabel("Damages")
-        .setCustomId(`damages-${matchId}-${participantIndex}`)
+        .setCustomId(`league.Damages.${matchId}.${participantIndex}`)
         .setStyle(ButtonStyle.Secondary);
 
     const statsButton = new ButtonBuilder()
         .setLabel("Stats")
-        .setCustomId(`stats-${matchId}-${participantIndex}`)
+        .setCustomId(`league.Stats.${matchId}.${participantIndex}`)
         .setStyle(ButtonStyle.Secondary);
 
     return new ActionRowBuilder().addComponents(

@@ -1,15 +1,19 @@
 import "../styled-system/styles.css";
 import "./App.css";
+import valorantProps from "./valorantMock.json";
 import props from "./mock.json";
-import * as components from "./components";
-import { DefaultProps } from "./components/utils";
+import { MatchDetails, MatchDamage, MatchRandomInformations } from "./components";
+import { ValorantMatchDetails } from "./components";
+import { DefaultProps, DefaultValorantProps } from "./components/utils";
 
 export function App() {
     return (
         <>
-            {Object.values(components).map((Component, index) => (
-                <Component key={index} {...(props as any as DefaultProps)} />
-            ))}
+            <ValorantMatchDetails {...(valorantProps as DefaultValorantProps)} />
+
+            <MatchDetails {...(props as DefaultProps)} />
+            <MatchRandomInformations {...(props as DefaultProps)} />
+            <MatchDamage {...(props as DefaultProps)} />
         </>
     );
 }

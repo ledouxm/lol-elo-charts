@@ -1,4 +1,5 @@
 import { MatchDamage } from "./MatchDamage";
 import { MatchDetails } from "./MatchDetails";
 import { MatchRandomInformations } from "./MatchRandomInformations";
-export { MatchRandomInformations, MatchDetails, MatchDamage };
+import { ValorantMatchDetails } from "./ValorantMatchDetails";
+export { MatchRandomInformations, MatchDetails, MatchDamage, ValorantMatchDetails };
