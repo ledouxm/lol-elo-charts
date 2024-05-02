@@ -215,7 +215,7 @@ export const getComponentsRow = ({
 
     return new ActionRowBuilder().addComponents(
         detailsButton,
-        // damageButton,
+        roundsButton,
         // statsButton,
         ...(additionalComponents || [])
     );
