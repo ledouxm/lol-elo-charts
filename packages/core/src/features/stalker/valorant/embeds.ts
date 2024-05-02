@@ -205,7 +205,7 @@ export const getComponentsRow = ({
 
     const roundsButton = new ButtonBuilder()
         .setLabel("Rounds")
-        .setCustomId(`valorant.RoundsDetails-${matchId}-${participantIndex}`)
+        .setCustomId(`valorant.RoundsDetails.${matchId}.${participantIndex}`)
         .setStyle(ButtonStyle.Secondary);
 
     // const statsButton = new ButtonBuilder()

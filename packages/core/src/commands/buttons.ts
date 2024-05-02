@@ -15,6 +15,7 @@ const commandToTemplateName: Record<string, Templates> = {
     leagueDamages: "MatchDamage",
     leagueStats: "MatchRandomInformations",
     valorantMatchDetails: "ValorantMatchDetails",
+    valorantRoundsDetails: "ValorantRoundsDetails",
 };
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {
@@ -50,6 +51,7 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
 
     const participant = isValorant ? (details as Schemas.match ).players.all_players[index] : (details as MatchDTO).info.participants[index];
 
+    console.log("command", commandToTemplateName[game+command])
     const file = await generateTemplateBuffer({
         match: details,
         participant,
