@@ -30,13 +30,15 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
                 players={sortedPlayers["Blue"]}
                 participant={participant}
                 isWinner={hasBlueSideWon}
-                rounds={rounds}
+                totalRounds={rounds.blue + rounds.red}
+                wonRounds={rounds.blue}
             />
             <Team
                 players={sortedPlayers["Red"]}
                 participant={participant}
                 isWinner={!hasBlueSideWon}
-                rounds={rounds}
+                totalRounds={rounds.blue + rounds.red}
+                wonRounds={rounds.red}
             />
         </Flex>
     );
@@ -47,12 +49,14 @@ const Team = ({
     players,
     participant,
     isWinner,
-    rounds,
+    totalRounds,
+    wonRounds,
 }: {
     players: ValorantParticipant[];
     participant: ValorantParticipant;
     isWinner: boolean;
-    rounds: any;
+    totalRounds: number;
+    wonRounds: number;
 }) => {
     return (
         <div
@@ -71,9 +75,8 @@ const Team = ({
                     alignSelf: "flex-middle",
                 })}
             >
-                {isWinner ? "Victory - " : "Defeat - "} 
+                {isWinner ? "Victory - " + wonRounds : "Defeat - " + wonRounds} 
 
-                {isWinner ? rounds.blue : rounds.red}
             </div>
             {players.map((p) => {
                 const styles = playerRow({ isPlayer: p.puuid === participant.puuid });
@@ -93,7 +96,7 @@ const Team = ({
                                         <span className={styles.assists}>{p.stats.assists}</span>
                                     </div>
                                     <div className={styles.acs}>
-                                        {computeAverageCombatScore(p.stats.score, rounds.red + rounds.blue).toFixed(0)} ACS
+                                        {computeAverageCombatScore(p.stats.score, totalRounds).toFixed(0)} ACS
                                     </div>
                                     <div className={styles.hsp}>
                                         {computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)}% HS

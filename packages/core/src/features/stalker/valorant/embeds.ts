@@ -203,10 +203,10 @@ export const getComponentsRow = ({
             .setCustomId(`valorant.MatchDetails.${matchId}.${participantIndex}`)
             .setStyle(ButtonStyle.Secondary);
 
-    // const damageButton = new ButtonBuilder()
-    //     .setLabel("Damages")
-    //     .setCustomId(`damages-${matchId}-${participantIndex}`)
-    //     .setStyle(ButtonStyle.Secondary);
+    const roundsButton = new ButtonBuilder()
+        .setLabel("Rounds")
+        .setCustomId(`valorant.RoundsDetails-${matchId}-${participantIndex}`)
+        .setStyle(ButtonStyle.Secondary);
 
     // const statsButton = new ButtonBuilder()
     //     .setLabel("Stats")
