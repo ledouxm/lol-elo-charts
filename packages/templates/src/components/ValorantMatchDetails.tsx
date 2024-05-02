@@ -7,7 +7,6 @@ import {
     computeAverageCombatScore,
     markPremades,
     computeHsPercentage,
-    computeEconRating,
     getValorantRankImage,
     getFirstBloodCounts
 } from "./utils";
@@ -80,7 +79,6 @@ const Team = ({
             </div>
             {players.map((p) => {
                 const styles = playerRow({ isPlayer: p.puuid === participant.puuid });
-                // @ts-ignore - Galeforce DataDragon types are wrong
                 const name = p.name;
                 return (
                     <div className={styles.row} key={p.puuid} style={{ backgroundColor: p.isPremade }}>

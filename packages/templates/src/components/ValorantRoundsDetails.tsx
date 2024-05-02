@@ -1,30 +1,28 @@
-import { setValorantContext, type DefaultValorantProps } from "./utils";
+import { ValorantSide, getParticipantTeam, setValorantContext, type DefaultValorantProps } from "./utils";
 import { Box, Flex } from "../../styled-system/jsx";
 import { sva, css } from "../../styled-system/css";
 import { ValorantParticipant, Round } from "./utils";
-import React from "react";
+import { Fragment } from "react";
 
 export const ValorantRoundsDetails = (props: DefaultValorantProps) => {
     setValorantContext(props);
 
     const { match, participant } = props;
     const rounds = match.rounds;
-    console.log(rounds);
+    const participantTeam = getParticipantTeam(participant, match);
     return (
         <Flex flexDirection="row" justifyContent="space-between" flexWrap="wrap" w="1600px" p="5px">
-            <RoundsHistory participant={participant} isWinner={true} rounds={rounds} />
+            <RoundsHistory rounds={rounds} participantTeam={participantTeam} />
         </Flex>
     );
 };
 
 const RoundsHistory = ({
-    participant,
-    isWinner,
     rounds,
+    participantTeam,
 }: {
-    participant: ValorantParticipant;
-    isWinner: boolean;
     rounds: Round;
+    participantTeam: ValorantSide;
 }) => {
     return (
         <div
@@ -35,7 +33,7 @@ const RoundsHistory = ({
             })}
         >
             {rounds.map((r) => {
-                const styles = roundBox({winningTeam: r.winning_team });
+                const styles = roundBox({playerWon: participantTeam === r.winning_team});
                 let imageSrc;
                 switch (r.end_type) {
                     case 'Eliminated':
@@ -50,7 +48,7 @@ const RoundsHistory = ({
                 }
                 var index = rounds.indexOf(r);
                 return (
-                  <React.Fragment key={index}>
+                  <Fragment key={index}>
                   <div className={styles.round}>
                       <h2>{index + 1}</h2>
                       <img className={styles.icon} src={imageSrc}/>
@@ -60,7 +58,7 @@ const RoundsHistory = ({
                         filter: "invert(100%) sepia(33%) saturate(3462%) hue-rotate(197deg) brightness(101%) contrast(101%)" 
                     }}  className={styles.switch} src="https://cdn-icons-png.flaticon.com/256/91/91873.png" alt="Switch" />
                   )}
-              </React.Fragment>
+              </Fragment>
                 );
             })}
         </div>
@@ -78,8 +76,7 @@ const roundBox = sva({
             height: "60px",
             backgroundColor: "gray",
             color: "white",
-            border: "1px solid",
-            borderColor: "black",
+            fontWeight: "bold",
         },
 
       switch: {
@@ -91,17 +88,18 @@ const roundBox = sva({
     },
 
     variants: {
-        winningTeam: {
-            Red: {
-                round: {
-                    backgroundColor: "red",
-                },
-            },
-            Blue: {
+        playerWon: {
+            true: {
                 round: {
                     backgroundColor: "blue",
                 },
             },
+            false: {
+                round: {
+                    backgroundColor: "red",
+                },
+            },
+            
         },
     },
 });

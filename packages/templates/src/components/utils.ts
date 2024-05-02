@@ -84,6 +84,9 @@ export const computeEconRating = (damage_made: number, economy_spent: number) =>
     return Math.round((damage_made / economy_spent) * 1000);
 }
 
+export const getParticipantTeam = (participant: ValorantParticipant, match: ValorantMatch) => {
+    return match.players.all_players.find((p: { puuid: any; }) => p.puuid === participant.puuid).team;
+}
 
 export const getChampionImage = (championName: string) => {
     return `https://ddragon.leagueoflegends.com/cdn/${ref.context.version}/img/champion/${championName}.png`;
