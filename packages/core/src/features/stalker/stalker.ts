@@ -18,7 +18,6 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
     }
 
     async start() {
-        console.log("START");
         this.debug("Stalker start");
 
         await this.appendPlayersToFetch();
@@ -48,37 +47,41 @@ export class Stalker<Player extends StalkerPlayer, Match, RemoteRank, DbRank> {
     }
 
     async getPlayerNewRankAndPop() {
-        const player = this.playersPool.shift();
+        try {
+            const player = this.playersPool.shift();
 
-        if (!player) {
-            if (!this.hasLoggedEnd) {
-                this.debug("No more players to fetch");
-                this.hasLoggedEnd = true;
+            if (!player) {
+                if (!this.hasLoggedEnd) {
+                    this.debug("No more players to fetch");
+                    this.hasLoggedEnd = true;
+                }
+                return;
             }
-            return;
+
+            const playerDebug = this.debug.extend(this.options.getPlayerName({ player }));
+            playerDebug("Fetching new rank");
+
+            const rank = await this.options.getRank({ player });
+            if (!rank) return void playerDebug("No rank");
+            playerDebug("Current rank", this.options.formatRank(rank));
+
+            const match = await this.options.getLastMatch({ player });
+
+            const lastRank = await this.options.getLastRank({ player });
+            playerDebug(this.options.formatRank(lastRank), " > ", this.options.formatRank(rank));
+
+            const shouldSkip = this.options.areRanksEqual({ lastRank, newRank: rank });
+            if (shouldSkip) return;
+
+            this.currentChanges.push({
+                player,
+                lastMatch: match,
+                lastRank,
+                newRank: rank,
+            });
+        } catch (e) {
+            this.debug("Error fetching player", e);
         }
-
-        const playerDebug = this.debug.extend(this.options.getPlayerName({ player }));
-        playerDebug("Fetching new rank");
-
-        const rank = await this.options.getRank({ player });
-        if (!rank) return void playerDebug("No rank");
-        playerDebug("Current rank", this.options.formatRank(rank));
-
-        const match = await this.options.getLastMatch({ player });
-
-        const lastRank = await this.options.getLastRank({ player });
-        playerDebug(this.options.formatRank(lastRank), " > ", this.options.formatRank(rank));
-
-        const shouldSkip = this.options.areRanksEqual({ lastRank, newRank: rank });
-        if (shouldSkip) return;
-
-        this.currentChanges.push({
-            player,
-            lastMatch: match,
-            lastRank,
-            newRank: rank,
-        });
     }
 
     async commitChanges() {
