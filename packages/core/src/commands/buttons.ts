@@ -51,7 +51,6 @@ export const executeButtonInteraction = async (interaction: ButtonInteraction) =
 
     const participant = isValorant ? (details as Schemas.match ).players.all_players[index] : (details as MatchDTO).info.participants[index];
 
-    console.log("command", commandToTemplateName[game+command])
     const file = await generateTemplateBuffer({
         match: details,
         participant,
