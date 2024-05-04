@@ -15,6 +15,7 @@ const commandToTemplateName: Record<string, Templates> = {
     leagueDamages: "MatchDamage",
     leagueStats: "MatchRandomInformations",
     valorantMatchDetails: "ValorantMatchDetails",
+    valorantRoundsDetails: "ValorantRoundsDetails",
 };
 
 export const executeButtonInteraction = async (interaction: ButtonInteraction) => {

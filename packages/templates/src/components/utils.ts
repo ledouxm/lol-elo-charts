@@ -84,6 +84,9 @@ export const computeEconRating = (damage_made: number, economy_spent: number) =>
     return Math.round((damage_made / economy_spent) * 1000);
 }
 
+export const getParticipantTeam = (participant: ValorantParticipant, match: ValorantMatch) => {
+    return match.players.all_players.find((p: { puuid: any; }) => p.puuid === participant.puuid).team;
+}
 
 export const getChampionImage = (championName: string) => {
     return `https://ddragon.leagueoflegends.com/cdn/${ref.context.version}/img/champion/${championName}.png`;
@@ -183,6 +186,144 @@ export type DefaultValorantProps = {
     participant: ValorantParticipant;
     mmr: ValorantMmr;
 };
+
+export type Round = Array<{
+    winning_team: ValorantSide
+    end_type: string
+    bomb_planted: boolean
+    bomb_defused: boolean
+    plant_events: {
+      plant_location?: {
+        x: number
+        y: number
+      }
+      planted_by?: {
+        puuid: string
+        display_name: string
+        team: string
+      }
+      plant_site?: string
+      plant_time_in_round?: number
+      player_locations_on_plant?: Array<{
+        player_puuid: string
+        player_display_name: string
+        player_team: string
+        location: {
+          x: number
+          y: number
+        }
+        view_radians: number
+      }>
+    }
+    defuse_events: {
+      defuse_location?: {
+        x: number
+        y: number
+      }
+      defused_by?: {
+        puuid: string
+        display_name: string
+        team: string
+      }
+      defuse_time_in_round?: number
+      player_locations_on_defuse?: Array<{
+        player_puuid: string
+        player_display_name: string
+        player_team: string
+        location: {
+          x: number
+          y: number
+        }
+        view_radians: number
+      }>
+    }
+    player_stats: Array<{
+      ability_casts: {
+        c_casts: any
+        q_casts: any
+        e_cast: any
+        x_cast: any
+      }
+      player_puuid: string
+      player_display_name: string
+      player_team: string
+      damage_events: Array<{
+        receiver_puuid: string
+        receiver_display_name: string
+        receiver_team: string
+        bodyshots: number
+        damage: number
+        headshots: number
+        legshots: number
+      }>
+      damage: number
+      bodyshots: number
+      headshots: number
+      legshots: number
+      kill_events: Array<{
+        kill_time_in_round: number
+        kill_time_in_match: number
+        killer_puuid: string
+        killer_display_name: string
+        killer_team: string
+        victim_puuid: string
+        victim_display_name: string
+        victim_team: string
+        victim_death_location: {
+          x: number
+          y: number
+        }
+        damage_weapon_id: string
+        damage_weapon_name?: string
+        damage_weapon_assets: {
+          display_icon?: string
+          killfeed_icon?: string
+        }
+        secondary_fire_mode: boolean
+        player_locations_on_kill: Array<{
+          player_puuid: string
+          player_display_name: string
+          player_team: string
+          location: {
+            x: number
+            y: number
+          }
+          view_radians: number
+        }>
+        assistants: Array<{
+          assistant_puuid: string
+          assistant_display_name: string
+          assistant_team: string
+        }>
+      }>
+      kills: number
+      score: number
+      economy: {
+        loadout_value: number
+        weapon: {
+          id: string
+          name: string
+          assets: {
+            display_icon: string
+            killfeed_icon: string
+          }
+        }
+        armor: {
+          id?: string
+          name?: string
+          assets: {
+            display_icon?: string
+          }
+        }
+        remaining: number
+        spent: number
+      }
+      was_afk: boolean
+      was_penalized: boolean
+      stayed_in_spawn: boolean
+    }>
+  }>
+  
 
 export type ValorantParticipant = ValorantMatch["players"][0];
 
