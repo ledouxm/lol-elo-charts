@@ -18,7 +18,7 @@ const start = async () => {
     makeRouter();
 
     await lolStalker.start();
-    // await valorantStalker.start();
+    await valorantStalker.start();
 
     if (ENV.FORCE_RECAPS) {
         await getAndSaveApex();
