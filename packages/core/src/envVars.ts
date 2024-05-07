@@ -30,6 +30,8 @@ const envSchema = z.object({
     VALORANT_PLAYER_REQUEST_INTERVAL_SEC: stringOrNumberAsNumber.default(5),
     VALORANT_API_KEY: z.string(),
 
+    ARENA_COMMANDS_ENABLED: stringOrBooleanAsBoolean.default(false),
+    ARENA_ENABLED: stringOrBooleanAsBoolean.default(false),
     DEBUG: z.string().default("elo-stalker*"),
 });
 

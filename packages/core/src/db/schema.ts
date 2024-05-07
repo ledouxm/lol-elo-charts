@@ -50,10 +50,6 @@ export const summoner = pgTable(
 
 export type Summoner = InferModel<typeof summoner, "select">;
 
-export const summonerRelations = relations(summoner, ({ many }) => {
-    return { ranks: many(rank), bets: many(bet), matches: many(match) };
-});
-
 export const rank = pgTable("rank", {
     id: serial("id").primaryKey(),
     summonerId: varchar("summoner_id", { length: 100 }).notNull(),
@@ -155,4 +151,42 @@ export const playerOfTheDay = pgTable("player_of_the_day", {
 
 export const playerOfTheDayRelations = relations(playerOfTheDay, ({ one }) => {
     return { summoner: one(summoner, { fields: [playerOfTheDay.summonerId], references: [summoner.puuid] }) };
+});
+
+export const arenaMatch = pgTable("arena_match", {
+    matchId: varchar("match_id", { length: 25 }).primaryKey(),
+    endedAt: timestamp("ended_at"),
+});
+
+export const arenaPlayer = pgTable(
+    "arena_player",
+    {
+        puuid: varchar("puuid", { length: 100 }),
+        name: text("name"),
+        placement: integer("placement"),
+        champion: text("champion"),
+        matchId: varchar("match_id", { length: 25 }).notNull(),
+    },
+    (table) => {
+        return {
+            pk: primaryKey(table.puuid, table.matchId),
+        };
+    }
+);
+export type ArenaPlayer = InferModel<typeof arenaPlayer, "select">;
+
+export const arenaMatchRelations = relations(arenaMatch, ({ many }) => {
+    return { players: many(arenaPlayer) };
+});
+
+export const arenaPlayerRelations = relations(arenaPlayer, ({ one }) => {
+    return { match: one(arenaMatch, { fields: [arenaPlayer.matchId], references: [arenaMatch.matchId] }) };
+});
+
+export const summonerArenaPlayerRelations = relations(summoner, ({ one }) => {
+    return { arenaPlayers: one(arenaPlayer, { fields: [summoner.puuid], references: [arenaPlayer.puuid] }) };
+});
+
+export const summonerRelations = relations(summoner, ({ many }) => {
+    return { ranks: many(rank), bets: many(bet), matches: many(match), arenaPlayers: many(arenaPlayer) };
 });

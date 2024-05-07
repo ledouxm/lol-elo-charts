@@ -2,6 +2,16 @@ import { ApplicationCommandOptionType, Awaitable, CommandInteraction, Interactio
 import { Discord, Slash, SlashChoice, SlashOption } from "discordx";
 import { lolConfig } from "./lol";
 import { valorantConfig } from "./valorant";
+import { getSummonersWithChannels } from "@/features/stalker/lol/summoner";
+import { db } from "@/db/db";
+import { arenaPlayer, summoner } from "@/db/schema";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { sendToChannelId } from "@/features/discord/discord";
+import { EmbedBuilder } from "@discordjs/builders";
+import { getChampionAndSpellIconStaticData } from "@/features/lol/icons";
+import Galeforce from "galeforce";
+import { getSummonerByName } from "@/features/summoner";
+import { ENV } from "@/envVars";
 
 @Discord()
 export class ManagePlayers {
@@ -76,6 +86,7 @@ export class ManagePlayers {
     async leaderboard(
         @SlashChoice({ name: "LoL", value: "lol" })
         @SlashChoice({ name: "Valorant", value: "valorant" })
+        @SlashChoice({ name: "Arena", value: "arena" })
         @SlashOption({
             name: "game",
             description: "Game to list the players for",
@@ -88,12 +99,105 @@ export class ManagePlayers {
         const message = await gameConfigs[game].leaderboard({ channelId: interaction.channelId });
         interaction.reply(message);
     }
+
+    @Slash({ name: "arena", description: "Show the progress of the Arena god challenge" })
+    async arena(
+        @SlashOption({
+            name: "name",
+            description: "Summoner#TAG",
+            required: true,
+            type: ApplicationCommandOptionType.String,
+        })
+        name,
+        interaction: CommandInteraction
+    ) {
+        if (!ENV.ARENA_COMMANDS_ENABLED) return interaction.reply({ content: "Arena commands are disabled" });
+        // const [gameName, tag] = name.split("#");
+        const { champion } = await getChampionAndSpellIconStaticData();
+        const summs = await db.select().from(summoner).where(eq(summoner.currentName, name)).limit(1);
+        const summ = summs[0];
+        if (!summ) {
+            interaction.reply("Summoner not found");
+            return;
+        }
+
+        const championsWin = await db
+            .select()
+            .from(arenaPlayer)
+            .where(and(eq(arenaPlayer.puuid, summ.puuid), eq(arenaPlayer.placement, 1)));
+
+        // const embed = new EmbedBuilder();
+        // embed.setTitle("Arena god progress");
+        // embed.setContent([
+        //     { name: "Done", value: done.join("\n") },
+        //     { name: "To do", value: toDo.join(", ") },
+        // ]);
+
+        interaction.reply({
+            content: `## Arena god progress for ${name}
+${championsWin.length ? "### Done" : `### 0 / ${Object.keys(champion).length}`}
+${championsWin
+    .map((c) => c.champion)
+    .sort()
+    .join("\n")}
+`,
+        });
+    }
 }
 
 const gameConfigs: Record<Game, GameConfig> = {
     lol: lolConfig,
+    arena: {
+        leaderboard: async ({ channelId }) => {
+            if (!ENV.ARENA_COMMANDS_ENABLED) return { content: "Arena commands are disabled" };
+
+            const summoners = await getSummonersWithChannels(channelId);
+            const puuidArray = summoners.map((s) => s.puuid);
+            const top1 = await db
+                .select({
+                    puuid: arenaPlayer.puuid,
+                    wins: sql`count(*)`.mapWith(Number),
+                })
+                .from(arenaPlayer)
+                .where(and(inArray(arenaPlayer.puuid, puuidArray), eq(arenaPlayer.placement, 1)))
+                .groupBy(arenaPlayer.puuid);
+
+            const totalGames = await db
+                .select({
+                    puuid: arenaPlayer.puuid,
+                    name: arenaPlayer.name,
+                    games: sql`count(*)`.mapWith(Number),
+                })
+                .from(arenaPlayer)
+                .where(inArray(arenaPlayer.puuid, puuidArray))
+                .groupBy(arenaPlayer.puuid, arenaPlayer.name);
+
+            const embed = new EmbedBuilder();
+            embed.setTitle("Arena leaderboard");
+
+            embed.addFields(
+                totalGames.map((p) => {
+                    const wins = top1.find((t) => t.puuid === p.puuid)?.wins || 0;
+
+                    return {
+                        name: p.name,
+                        value: `**${wins}** ${stringWithPlural("win", wins)} / **${p.games}** ${stringWithPlural(
+                            "game",
+                            p.games
+                        )}`,
+                    };
+                })
+            );
+
+            return {
+                embeds: [embed],
+            };
+        },
+    },
     valorant: valorantConfig,
 };
+
+const stringWithPlural = (str: string, items: number) => `${str}${items > 1 ? "s" : ""}`;
 
 export interface GameConfig {
     addPlayer: ({ name, tag, channelId }: { name: string; tag: string; channelId: string }) => Awaitable<void>;
@@ -102,4 +206,4 @@ export interface GameConfig {
     listPlayers: ({ channelId }: { channelId: string }) => Awaitable<InteractionReplyOptions>;
 }
 
-type Game = "lol" | "valorant";
+type Game = "lol" | "valorant" | "arena";

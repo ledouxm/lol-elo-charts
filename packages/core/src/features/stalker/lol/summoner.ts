@@ -1,7 +1,6 @@
 import { db } from "@/db/db";
 import { Summoner, rank, summoner } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { galeforce } from "../../summoner";
 
 export const getSummonersWithChannels = async (channelId?: string) => {
     const baseWhere = eq(summoner.isActive, true);
