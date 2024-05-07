@@ -128,7 +128,7 @@ const sendArenaDiscordNotification = async (players: ArenaPlayer[]) => {
 const getArenaEmbed = (players: ArenaPlayer[]) => {
     const embed = new EmbedBuilder();
     embed.setTitle("Arena game results");
-
+    embed.setURL("https://www.leagueofgraphs.com/match/euw/" + players[0].matchId.split("_")[1]);
     embed.addFields(
         players
             .sort((a, b) => a.placement - b.placement)
