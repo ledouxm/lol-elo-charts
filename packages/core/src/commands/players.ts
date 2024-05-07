@@ -129,10 +129,12 @@ export class ManagePlayers {
 
         const sortedByChampion = groupBy(championsWin, (c) => c.champion);
 
+        const entries = Object.entries(sortedByChampion);
+
         interaction.reply({
             content: `## Arena god progress for ${name}
-${"### Done " + "(" + (sortedByChampion.length ?? 0) + "/" + Object.keys(champion).length + ")"}
-${Object.entries(sortedByChampion)
+${"### Done " + "(" + (entries.length ?? 0) + "/" + Object.keys(champion).length + ")"}
+${entries
     .map(([name, c]) => name + ` (x${c.length})`)
     .sort()
     .join("\n")}
