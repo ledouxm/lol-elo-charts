@@ -193,7 +193,7 @@ const gameConfigs: Record<Game, GameConfig> = {
                 embeds: [embed],
             };
         },
-    },
+    } as any,
     valorant: valorantConfig,
 };
 
