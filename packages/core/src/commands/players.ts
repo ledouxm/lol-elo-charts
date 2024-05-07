@@ -133,7 +133,7 @@ export class ManagePlayers {
             content: `## Arena god progress for ${name}
 ${"### Done " + "(" + (sortedByChampion.length ?? 0) + "/" + Object.keys(champion).length + ")"}
 ${Object.entries(sortedByChampion)
-    .map(([name, c]) => name + `(x${c.length})`)
+    .map(([name, c]) => name + ` (x${c.length})`)
     .sort()
     .join("\n")}
 `,
@@ -161,28 +161,31 @@ const gameConfigs: Record<Game, GameConfig> = {
             const totalGames = await db
                 .select({
                     puuid: arenaPlayer.puuid,
-                    name: arenaPlayer.name,
                     games: sql`count(*)`.mapWith(Number),
                 })
                 .from(arenaPlayer)
                 .where(inArray(arenaPlayer.puuid, puuidArray))
-                .groupBy(arenaPlayer.puuid, arenaPlayer.name);
+                .groupBy(arenaPlayer.puuid);
 
             const embed = new EmbedBuilder();
             embed.setTitle("Arena leaderboard");
 
             embed.addFields(
-                totalGames.map((p) => {
-                    const wins = top1.find((t) => t.puuid === p.puuid)?.wins || 0;
+                summoners
+                    .map((summ) => {
+                        const p = totalGames.find((t) => t.puuid === summ.puuid);
+                        const wins = top1.find((t) => t.puuid === p.puuid)?.wins || 0;
+                        if (!p) return null;
 
-                    return {
-                        name: p.name,
-                        value: `**${wins}** ${stringWithPlural("win", wins)} / **${p.games}** ${stringWithPlural(
-                            "game",
-                            p.games
-                        )}`,
-                    };
-                })
+                        return {
+                            name: summ.currentName,
+                            value: `**${wins}** ${stringWithPlural("win", wins)} / **${p.games}** ${stringWithPlural(
+                                "game",
+                                p.games
+                            )}`,
+                        };
+                    })
+                    .filter(Boolean)
             );
 
             return {
