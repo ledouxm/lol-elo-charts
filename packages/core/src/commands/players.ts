@@ -174,8 +174,8 @@ const gameConfigs: Record<Game, GameConfig> = {
                 summoners
                     .map((summ) => {
                         const p = totalGames.find((t) => t.puuid === summ.puuid);
-                        const wins = top1.find((t) => t.puuid === p.puuid)?.wins || 0;
                         if (!p) return null;
+                        const wins = top1.find((t) => t.puuid === p.puuid)?.wins || 0;
 
                         return {
                             name: summ.currentName,
