@@ -183,9 +183,11 @@ const gameConfigs: Record<Game, GameConfig> = {
                                 "game",
                                 p.games
                             )}`,
+                            wins,
                         };
                     })
                     .filter(Boolean)
+                    .sort((a, b) => b.wins - a.wins)
             );
 
             return {
