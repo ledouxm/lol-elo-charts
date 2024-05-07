@@ -97,7 +97,9 @@ const checkIfGameIsArenaAndStore = async (lastGameId: string, lastGame: MatchDTO
         )
         .returning();
 
-    await sendArenaDiscordNotification(players);
+    if (ENV.ARENA_NOTIFICATION_ENABLED) {
+        await sendArenaDiscordNotification(players);
+    }
 
     return true;
 };

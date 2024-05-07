@@ -32,6 +32,7 @@ const envSchema = z.object({
 
     ARENA_COMMANDS_ENABLED: stringOrBooleanAsBoolean.default(false),
     ARENA_ENABLED: stringOrBooleanAsBoolean.default(false),
+    ARENA_NOTIFICATION_ENABLED: stringOrBooleanAsBoolean.default(false),
     DEBUG: z.string().default("elo-stalker*"),
 });
 
