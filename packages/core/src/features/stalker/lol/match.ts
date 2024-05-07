@@ -1,10 +1,15 @@
 import { db } from "@/db/db";
-import { Summoner, match, summoner } from "@/db/schema";
+import { ArenaPlayer, Summoner, arenaMatch, arenaPlayer, match, summoner } from "@/db/schema";
 import { getChampionIconUrl } from "@/features/lol/icons";
 import Galeforce from "galeforce";
-import { SummonerWithChannels } from "./summoner";
+import { SummonerWithChannels, getSummonersWithChannels } from "./summoner";
 import { galeforce } from "@/features/summoner";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
+import { EmbedBuilder } from "@discordjs/builders";
+import { groupBy } from "pastable";
+import { sendToChannelId } from "@/features/discord/discord";
+import { ENV } from "@/envVars";
+import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
 
 export const getMatchInformationsForSummoner = async (summ: Summoner, match: Galeforce.dto.MatchDTO) => {
     const participantIndex = match.info.participants.findIndex((p) => p.puuid === summ.puuid);
@@ -31,7 +36,7 @@ export const getLastGameId = async (summoner: Summoner) => {
         .list()
         .region(galeforce.region.riot.EUROPE)
         .puuid(summoner.puuid)
-        .query({ count: 1, queue: 420 })
+        .query({ count: 1, queue: [420, 1700] as any })
         .exec();
 
     return lastGames?.[0];
@@ -57,9 +62,83 @@ export const getLastGameAndStoreIfNecessary = async (summoner: Summoner) => {
     if (existingGame) return existingGame.details;
 
     const lastGame = await getGameById(lastGameId);
+    if (await checkIfGameIsArenaAndStore(lastGameId, lastGame)) return null;
+
     await storeLoLMatch({ player: summoner, lastMatch: lastGame });
 
     return lastGame;
+};
+
+const checkIfGameIsArenaAndStore = async (lastGameId: string, lastGame: MatchDTO) => {
+    if (!ENV.ARENA_ENABLED) return true;
+
+    const existing = await db.select().from(arenaMatch).where(eq(arenaMatch.matchId, lastGameId)).limit(1);
+    if (existing[0]) return true;
+
+    if (!lastGame) return false;
+
+    if (lastGame.info.queueId !== 1700) return false;
+
+    await db.insert(arenaMatch).values({
+        matchId: lastGameId,
+        endedAt: new Date(lastGame.info.gameEndTimestamp),
+    });
+
+    const players = await db
+        .insert(arenaPlayer)
+        .values(
+            lastGame.info.participants.map((p) => ({
+                puuid: p.puuid,
+                placement: p.placement,
+                name: `${p.riotIdGameName}#${p.riotIdTagline}`,
+                champion: p.championName,
+                matchId: lastGameId,
+            }))
+        )
+        .returning();
+
+    if (ENV.ARENA_NOTIFICATION_ENABLED) {
+        await sendArenaDiscordNotification(players);
+    }
+
+    return true;
+};
+
+const sendArenaDiscordNotification = async (players: ArenaPlayer[]) => {
+    const matchingSummoners = await db
+        .select()
+        .from(summoner)
+        .where(
+            inArray(
+                summoner.puuid,
+                players.map((p) => p.puuid)
+            )
+        );
+    const groupedByChannel = groupBy(matchingSummoners, (s) => s.channelId);
+
+    for (const [channelId, summ] of Object.entries(groupedByChannel)) {
+        const arenaPlayers = summ.map((s) => players.find((p) => p.puuid === s.puuid));
+
+        const embed = getArenaEmbed(arenaPlayers);
+
+        await sendToChannelId({ channelId, message: { embeds: [embed] } });
+    }
+};
+
+const getArenaEmbed = (players: ArenaPlayer[]) => {
+    const embed = new EmbedBuilder();
+    embed.setTitle("Arena game results");
+
+    embed.addFields(
+        players
+            .sort((a, b) => a.placement - b.placement)
+            .map((p) => ({
+                name: p.name,
+                value: `Top **${p.placement}** with **${p.champion}**`,
+            }))
+    );
+
+    return embed;
 };
 
 export const storeLoLMatch = async ({ player, lastMatch }: { player: Summoner; lastMatch: Galeforce.dto.MatchDTO }) => {

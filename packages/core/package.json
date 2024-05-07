@@ -6,7 +6,7 @@
         "dev": "vite-node --watch ./src/main.tsx",
         "build": "tsup",
         "start": "cross-env NODE_ENV=production node dist/main.js",
-        "migration:create": "drizzle-kit generate:pg",
+        "migrate": "drizzle-kit generate:pg",
         "prettier": "prettier --write \"./{src,tests}/**/*\"",
         "test": "cross-env NODE_ENV=test vitest"
     },
