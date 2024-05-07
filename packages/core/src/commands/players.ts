@@ -126,13 +126,6 @@ export class ManagePlayers {
             .from(arenaPlayer)
             .where(and(eq(arenaPlayer.puuid, summ.puuid), eq(arenaPlayer.placement, 1)));
 
-        // const embed = new EmbedBuilder();
-        // embed.setTitle("Arena god progress");
-        // embed.setContent([
-        //     { name: "Done", value: done.join("\n") },
-        //     { name: "To do", value: toDo.join(", ") },
-        // ]);
-
         interaction.reply({
             content: `## Arena god progress for ${name}
 ${championsWin.length ? "### Done" : `### 0 / ${Object.keys(champion).length}`}
