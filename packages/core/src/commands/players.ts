@@ -12,6 +12,7 @@ import { getChampionAndSpellIconStaticData } from "@/features/lol/icons";
 import Galeforce from "galeforce";
 import { getSummonerByName } from "@/features/summoner";
 import { ENV } from "@/envVars";
+import { groupBy } from "pastable";
 
 @Discord()
 export class ManagePlayers {
@@ -126,11 +127,13 @@ export class ManagePlayers {
             .from(arenaPlayer)
             .where(and(eq(arenaPlayer.puuid, summ.puuid), eq(arenaPlayer.placement, 1)));
 
+        const sortedByChampion = groupBy(championsWin, (c) => c.champion);
+
         interaction.reply({
             content: `## Arena god progress for ${name}
-${championsWin.length ? "### Done" : `### 0 / ${Object.keys(champion).length}`}
-${championsWin
-    .map((c) => c.champion)
+${"### Done " + "(" + (sortedByChampion.length ?? 0) + "/" + Object.keys(champion).length + ")"}
+${Object.entries(sortedByChampion)
+    .map(([name, c]) => name + `(x${c.length})`)
     .sort()
     .join("\n")}
 `,
