@@ -17,8 +17,8 @@ import Galeforce from "galeforce";
 export const divisionEnum = pgEnum("division", ["IV", "III", "II", "I", "NA"]);
 export const tierEnum = pgEnum("tier", [
     "IRON",
-    "SILVER",
     "BRONZE",
+    "SILVER",
     "GOLD",
     "PLATINUM",
     "EMERALD",
