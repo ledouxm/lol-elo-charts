@@ -5,6 +5,7 @@ import { Client } from "discordx";
 import "../../commands/bets";
 import "../../commands/manageSummoners";
 import "../../commands/players";
+import "../../commands/wow";
 
 import { makeDebug } from "@/utils";
 import { ENV } from "@/envVars";

@@ -1,0 +1,1 @@
+ALTER TABLE "wow_mythic_run" ALTER COLUMN "score" SET DATA TYPE numeric;

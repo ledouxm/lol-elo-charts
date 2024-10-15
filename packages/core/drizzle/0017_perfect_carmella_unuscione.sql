@@ -1,0 +1,1 @@
+ALTER TABLE "wow_character" ADD COLUMN "channel_id" varchar(50);

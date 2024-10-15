@@ -6,20 +6,22 @@ import { makeRouter } from "./features/router";
 import { lolStalker } from "./features/stalker/lol/lol";
 import { valorantStalker } from "./features/stalker/valorant/valorant";
 import { startCronJobs } from "./startCronJobs";
+import { getWowRecentRun } from "./features/wow/wowStalker";
 
 const start = async () => {
     await initDb();
-    await startDiscordBot();
+    // await startDiscordBot();
+    console.log(await getWowRecentRun({ region: "eu", realm: "ysondre", name: "pinmardoule" }));
 
-    startCronJobs();
-    makeRouter();
+    // startCronJobs();
+    // makeRouter();
 
-    await lolStalker.start();
-    await valorantStalker.start();
+    // await lolStalker.start();
+    // await valorantStalker.start();
 
-    if (ENV.FORCE_RECAPS) {
-        await getAndSaveApex();
-    }
+    // if (ENV.FORCE_RECAPS) {
+    //     await getAndSaveApex();
+    // }
 };
 
 try {
