@@ -2,7 +2,7 @@
 # BASE IMAGE FOR EVERY SERVICE #
 ################################
 FROM --platform=linux/amd64  node:18 AS with-pnpm
-RUN npm i -g pnpm
+RUN npm i -g pnpm@8.4
 
 ################################
 #      DEPS INSTALLATION       #
