@@ -69,8 +69,10 @@ export const getLastGameAndStoreIfNecessary = async (summoner: Summoner) => {
     return lastGame;
 };
 
-const checkIfGameIsArenaAndStore = async (lastGameId: string, lastGame: MatchDTO) => {
-    if (!ENV.ARENA_ENABLED) return true;
+type HasAlreadyWritten = boolean;
+
+const checkIfGameIsArenaAndStore = async (lastGameId: string, lastGame: MatchDTO): Promise<HasAlreadyWritten> => {
+    if (!ENV.ARENA_ENABLED) return false;
 
     const existing = await db.select().from(arenaMatch).where(eq(arenaMatch.matchId, lastGameId)).limit(1);
     if (existing[0]) return true;
