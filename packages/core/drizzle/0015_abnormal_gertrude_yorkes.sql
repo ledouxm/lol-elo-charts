@@ -1,0 +1,1 @@
+ALTER TABLE "bet" ADD COLUMN "odds" numeric(4, 2) NOT NULL;

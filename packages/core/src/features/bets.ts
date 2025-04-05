@@ -6,6 +6,7 @@ import { addRequest, galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
 import { Participant } from "./stalker/lol/match";
 import { ENV } from "@/envVars";
+import { getLoLNewRank } from "./stalker/lol/rank";
 
 export const checkBetsAndGetLastGame = async () => {
     const bets = await db
@@ -41,6 +42,35 @@ export const checkBetsAndGetLastGame = async () => {
 
 type GameCache = Map<string, Galeforce.dto.MatchDTO>;
 
+export const calculateOddsFromStats = async (summonerPuuid: string) => {
+    const statsFromSummoner = await getLoLNewRank(summonerPuuid);
+
+    // If no stats available, return default odds
+    if (!statsFromSummoner || statsFromSummoner.wins + statsFromSummoner.losses === 0) {
+        return 1.9;
+    }
+
+    const totalGames = statsFromSummoner.wins + statsFromSummoner.losses;
+    const winRate = statsFromSummoner.wins / totalGames;
+
+    console.log(
+        `Summoner stats - Wins: ${statsFromSummoner.wins}, Losses: ${statsFromSummoner.losses}, Win Rate: ${(
+            winRate * 100
+        ).toFixed(2)}%`
+    );
+
+    let odds = 1 / winRate;
+
+    // prevents odds from being less than 1.2 and more than 5
+    odds = Math.max(1.2, Math.min(odds, 5.0));
+
+    odds = odds * 0.95;
+
+    odds = Math.round(odds * 100) / 100;
+
+    return odds;
+};
+
 const tryToResolveBet = async ({
     activeBet,
     gameCache,
@@ -59,6 +89,7 @@ const tryToResolveBet = async ({
         "by",
         activeBet.gambler.name
     );
+
     const game = await getGameMatchingBet(activeBet, gameCache);
     if (!game) return;
 
@@ -72,10 +103,15 @@ const tryToResolveBet = async ({
     console.log("bet is win", isWin);
 
     if (isWin) {
-        // increase points if win
+        const odds = Number(activeBet.bet.odds);
+
+        //calculate payout
+        const payout = Math.round(activeBet.bet.points * odds);
+
+        // increase points if win with payout
         await db
             .update(gambler)
-            .set({ points: activeBet.gambler.points + activeBet.bet.points * 2 })
+            .set({ points: activeBet.gambler.points + payout })
             .where(eq(gambler.id, activeBet.gambler.id));
     }
 

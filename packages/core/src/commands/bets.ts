@@ -9,6 +9,7 @@ import { getSummonerCurrentGame } from "@/features/summoner";
 import { groupBy } from "pastable";
 import { addMinutes, isSameDay } from "date-fns";
 import { ENV } from "@/envVars";
+import { calculateOddsFromStats } from "@/features/bets";
 
 @Discord()
 export class Bets {
@@ -117,6 +118,8 @@ export class Bets {
             if (!shouldCreateBet) return interaction.editReply("Bet cancelled");
         }
 
+        const odds = await calculateOddsFromStats(currentSummoner.puuid);
+
         await db
             .update(gambler)
             .set({ points: currentGambler.points - points })
@@ -127,6 +130,7 @@ export class Bets {
             gamblerId: currentGambler.id,
             hasBetOnWin: win,
             summonerId: currentSummoner.puuid,
+            odds: sql`${odds}`,
         });
 
         console.log("bet created");
@@ -134,7 +138,7 @@ export class Bets {
         await interaction.editReply(
             `Bet placed by **${interaction.member.user.username}** on **${currentSummoner.currentName}** ${
                 win ? "winning" : "losing"
-            } next game (${points} points)`
+            } next game (${points} points), odds: ${odds}`
         );
     }
 
