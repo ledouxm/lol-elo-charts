@@ -1,8 +1,10 @@
 import { db } from "@/db/db";
 import { InsertRank, rank } from "@/db/schema";
+import { ENV } from "@/envVars";
 import { galeforce } from "@/features/summoner";
 import { eq, desc } from "drizzle-orm";
 import { omit } from "pastable";
+import { Constants, LolApi } from "twisted";
 
 export const getLoLLastRank = async (puuid: string) => {
     const lastRanks = await db
@@ -43,15 +45,15 @@ const getLoLSoloQElo = async (id: string) => {
     return elo;
 };
 
-const getLoLElos = async (id: string) => {
-    const result = await galeforce.lol.league
-        .entries()
-        .summonerId(id)
-        .region(galeforce.region.lol.EUROPE_WEST)
-        .queue(galeforce.queue.lol.RANKED_SOLO)
-        .exec();
+// temporary fix since galeforce is not up to date
+const api = new LolApi({
+    key: ENV.RG_API_KEY,
+});
 
-    return result;
+const getLoLElos = async (id: string) => {
+    const result = await api.League.byPUUID(id, Constants.Regions.EU_WEST);
+
+    return result.response;
 };
 
 export type LoLRankWithWinsLosses = Awaited<ReturnType<typeof getLoLNewRank>>;

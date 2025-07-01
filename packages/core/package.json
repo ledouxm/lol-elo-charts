@@ -44,7 +44,8 @@
         "react-dom": "^18.2.0",
         "reflect-metadata": "^0.1.13",
         "xstate": "^5.9.0",
-        "zod": "^3.22.4"
+        "zod": "^3.22.4",
+        "twisted": "^1.66.0"
     },
     "devDependencies": {
         "@faker-js/faker": "^8.0.2",
@@ -69,9 +70,6 @@
         "vite-node": "^0.33.0",
         "vite-tsconfig-paths": "^4.2.0",
         "vitest": "^0.33.0"
-    },
-    "engines": {
-        "node": "^16.x"
     },
     "importSort": {
         ".js, jsx, .ts, .tsx": {
