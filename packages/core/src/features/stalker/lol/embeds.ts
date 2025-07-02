@@ -123,7 +123,7 @@ export const getRankDifferenceWithoutGameEmbed = async ({
     const embed = new EmbedBuilder()
         .setColor(getColor(isLoss))
         .setTitle(`${player.currentName} (${rankDifference.content})`)
-        .setDescription("Either the player dodged or RIOT API is down")
+        .setDescription("Couldn't find a game, is Riot match API down?")
         .setThumbnail(profileIcon)
         .setFields(getWinRateFields(newRank))
         .setFooter({ text: footer });
