@@ -66,7 +66,6 @@ export const getCurrentDayRecap = async ({ channelId }: { channelId: string }) =
 export const generate24hRankRecap = async () => {
     const summoners = await getSummonersWithChannels();
     const { recap, lastApex } = await get24hData({ summoners });
-    console.log(summoners.length, recap);
     const byChannelId = groupBy(
         recap.sort((a, b) => b.diff - a.diff),
         (r) => r.channelId
