@@ -64,9 +64,13 @@ const getAchievedBetString = (b: AchievedBet) => {
 
     const icon = isWin ? "✅" : "❌";
     const payout = isWin ? Math.round(points * Number(odds)) : points;
-    return `${icon} **${gambler.name}** : ${isWin ? "+" : "-"}${payout} points on **${currentName}** ${
-        hasBetOnWin ? "winning" : "losing"
-    } (${formatDistanceToNow(new Date(match.info.gameEndTimestamp), { addSuffix: true })})`;
+    const diff = payout - points;
+    return `${icon} **${gambler.name}** : ${isWin ? "+" : "-"}${payout}${
+        isWin ? ` 📈 **+${diff}**` : ""
+    } points on **${currentName}** ${hasBetOnWin ? "winning" : "losing"} (${formatDistanceToNow(
+        new Date(match.info.gameEndTimestamp),
+        { addSuffix: true }
+    )})`;
 };
 
 export const getRecapMessageEmbed = ({
