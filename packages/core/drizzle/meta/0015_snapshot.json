@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "a16294fc-01de-4059-a080-808c78fa6bfb",
+  "id": "ffcbd1b8-4064-4fad-89cb-6519f73b63cb",
   "prevId": "719e9a40-9586-4195-8762-971faf5a83a3",
   "tables": {
     "apex": {
@@ -178,7 +178,7 @@
           "name": "odds",
           "type": "numeric(4, 2)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         }
       },
       "indexes": {},
