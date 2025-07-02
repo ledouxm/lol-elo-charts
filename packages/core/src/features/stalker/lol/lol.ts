@@ -16,7 +16,7 @@ export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWit
         return summoners;
     },
     getRank: async ({ player }) => {
-        const rank = await getLoLNewRank(player.id);
+        const rank = await getLoLNewRank(player.puuid);
         return rank;
     },
     persistChanges: async ({ changes, debug }) => {
@@ -30,7 +30,7 @@ export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWit
 
             // update player name if needed
             const playerInGame = lastMatch?.info.participants.find((p) => p.puuid === player.puuid);
-            const newName = `${playerInGame.riotIdGameName}#${playerInGame.riotIdTagline}`;
+            const newName = `${playerInGame.riotIdGameName ?? playerInGame.riotIdName}#${playerInGame.riotIdTagline}`;
             if (playerInGame && player.currentName !== newName) {
                 await updateSummonerName(player.puuid, newName);
             }

@@ -12,6 +12,14 @@
     "author": "",
     "license": "ISC",
     "pnpm": {
+        "onlyBuiltDependencies": [
+            "arktype",
+            "canvas",
+            "es5-ext",
+            "esbuild",
+            "galeforce",
+            "puppeteer"
+        ],
         "patchedDependencies": {
             "galeforce@0.6.1": "patches/galeforce@0.6.1.patch"
         }
