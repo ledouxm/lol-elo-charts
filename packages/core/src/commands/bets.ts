@@ -9,6 +9,7 @@ import { getSummonerCurrentGame } from "@/features/summoner";
 import { groupBy } from "pastable";
 import { addMinutes, isSameDay } from "date-fns";
 import { ENV } from "@/envVars";
+import { calculateOddsFromStats } from "@/features/bets";
 
 @Discord()
 export class Bets {
@@ -44,13 +45,10 @@ export class Bets {
                 interaction
             );
         }
-        console.log("bets are enabled");
         if (interaction.member.user.bot)
             return sendErrorToChannelId(interaction.channelId, "Bots can't bet", interaction);
 
-        console.log("not a bot");
         if (points < 1) return sendErrorToChannelId(interaction.channelId, "Tu te crois où ?", interaction);
-        console.log("points > 1");
         const currentGambler = await getOrCreateGambler(interaction);
 
         if (currentGambler.points < points)
@@ -59,7 +57,6 @@ export class Bets {
                 `You don't have enough points (current: ${currentGambler.points})`,
                 interaction
             );
-        console.log("enough points");
 
         const s = await db
             .select()
@@ -78,7 +75,6 @@ export class Bets {
                 interaction
             );
         }
-        console.log("summoner found");
         const { summoner: currentSummoner } = s[0];
 
         if (!currentSummoner.isActive)
@@ -107,15 +103,15 @@ export class Bets {
             );
 
         await interaction.deferReply();
-        console.log("deferred reply");
 
         const currentGame = await getSummonerCurrentGame(currentSummoner.id);
-        console.log(currentSummoner.id);
-        console.log("current game", !!currentGame);
+
         if (currentGame && addMinutes(new Date(currentGame.gameStartTime), ENV.CRON_BETS_DELAY_MIN) > new Date()) {
             const shouldCreateBet = await sendBetConfirmation({ summ: currentSummoner, points, win, interaction });
             if (!shouldCreateBet) return interaction.editReply("Bet cancelled");
         }
+
+        const odds = await calculateOddsFromStats(currentSummoner.puuid);
 
         await db
             .update(gambler)
@@ -127,14 +123,13 @@ export class Bets {
             gamblerId: currentGambler.id,
             hasBetOnWin: win,
             summonerId: currentSummoner.puuid,
+            odds: sql`${odds}`,
         });
-
-        console.log("bet created");
 
         await interaction.editReply(
             `Bet placed by **${interaction.member.user.username}** on **${currentSummoner.currentName}** ${
                 win ? "winning" : "losing"
-            } next game (${points} points)`
+            } next game (${points} points), odds: ${odds}`
         );
     }
 
@@ -183,7 +178,6 @@ export class Bets {
 
     @Slash({ name: "pointsleaderboard", description: "Points leaderboard" })
     async pointsLeaderboard(interaction: CommandInteraction) {
-        console.log("points leaderboard");
         const leaderboard = await getLeaderBoard(interaction.channelId);
 
         if (!leaderboard || leaderboard.length === 0)

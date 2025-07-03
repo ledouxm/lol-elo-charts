@@ -131,14 +131,18 @@ const getArenaEmbed = (players: ArenaPlayer[]) => {
     const embed = new EmbedBuilder();
     embed.setTitle("Arena game results");
     embed.setURL("https://www.leagueofgraphs.com/match/euw/" + players[0].matchId.split("_")[1]);
-    embed.addFields(
-        players
-            .sort((a, b) => a.placement - b.placement)
-            .map((p) => ({
-                name: p.name,
-                value: `Top **${p.placement}** with **${p.champion}**`,
-            }))
-    );
+
+    const emojiMap = { 1: "🏆", 2: "🥈", 3: "🥉" };
+
+    players
+        .sort((a, b) => a.placement - b.placement)
+        .forEach(({ name, placement, champion }) => {
+            const emoji = emojiMap[placement] || "";
+            embed.addFields({
+                name: `${emoji} ${name}`,
+                value: `Top **${placement}** with **${champion}**`,
+            });
+        });
 
     return embed;
 };

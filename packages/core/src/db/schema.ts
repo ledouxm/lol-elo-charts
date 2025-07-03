@@ -11,6 +11,7 @@ import {
     primaryKey,
     jsonb,
     date,
+    numeric,
 } from "drizzle-orm/pg-core";
 import Galeforce from "galeforce";
 
@@ -103,6 +104,7 @@ export const bet = pgTable("bet", {
     matchId: varchar("match_id", { length: 25 }),
     hasBetOnWin: boolean("has_bet_on_win"),
     isWin: boolean("is_win"),
+    odds: numeric("odds", { precision: 4, scale: 2 }),
 });
 
 export type Bet = InferModel<typeof bet, "select">;

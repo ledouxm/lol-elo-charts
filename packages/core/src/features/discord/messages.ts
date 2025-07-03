@@ -59,13 +59,18 @@ const compareBets = (a: AchievedBet, b: AchievedBet) => {
 
 const getAchievedBetString = (b: AchievedBet) => {
     const { bet, summoner, gambler, match } = b;
-    const { points, isWin, hasBetOnWin } = bet;
+    const { points, isWin, hasBetOnWin, odds } = bet;
     const { currentName } = summoner;
 
     const icon = isWin ? "✅" : "❌";
-    return `${icon} **${gambler.name}** : ${isWin ? "+" : "-"}${points} points on **${currentName}** ${
-        hasBetOnWin ? "winning" : "losing"
-    } (${formatDistanceToNow(new Date(match.info.gameEndTimestamp), { addSuffix: true })})`;
+    const payout = isWin ? Math.round(points * Number(odds)) : points;
+    const diff = payout - points;
+    return `${icon} **${gambler.name}** : ${
+        isWin ? `**+${payout} points** (${diff} profit)` : `**-${payout} points**`
+    } on **${currentName}** ${hasBetOnWin ? "winning" : "losing"} (${formatDistanceToNow(
+        new Date(match.info.gameEndTimestamp),
+        { addSuffix: true }
+    )})`;
 };
 
 export const getRecapMessageEmbed = ({

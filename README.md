@@ -46,7 +46,8 @@ League of Legends LP tracking Discord bot
 
 ## Templates
 
--   `pnpm templates dev`
+-   Generate styles.css with `pnpm templates panda`
+-   Run the app that generate the graph with `pnpm templates dev`
 
 ### Create a template
 

@@ -6,6 +6,7 @@ import { addRequest, galeforce } from "./summoner";
 import { subMinutes } from "date-fns";
 import { Participant } from "./stalker/lol/match";
 import { ENV } from "@/envVars";
+import { getLoLNewRank } from "./stalker/lol/rank";
 
 export const checkBetsAndGetLastGame = async () => {
     const bets = await db
@@ -16,10 +17,8 @@ export const checkBetsAndGetLastGame = async () => {
         .leftJoin(summoner, and(eq(bet.summonerId, summoner.puuid), eq(summoner.channelId, gambler.channelId)));
 
     if (!bets?.[0]) {
-        void console.log("no bets");
         return [] as AchievedBet[];
     }
-    console.log("Checking", bets.length, "bets");
 
     const newBets = [] as AchievedBet[];
 
@@ -41,6 +40,29 @@ export const checkBetsAndGetLastGame = async () => {
 
 type GameCache = Map<string, Galeforce.dto.MatchDTO>;
 
+export const calculateOddsFromStats = async (summonerPuuid: string) => {
+    const statsFromSummoner = await getLoLNewRank(summonerPuuid);
+
+    // If no stats available, return default odds
+    if (!statsFromSummoner || statsFromSummoner.wins + statsFromSummoner.losses === 0) {
+        return 1.9;
+    }
+
+    const totalGames = statsFromSummoner.wins + statsFromSummoner.losses;
+    const winRate = statsFromSummoner.wins / totalGames;
+
+    let odds = 1 / winRate;
+
+    // prevents odds from being less than 1.2 and more than 5
+    odds = Math.max(1.2, Math.min(odds, 5.0));
+
+    odds = odds * 0.95;
+
+    odds = Math.round(odds * 100) / 100;
+
+    return odds;
+};
+
 const tryToResolveBet = async ({
     activeBet,
     gameCache,
@@ -48,17 +70,6 @@ const tryToResolveBet = async ({
     activeBet: { bet: InferModel<typeof bet, "select">; gambler: Gambler; summoner: Summoner };
     gameCache?: GameCache;
 }) => {
-    console.log("activeBet", activeBet);
-    console.log(
-        "resolving bet",
-        activeBet.bet.id,
-        "for",
-        activeBet.summoner?.currentName,
-        "on win",
-        activeBet.bet.hasBetOnWin,
-        "by",
-        activeBet.gambler.name
-    );
     const game = await getGameMatchingBet(activeBet, gameCache);
     if (!game) return;
 
@@ -69,17 +80,17 @@ const tryToResolveBet = async ({
     const isWin =
         game.info.participants.find((p) => p.puuid === activeBet.summoner.puuid)?.win === activeBet.bet.hasBetOnWin;
 
-    console.log("bet is win", isWin);
-
     if (isWin) {
-        // increase points if win
+        const odds = Number(activeBet.bet.odds);
+
+        const payout = Math.round(activeBet.bet.points * odds);
+
         await db
             .update(gambler)
-            .set({ points: activeBet.gambler.points + activeBet.bet.points * 2 })
+            .set({ points: activeBet.gambler.points + payout })
             .where(eq(gambler.id, activeBet.gambler.id));
     }
 
-    // add endedAt isWin and matchId to bet
     await db
         .update(bet)
         .set({ endedAt: new Date(), isWin, matchId: game.metadata.matchId })
@@ -94,8 +105,6 @@ const tryToResolveBet = async ({
             .leftJoin(summoner, eq(bet.summonerId, summoner.puuid))
             .limit(1)
     )?.[0];
-
-    console.log(newBet);
 
     return { ...newBet, match: game };
 };
@@ -112,16 +121,7 @@ const getGameMatchingBet = async (
     gameCache?: GameCache
 ) => {
     const betDate = subMinutes(activeBet.bet.createdAt, ENV.CRON_BETS_DELAY_MIN);
-    console.log("bet createdAt", activeBet.bet.createdAt, ENV.CRON_BETS_DELAY_MIN);
-    console.log("betDate", betDate);
 
-    console.log(
-        "fetching game matching bet",
-        activeBet.bet.id,
-        "for",
-        activeBet.summoner.currentName,
-        Math.round(betDate.getTime() / 1000)
-    );
     const lastGames = await galeforce.lol.match
         .list()
         .region(galeforce.region.riot.EUROPE)
@@ -130,14 +130,11 @@ const getGameMatchingBet = async (
         .exec();
     await addRequest();
 
-    console.log(lastGames);
     if (!lastGames?.length) return null;
 
-    console.log("found", lastGames.length, "games", lastGames.join(", "));
     const game = await getMatchIdAfterDate(lastGames, betDate, gameCache);
     if (!game) return null;
 
-    console.log("match", game?.metadata.matchId, "is after", betDate.toISOString(), "for bet", activeBet.bet.id);
     return game;
 };
 
@@ -177,7 +174,6 @@ const getMatchIdAfterDate = async (gameIds: string[], betDate: Date, gameCache?:
         if (!fromCache) gameCache?.set(gameId, game);
 
         const isRemake = isMatchRemake(game);
-        console.log("game", gameId, "isRemake", isRemake, "timestamp:", new Date(game.info.gameStartTimestamp));
 
         if (new Date(game.info.gameStartTimestamp) > betDate && !isRemake) return game;
     }
