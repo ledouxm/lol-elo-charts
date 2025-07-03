@@ -18,7 +18,7 @@ export const makeRouter = () => {
 
     const port = ENV.HTTP_PORT;
 
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
         debug(`Listening on port ${port}`);
     });
 };
