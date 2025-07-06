@@ -143,7 +143,7 @@ export class ManagePlayers {
 
         interaction.reply({
             content: `## Arena god progress for ${name}
-${"### Done " + "(" + (entries.length ?? 0) + "/" + Object.keys(champion).length + ")"}
+${"### Done " + "(" + (entries.length ?? 0) + "/60)"}
 ${entries
     .map(([name, c]) => name + ` (x${c.length})`)
     .sort()
