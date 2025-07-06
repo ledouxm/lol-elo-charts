@@ -4,8 +4,8 @@ import { lolConfig } from "./lol";
 import { valorantConfig } from "./valorant";
 import { getSummonersWithChannels } from "@/features/stalker/lol/summoner";
 import { db } from "@/db/db";
-import { arenaPlayer, summoner } from "@/db/schema";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { arenaMatch, arenaPlayer, summoner } from "@/db/schema";
+import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { sendToChannelId } from "@/features/discord/discord";
 import { EmbedBuilder } from "@discordjs/builders";
 import { getChampionAndSpellIconStaticData } from "@/features/lol/icons";
@@ -123,9 +123,19 @@ export class ManagePlayers {
         }
 
         const championsWin = await db
-            .select()
+            .select({
+                champion: arenaPlayer.champion,
+                matchId: arenaMatch.matchId,
+            })
             .from(arenaPlayer)
-            .where(and(eq(arenaPlayer.puuid, summ.puuid), eq(arenaPlayer.placement, 1)));
+            .leftJoin(arenaMatch, eq(arenaPlayer.matchId, arenaMatch.matchId))
+            .where(
+                and(
+                    eq(arenaPlayer.puuid, summ.puuid),
+                    eq(arenaPlayer.placement, 1),
+                    gte(arenaMatch.endedAt, new Date("2025-01-01"))
+                )
+            );
 
         const sortedByChampion = groupBy(championsWin, (c) => c.champion);
 
