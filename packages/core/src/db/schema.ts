@@ -61,6 +61,7 @@ export const rank = pgTable("rank", {
 });
 export type InsertRank = InferModel<typeof rank, "insert">;
 export type InsertRankWithoutLiterals = Omit<InsertRank, "division" | "tier"> & { tier: string; division: string };
+export type Rank = InferModel<typeof rank, "select">;
 
 export const rankRelations = relations(rank, ({ one }) => {
     return { summoner: one(summoner, { fields: [rank.summonerId], references: [summoner.puuid] }) };
@@ -135,6 +136,8 @@ export const match = pgTable("match", {
     details: jsonb("details").$type<Galeforce.dto.MatchDTO>(),
 });
 
+export type Match = InferModel<typeof match, "select">;
+
 export const matchRelations = relations(match, ({ one }) => {
     return {
         summoner: one(summoner, { fields: [match.summonerId], references: [summoner.puuid] }),
@@ -151,6 +154,8 @@ export const playerOfTheDay = pgTable("player_of_the_day", {
     type: playerOfTheDayTypeEnum("type"),
 });
 
+export type PlayerOfTheDay = InferModel<typeof playerOfTheDay, "select">;
+
 export const playerOfTheDayRelations = relations(playerOfTheDay, ({ one }) => {
     return { summoner: one(summoner, { fields: [playerOfTheDay.summonerId], references: [summoner.puuid] }) };
 });
@@ -159,6 +164,8 @@ export const arenaMatch = pgTable("arena_match", {
     matchId: varchar("match_id", { length: 25 }).primaryKey(),
     endedAt: timestamp("ended_at"),
 });
+
+export type ArenaMatch = InferModel<typeof arenaMatch, "select">;
 
 export const arenaPlayer = pgTable(
     "arena_player",

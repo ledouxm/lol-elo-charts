@@ -43,9 +43,10 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "reflect-metadata": "^0.1.13",
+        "twisted": "^1.66.0",
         "xstate": "^5.9.0",
         "zod": "^3.22.4",
-        "twisted": "^1.66.0"
+        "zod-express-middleware": "^1.4.0"
     },
     "devDependencies": {
         "@faker-js/faker": "^8.0.2",

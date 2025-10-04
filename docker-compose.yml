@@ -14,11 +14,14 @@ services:
         networks:
             - lol-charts-network
 
-    adminer:
-        image: adminer
+    explorer:
+        image: ghcr.io/ledouxm/kysely-explorer:0.0.2
         restart: always
+        environment:
+            FIRST_CONNECTION_TOKEN: ${FIRST_CONNECTION_TOKEN}
+            AUTH_SECRET: ${AUTH_SECRET}
         ports:
-            - "${ADMINER_PORT}:8080"
+            - "${EXPLORER_PORT}:3005"
         networks:
             - lol-charts-network
 

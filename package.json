@@ -1,12 +1,14 @@
 {
     "name": "lol-elo-charts",
     "version": "1.0.0",
+    "type": "module",
     "description": "",
     "main": "index.js",
     "scripts": {
         "core": "pnpm --filter @lol-elo-charts/core",
         "templates": "pnpm --filter @lol-elo-charts/templates",
-        "valorant-api": "pnpm typed-openapi ./valorant-unofficial-api.json -o ./packages/core/src/valorantApi.gen.ts"
+        "valorant-api": "pnpm typed-openapi ./valorant-unofficial-api.json -o ./packages/core/src/valorantApi.gen.ts",
+        "import-from-other-env": "node  --no-warnings=ExperimentalWarning --experimental-strip-types --experimental-transform-types --env-file-if-exists=.env --watch -- scripts/importFromOtherEnv.ts "
     },
     "keywords": [],
     "author": "",
@@ -25,6 +27,9 @@
         }
     },
     "devDependencies": {
+        "@types/node": "^16.18.126",
+        "axios": "^1.10.0",
+        "dotenv": "^16.6.1",
         "typed-openapi": "^0.4.1"
     }
 }

@@ -20,6 +20,7 @@ const envSchema = z.object({
     POSTGRES_DB: z.string(),
     BOT_TOKEN: z.string(),
     RG_API_KEY: z.string(),
+    ADMIN_TOKEN: z.string().optional(),
 
     CRON_BETS_DELAY_MIN: stringOrNumberAsNumber.default(5),
 
