@@ -41,6 +41,7 @@ export const summoner = pgTable(
         channelId: varchar("channel_id", { length: 100 }).notNull(),
         lastGameId: varchar("last_game_id", { length: 25 }),
         lastNotifiedInGameId: varchar("last_notified_in_game_id", { length: 25 }),
+        lastGameEndedAt: timestamp("last_game_ended_at"),
     },
     (table) => {
         return {
@@ -176,6 +177,20 @@ export const arenaPlayer = pgTable(
     }
 );
 export type ArenaPlayer = InferModel<typeof arenaPlayer, "select">;
+
+export const lolParticipant = pgTable(
+    "lol_participant",
+    {
+        matchId: varchar("match_id", { length: 25 }).notNull(),
+        puuid: varchar("puuid", { length: 100 }).notNull(),
+        win: boolean("win").notNull(),
+    },
+    (table) => {
+        return {
+            pk: primaryKey(table.matchId, table.puuid),
+        };
+    }
+);
 
 export const arenaMatchRelations = relations(arenaMatch, ({ many }) => {
     return { players: many(arenaPlayer) };

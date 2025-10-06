@@ -10,6 +10,7 @@ services:
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         volumes:
             - stalker-db:/var/lib/postgresql/data:delegated
+            - C:/Users/mledo/Downloads/match.sql:/tmp/match.sql:ro
 
         networks:
             - lol-charts-network

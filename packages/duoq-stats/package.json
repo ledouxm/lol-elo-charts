@@ -1,0 +1,43 @@
+{
+    "name": "@lol-elo-charts/duoq-stats",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite --port 5173",
+        "build": "vite build",
+        "serve": "vite preview",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
+        "@lol-elo-charts/shared": "workspace:*",
+        "@mui/material": "^7.3.4",
+        "@tanstack/react-devtools": "^0.7.0",
+        "@tanstack/react-query": "^5.90.2",
+        "@tanstack/react-router": "^1.132.0",
+        "@tanstack/react-router-devtools": "^1.132.0",
+        "@tanstack/router-plugin": "^1.132.0",
+        "date-fns": "^2.30.0",
+        "ofetch": "^1.4.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-hook-form": "^7.64.0",
+        "zod": "^3.25.67"
+    },
+    "devDependencies": {
+        "@testing-library/dom": "^10.4.0",
+        "@testing-library/react": "^16.2.0",
+        "@types/node": "^22.10.2",
+        "@types/react": "^19.0.8",
+        "@types/react-dom": "^19.0.3",
+        "@vitejs/plugin-react": "^5.0.4",
+        "galeforce": "^0.6.1",
+        "jsdom": "^27.0.0",
+        "typescript": "^5.7.2",
+        "vite": "^7.1.7",
+        "vite-plugin-svgr": "^4.5.0",
+        "vitest": "^3.0.5",
+        "web-vitals": "^5.1.0"
+    }
+}

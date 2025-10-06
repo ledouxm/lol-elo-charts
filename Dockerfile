@@ -22,6 +22,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/core/package.json ./packages/core/
 COPY packages/templates/package.json ./packages/templates/
 COPY packages/templates/panda.config.ts ./packages/templates/
+COPY packages/shared/package.json ./packages/shared/
 COPY packages/core/vite.config.ts ./packages/core/
 COPY packages/templates/vite.config.ts ./packages/templates/
 COPY patches/ ./patches/
@@ -36,9 +37,11 @@ WORKDIR /usr/src/app
 
 COPY ./packages/core/ ./packages/core/
 COPY ./packages/templates/ ./packages/templates/
+COPY ./packages/shared/ ./packages/shared/
 
 COPY --from=with-deps /usr/src/app/packages/core/node_modules ./packages/core/node_modules
 COPY --from=with-deps /usr/src/app/packages/templates/node_modules ./packages/templates/node_modules
+COPY --from=with-deps /usr/src/app/packages/shared/node_modules ./packages/shared/node_modules
 
 RUN pnpm templates panda
 RUN pnpm core build

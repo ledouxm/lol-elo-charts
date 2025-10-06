@@ -15,7 +15,6 @@ export const lolConfig: GameConfig = {
     removePlayer: async ({ name, channelId }) => {
         await removeSummoner(name, channelId);
     },
-
     listPlayers: async ({ channelId }) => {
         const summoners = await db
             .select()

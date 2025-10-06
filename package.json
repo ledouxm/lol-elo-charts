@@ -6,6 +6,8 @@
     "scripts": {
         "core": "pnpm --filter @lol-elo-charts/core",
         "templates": "pnpm --filter @lol-elo-charts/templates",
+        "duoq": "pnpm --filter @lol-elo-charts/duoq-stats",
+        "shared": "pnpm --filter @lol-elo-charts/shared",
         "valorant-api": "pnpm typed-openapi ./valorant-unofficial-api.json -o ./packages/core/src/valorantApi.gen.ts"
     },
     "keywords": [],

@@ -2,7 +2,7 @@ import { getAndSaveApex } from "./features/lol/apex";
 import { checkBets } from "./features/lol/elo";
 import cron from "node-cron";
 import cronstrue from "cronstrue";
-import { clearRequests } from "./features/router";
+import { clearRequests } from "./features/api/router";
 import { ENV } from "./envVars";
 
 export const startCronJobs = () => {

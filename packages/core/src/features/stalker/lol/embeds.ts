@@ -1,7 +1,7 @@
 import { Summoner } from "@/db/schema";
 import { LoLRankWithWinsLosses } from "./rank";
 import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
-import { getProfileIconUrl } from "@/features/lol/icons";
+import { getProfileIconUrl } from "@lol-elo-charts/shared/datadragon";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { RankDifference, formatRank } from "./rankUtils";
 import { Participant, getMatchInformationsForSummoner } from "./match";

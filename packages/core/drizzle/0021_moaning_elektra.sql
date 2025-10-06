@@ -1,0 +1,1 @@
+ALTER TABLE "lol_participant" DROP COLUMN IF EXISTS "team";
