@@ -26,10 +26,11 @@ export const lolStalker = new Stalker<SummonerWithChannels, MatchDTO, LoLRankWit
 
             if (!lastMatch) return;
 
-            await persistLastGameId(player, lastMatch.metadata.matchId);
+            await persistLastGameId(player, lastMatch.metadata.matchId, lastMatch.info.gameEndTimestamp);
 
             // update player name if needed
             const playerInGame = lastMatch?.info.participants.find((p) => p.puuid === player.puuid);
+            // @ts-ignore
             const newName = `${playerInGame.riotIdGameName ?? playerInGame.riotIdName}#${playerInGame.riotIdTagline}`;
             if (playerInGame && player.currentName !== newName) {
                 await updateSummonerName(player.puuid, newName);

@@ -1,0 +1,1 @@
+ALTER TABLE "summoner" ADD COLUMN "last_game_ended_at" timestamp;

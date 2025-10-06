@@ -8,7 +8,7 @@ import { arenaMatch, arenaPlayer, summoner } from "@/db/schema";
 import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { sendToChannelId } from "@/features/discord/discord";
 import { EmbedBuilder } from "@discordjs/builders";
-import { getChampionAndSpellIconStaticData } from "@/features/lol/icons";
+import { getChampionAndSpellIconStaticData } from "@lol-elo-charts/shared/datadragon";
 import Galeforce from "galeforce";
 import { getSummonerByName } from "@/features/summoner";
 import { ENV } from "@/envVars";

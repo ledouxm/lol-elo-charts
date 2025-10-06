@@ -1,6 +1,6 @@
 import Galeforce from "galeforce";
 import { Participant } from "../summoner";
-import { getChampionAndSpellIconStaticData } from "../lol/icons";
+import { getChampionAndSpellIconStaticData } from "@lol-elo-charts/shared/datadragon";
 import * as components from "@lol-elo-charts/templates";
 import { renderToString } from "react-dom/server";
 import fs from "fs/promises";

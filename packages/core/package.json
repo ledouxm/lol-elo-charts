@@ -45,7 +45,8 @@
         "reflect-metadata": "^0.1.13",
         "xstate": "^5.9.0",
         "zod": "^3.22.4",
-        "twisted": "^1.66.0"
+        "twisted": "^1.66.0",
+        "@lol-elo-charts/shared": "workspace:*"
     },
     "devDependencies": {
         "@faker-js/faker": "^8.0.2",

@@ -1,0 +1,1 @@
+ALTER TABLE "lol_participants" ADD COLUMN "team" integer NOT NULL;

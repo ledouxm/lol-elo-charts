@@ -6,6 +6,7 @@ import { subMinutes } from "date-fns";
 import { and, asc, gte, lte, sql } from "drizzle-orm";
 import { makeDebug } from "@/utils";
 import { ENV } from "@/envVars";
+import { duoqRouter } from "./duoq";
 
 const debug = makeDebug("router");
 
@@ -14,10 +15,15 @@ export const makeRouter = () => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cors());
-    app.use("/api", router);
 
+    app.use("/api", router);
+    app.use("/api", duoqRouter);
     const port = ENV.HTTP_PORT;
 
+    app.use((err, req, res, next) => {
+        console.error(err.stack);
+        res.status(500).send("Something broke!");
+    });
     app.listen(port, "0.0.0.0", () => {
         debug(`Listening on port ${port}`);
     });

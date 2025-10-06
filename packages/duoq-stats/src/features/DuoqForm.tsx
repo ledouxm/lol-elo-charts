@@ -1,0 +1,93 @@
+import { Autocomplete, Box, Button, FormControl, Input, InputLabel, MenuItem, Select, TextField } from "@mui/material";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { api } from "./api";
+import { useRef, useState } from "react";
+import { useForm, type UseFormReturn } from "react-hook-form";
+import { useNavigate } from "@tanstack/react-router";
+
+export const DuoqForm = ({ defaultValues, isInline }: { defaultValues?: Partial<Form>; isInline?: boolean } = {}) => {
+    const form = useForm<Form>({
+        defaultValues: {
+            summoner1: defaultValues?.summoner1 || "",
+            summoner2: defaultValues?.summoner2 || "",
+        },
+    });
+
+    const navigate = useNavigate();
+
+    const onSubmit = (data: { summoner1: string; summoner2: string }) => {
+        navigate({ to: "/duoq", search: { summoner1: data.summoner1, summoner2: data.summoner2 } });
+    };
+
+    return (
+        <Box
+            component="form"
+            display="flex"
+            flexDirection={isInline ? "row" : "column"}
+            gap={2}
+            width="100%"
+            py="50px"
+            alignItems="center"
+            onSubmit={form.handleSubmit(onSubmit)}
+            bgcolor="background.default"
+            px="50px"
+            borderRadius={4}
+            sx={{
+                boxShadow: 1,
+            }}
+        >
+            <Box display="flex" gap={2} width="100%">
+                <SummonerAutocomplete form={form} />
+                <TextField
+                    label="Summoner 2"
+                    variant="standard"
+                    sx={{ flex: 1 }}
+                    placeholder="Summoner 2"
+                    {...form.register("summoner2", { required: "Summoner 2 is required" })}
+                    error={!!form.formState.errors.summoner2}
+                />
+            </Box>
+
+            <Button variant="contained" color="primary" sx={{ width: "90px", bgcolor: "white" }} type="submit">
+                Search
+            </Button>
+        </Box>
+    );
+};
+
+const SummonerAutocomplete = ({ form }: { form: UseFormReturn<Form> }) => {
+    const [inputValue, setInputValue] = useState("");
+    const optionsQuery = useQuery({
+        queryKey: ["summoner-options", inputValue],
+        queryFn: () => api.getAvailableSummoners(inputValue).then((res) => res.map((s) => s.name)),
+    });
+
+    const { errors } = form.formState;
+    const isError = !!errors.summoner1;
+
+    form.register("summoner1", { required: "Summoner 1 is required" });
+
+    return (
+        <Autocomplete
+            sx={{ flex: 1 }}
+            options={optionsQuery.data || []}
+            getOptionKey={(option) => option}
+            inputValue={inputValue}
+            value={form.getValues("summoner1")}
+            getOptionLabel={(option) => option}
+            onInputChange={(_, newInputValue) => {
+                setInputValue(newInputValue);
+            }}
+            onChange={(_, newValue) => {
+                form.setValue("summoner1", newValue || "");
+            }}
+            disablePortal
+            renderInput={(params) => <TextField variant="standard" error={isError} {...params} label="Summoner 1" />}
+        />
+    );
+};
+
+type Form = {
+    summoner1: string;
+    summoner2: string;
+};

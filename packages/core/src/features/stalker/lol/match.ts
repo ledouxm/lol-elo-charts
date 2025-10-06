@@ -1,6 +1,6 @@
 import { db } from "@/db/db";
 import { ArenaPlayer, Summoner, arenaMatch, arenaPlayer, match, summoner } from "@/db/schema";
-import { getChampionIconUrl } from "@/features/lol/icons";
+import { getChampionIconUrl } from "@lol-elo-charts/shared/datadragon";
 import Galeforce from "galeforce";
 import { SummonerWithChannels, getSummonersWithChannels } from "./summoner";
 import { galeforce } from "@/features/summoner";
@@ -10,6 +10,7 @@ import { groupBy } from "pastable";
 import { sendToChannelId } from "@/features/discord/discord";
 import { ENV } from "@/envVars";
 import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
+import { generateParticipantsForMatch } from "@/features/participants";
 
 export const getMatchInformationsForSummoner = async (summ: Summoner, match: Galeforce.dto.MatchDTO) => {
     const participantIndex = match.info.participants.findIndex((p) => p.puuid === summ.puuid);
@@ -154,6 +155,8 @@ export const storeLoLMatch = async ({ player, lastMatch }: { player: Summoner; l
     const isWin = participant.win;
     const kda = `${participant.kills}/${participant.deaths}/${participant.assists}`;
 
+    await generateParticipantsForMatch(lastMatch);
+
     return db.insert(match).values({
         startedAt: new Date(lastMatch.info.gameStartTimestamp),
         matchId: lastMatch.metadata.matchId,
@@ -167,8 +170,11 @@ export const storeLoLMatch = async ({ player, lastMatch }: { player: Summoner; l
     });
 };
 
-export const persistLastGameId = async (player: Summoner, gameId: string) => {
-    await db.update(summoner).set({ lastGameId: gameId }).where(eq(summoner.puuid, player.puuid));
+export const persistLastGameId = async (player: Summoner, gameId: string, timestamp: number) => {
+    await db
+        .update(summoner)
+        .set({ lastGameId: gameId, lastGameEndedAt: new Date(timestamp) })
+        .where(eq(summoner.puuid, player.puuid));
 };
 
 export type Participant = Galeforce.dto.MatchDTO["info"]["participants"][0];
