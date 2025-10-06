@@ -10,15 +10,15 @@ import { generateParticipants } from "./features/participants";
 
 const start = async () => {
     await initDb();
-    // await startDiscordBot();
+    await startDiscordBot();
 
     await generateParticipants();
 
-    // startCronJobs();
+    startCronJobs();
     makeRouter();
 
-    // await lolStalker.start();
-    // await valorantStalker.start();
+    await lolStalker.start();
+    await valorantStalker.start();
 
     if (ENV.FORCE_RECAPS) {
         await getAndSaveApex();
