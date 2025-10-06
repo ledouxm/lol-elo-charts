@@ -1,7 +1,7 @@
 ################################
 # BASE IMAGE FOR EVERY SERVICE #
 ################################
-FROM node:18 AS with-pnpm
+FROM node:20 AS with-pnpm
 RUN npm i -g pnpm@10.12.4
 
 ################################
@@ -35,11 +35,13 @@ RUN pnpm duoq build
 ################################
 #    PRODUCTION IMAGE          #
 ################################
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
+
 WORKDIR /app
 RUN npm install -g serve
 COPY --from=builder /usr/src/app/packages/duoq-stats/dist ./dist
+COPY --from=builder /usr/src/app/packages/duoq-stats/scripts/createEnvFile.js ./scripts/createEnvFile.js
 
 EXPOSE 4173
 
-CMD ["serve", "-s", "dist", "-l", "4173", "--no-clipboard"]
+CMD node ./scripts/createEnvFile.js && serve -s dist -l 4173 --no-clipboard

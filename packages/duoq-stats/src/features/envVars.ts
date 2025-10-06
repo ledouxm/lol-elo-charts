@@ -8,6 +8,7 @@ export const ENV = envSchema.parse({
     ...import.meta.env,
     ...(window.ENV ?? {}),
 });
+
 declare global {
     interface Window {
         ENV: typeof ENV;
