@@ -261,6 +261,12 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.0.4
         version: 5.0.4(vite@7.1.9(@types/node@22.18.8)(lightningcss@1.23.0)(tsx@4.20.6)(yaml@2.8.1))
+      dotenv:
+        specifier: ^16.6.1
+        version: 16.6.1
+      dotenv-expand:
+        specifier: ^12.0.3
+        version: 12.0.3
       galeforce:
         specifier: ^0.6.1
         version: 0.6.1(patch_hash=e3c668b470b572d8f41a6d1144475e7796e04ceed0e7a91d154e985b16191a41)
@@ -273,6 +279,9 @@ importers:
       vite:
         specifier: ^7.1.7
         version: 7.1.9(@types/node@22.18.8)(lightningcss@1.23.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite-node:
+        specifier: ^0.33.0
+        version: 0.33.0(@types/node@22.18.8)(lightningcss@1.23.0)
       vite-plugin-svgr:
         specifier: ^4.5.0
         version: 4.5.0(rollup@4.52.4)(typescript@5.9.3)(vite@7.1.9(@types/node@22.18.8)(lightningcss@1.23.0)(tsx@4.20.6)(yaml@2.8.1))
@@ -3358,6 +3367,10 @@ packages:
 
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
+
+  dotenv-expand@12.0.3:
+    resolution: {integrity: sha512-uc47g4b+4k/M/SeaW1y4OApx+mtLWl92l5LMPP0GNXctZqELk+YGgOPIIC5elYmUH4OuoK3JLhuRUYegeySiFA==}
+    engines: {node: '>=12'}
 
   dotenv@16.3.1:
     resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
@@ -9318,6 +9331,10 @@ snapshots:
       no-case: 3.0.4
       tslib: 2.8.1
 
+  dotenv-expand@12.0.3:
+    dependencies:
+      dotenv: 16.6.1
+
   dotenv@16.3.1: {}
 
   dotenv@16.6.1: {}
@@ -12040,6 +12057,24 @@ snapshots:
       pathe: 1.1.2
       picocolors: 1.1.1
       vite: 4.5.14(@types/node@16.18.126)(lightningcss@1.23.0)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vite-node@0.33.0(@types/node@22.18.8)(lightningcss@1.23.0):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.3
+      mlly: 1.8.0
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      vite: 4.5.14(@types/node@22.18.8)(lightningcss@1.23.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
