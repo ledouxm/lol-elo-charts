@@ -1,13 +1,10 @@
-import { api, type DuoqStats, type MatchesResponse } from "@/features/api";
+import { type DuoqStats } from "@/features/api";
 import { DuoqForm } from "@/features/DuoqForm";
 import { Matches } from "@/features/match/Matches";
 import { ProfileCard } from "@/features/ProfileCard";
 import { useDuoqDataQueryWithParams } from "@/features/utils";
-import { Accordion, AccordionDetails, AccordionSummary, Box, LinearProgress, Typography } from "@mui/material";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { Box } from "@mui/material";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import type Galeforce from "galeforce";
-import { useState } from "react";
 
 type DuoqParams = {
     summoner1: string;
@@ -41,6 +38,7 @@ function RouteComponent() {
             <Box display="flex" justifyContent="center" mt="20px" width="100%">
                 <DuoqForm defaultValues={{ summoner1, summoner2 }} isInline />
             </Box>
+
             <Box flex="1" display="flex" justifyContent="center" mt="40px">
                 {duoqDataQuery.isLoading ? <div>Loading...</div> : null}
                 {duoqDataQuery.isError ? <div>Error loading data</div> : null}

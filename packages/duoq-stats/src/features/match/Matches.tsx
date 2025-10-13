@@ -31,7 +31,7 @@ export const Matches = ({ stats }: { stats: DuoqStats }) => {
     );
 };
 
-const MatchPage = ({ page }: { page: MatchesResponse }) => {
+export const MatchPage = ({ page }: { page: MatchesResponse }) => {
     return (
         <>
             {page.matches.map((match) => (

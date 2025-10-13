@@ -8,68 +8,70 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as DuoqRouteImport } from "./routes/duoq";
-import { Route as IndexRouteImport } from "./routes/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as DuoqRouteImport } from './routes/duoq'
+import { Route as IndexRouteImport } from './routes/index'
 
 const DuoqRoute = DuoqRouteImport.update({
-    id: "/duoq",
-    path: "/duoq",
-    getParentRoute: () => rootRouteImport,
-} as any);
+  id: '/duoq',
+  path: '/duoq',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
-    id: "/",
-    path: "/",
-    getParentRoute: () => rootRouteImport,
-} as any);
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
-    "/": typeof IndexRoute;
-    "/duoq": typeof DuoqRoute;
+  '/': typeof IndexRoute
+  '/duoq': typeof DuoqRoute
 }
 export interface FileRoutesByTo {
-    "/": typeof IndexRoute;
-    "/duoq": typeof DuoqRoute;
+  '/': typeof IndexRoute
+  '/duoq': typeof DuoqRoute
 }
 export interface FileRoutesById {
-    __root__: typeof rootRouteImport;
-    "/": typeof IndexRoute;
-    "/duoq": typeof DuoqRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/duoq': typeof DuoqRoute
 }
 export interface FileRouteTypes {
-    fileRoutesByFullPath: FileRoutesByFullPath;
-    fullPaths: "/" | "/duoq";
-    fileRoutesByTo: FileRoutesByTo;
-    to: "/" | "/duoq";
-    id: "__root__" | "/" | "/duoq";
-    fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/duoq'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/duoq'
+  id: '__root__' | '/' | '/duoq'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-    IndexRoute: typeof IndexRoute;
-    DuoqRoute: typeof DuoqRoute;
+  IndexRoute: typeof IndexRoute
+  DuoqRoute: typeof DuoqRoute
 }
 
-declare module "@tanstack/react-router" {
-    interface FileRoutesByPath {
-        "/duoq": {
-            id: "/duoq";
-            path: "/duoq";
-            fullPath: "/duoq";
-            preLoaderRoute: typeof DuoqRouteImport;
-            parentRoute: typeof rootRouteImport;
-        };
-        "/": {
-            id: "/";
-            path: "/";
-            fullPath: "/";
-            preLoaderRoute: typeof IndexRouteImport;
-            parentRoute: typeof rootRouteImport;
-        };
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/duoq': {
+      id: '/duoq'
+      path: '/duoq'
+      fullPath: '/duoq'
+      preLoaderRoute: typeof DuoqRouteImport
+      parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-    IndexRoute: IndexRoute,
-    DuoqRoute: DuoqRoute,
-};
-export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
+  IndexRoute: IndexRoute,
+  DuoqRoute: DuoqRoute,
+}
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()

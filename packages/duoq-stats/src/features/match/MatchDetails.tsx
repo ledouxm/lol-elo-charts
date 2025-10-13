@@ -38,8 +38,7 @@ export const MatchDetails = ({ match }: { match: Galeforce.dto.MatchDTO }) => {
 const TeamDetails = ({ team, match }: { team: 100 | 200; match: Galeforce.dto.MatchDTO }) => {
     const participants = match.info.participants.filter((p) => p.teamId === team)!;
     const teamDetails = match.info.teams.find((t) => t.teamId === team)!;
-
-    const hasWon = teamDetails.win;
+    const hasWon = teamDetails?.win;
 
     const duoqDataQuery = useDuoqDataQueryWithParams();
     const summoner1 = duoqDataQuery.data?.summoner1.puuid;
@@ -56,7 +55,7 @@ const TeamDetails = ({ team, match }: { team: 100 | 200; match: Galeforce.dto.Ma
                         ({team === 100 ? "Blue side" : "Red side"})
                     </Typography>
                 </Box>
-                <TeamObjectives teamDetails={teamDetails} />
+                {teamDetails ? <TeamObjectives teamDetails={teamDetails} /> : null}
             </Box>
 
             <Box
@@ -182,9 +181,11 @@ const ParticipantRow = ({
             <Box width="150px">
                 <KDA participant={participant} />
             </Box>
-            <Box ml={1}>
-                <DamageAndKP participant={participant} match={match} team={team} />
-            </Box>
+            {team ? (
+                <Box ml={1}>
+                    <DamageAndKP participant={participant} match={match} team={team} />
+                </Box>
+            ) : null}
         </Box>
     );
 };
@@ -252,8 +253,6 @@ const Items = ({ participant }: { participant: Participant }) => {
         if (itemId === 0) return "";
         return `${urlQuery.data}img/item/${itemId}.png`;
     };
-
-    console.log(participant);
 
     return (
         <Box display="flex" flexDirection={"column"}>
