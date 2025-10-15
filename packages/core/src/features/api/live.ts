@@ -6,9 +6,8 @@ import { db } from "@/db/db";
 import { summoner } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { LolApi } from "twisted";
-import { Regions } from "twisted/dist/constants";
 import { ENV } from "@/envVars";
-import { CurrentGameInfoDTO } from "galeforce/dist/galeforce/interfaces/dto";
+import type { CurrentGameInfoDTO } from "galeforce/dist/galeforce/interfaces/dto";
 import { AxiosError } from "axios";
 
 const lolApi = new LolApi({
@@ -28,7 +27,7 @@ liveRouter.get("/live", async (req, res) => {
 
         const summonerData = await getSummonerPuuidFromDbWithFallback(summonerName as string);
 
-        const data = await lolApi.SpectatorV5.activeGame(summonerData.puuid, Regions.EU_WEST);
+        const data = await lolApi.SpectatorV5.activeGame(summonerData.puuid, "EUW1" as any);
         console.log(data);
         if (!data || !data.response) {
             return res.status(404).json({ error: "No live game found" });
