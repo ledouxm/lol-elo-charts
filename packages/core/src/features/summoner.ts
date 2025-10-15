@@ -12,6 +12,7 @@ export const addRequest = async () => {
         console.log("cant insert request", e);
     }
 };
+
 export const galeforce = new Galeforce({ "riot-api": { key: ENV.RG_API_KEY } });
 
 export const getSummonerByName = async (name: string, tag: string) => {

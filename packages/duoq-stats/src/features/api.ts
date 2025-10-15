@@ -42,6 +42,13 @@ export const api = {
             },
         });
     },
+    getLiveGameData: async (summoner: string) => {
+        return client<LiveGameData>("/live", {
+            params: {
+                summoner,
+            },
+        });
+    },
 };
 
 const datadragonApiClient = ofetch.create({
@@ -76,7 +83,47 @@ export type Summoner = {
     name: string;
 };
 
-type DuoqMatchSummary = {
+export type MatchesResponse = {
+    matchIds: string[];
+    matches: Galeforce.dto.MatchDTO[];
+    nextCursor: string | null;
+};
+
+export interface LiveGameData {
+    gameId: number;
+    mapId: number;
+    gameMode: string;
+    gameType: string;
+    gameQueueConfigId: number;
+    participants: LiveGameParticipant[];
+    observers: Observers;
+    platformId: string;
+    bannedChampions: BannedChampion[];
+    gameStartTime: number;
+    gameLength: number;
+}
+
+export interface LiveGameParticipant {
+    puuid: string;
+    teamId: number;
+    spell1Id: number;
+    spell2Id: number;
+    championId: number;
+    profileIconId: number;
+    riotId: string;
+    bot: boolean;
+    gameCustomizationObjects: any[];
+    perks: Perks;
+    duoqMatchSummary: DuoqMatchSummary | null;
+}
+
+export interface Perks {
+    perkIds: number[];
+    perkStyle: number;
+    perkSubStyle: number;
+}
+
+export interface DuoqMatchSummary {
     totalMatches: number;
     wonTogether: number;
     p1WonAgainstP2: number;
@@ -84,10 +131,14 @@ type DuoqMatchSummary = {
     playedAgainst: number;
     playedWith: number;
     matchIds: string[];
-};
+}
 
-export type MatchesResponse = {
-    matchIds: string[];
-    matches: Galeforce.dto.MatchDTO[];
-    nextCursor: string | null;
-};
+export interface Observers {
+    encryptionKey: string;
+}
+
+export interface BannedChampion {
+    championId: number;
+    teamId: number;
+    pickTurn: number;
+}

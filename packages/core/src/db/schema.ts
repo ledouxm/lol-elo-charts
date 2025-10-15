@@ -192,6 +192,15 @@ export const lolParticipant = pgTable(
     }
 );
 
+export const summonerPuuidCache = pgTable("summoner_puuid_cache", {
+    puuid: varchar("puuid", { length: 100 }).primaryKey(),
+    name: text("name").notNull(),
+    icon: integer("icon").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type SummonerPuuidCache = InferModel<typeof summonerPuuidCache, "select">;
+
 export const arenaMatchRelations = relations(arenaMatch, ({ many }) => {
     return { players: many(arenaPlayer) };
 });

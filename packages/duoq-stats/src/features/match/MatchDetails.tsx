@@ -190,7 +190,7 @@ const ParticipantRow = ({
     );
 };
 
-const SummonerSpells = ({ participant }: { participant: Participant }) => {
+export const SummonerSpells = ({ participant }: { participant: Pick<Participant, "summoner1Id" | "summoner2Id"> }) => {
     const url1Query = useQuery({
         queryKey: ["summoner-spell-icon", participant.summoner1Id],
         queryFn: () => getSummonerSpellIconUrl(participant.summoner1Id),

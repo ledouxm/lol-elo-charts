@@ -7,6 +7,7 @@ import { and, asc, gte, lte, sql } from "drizzle-orm";
 import { makeDebug } from "@/utils";
 import { ENV } from "@/envVars";
 import { duoqRouter } from "./duoq";
+import { liveRouter } from "./live";
 
 const debug = makeDebug("router");
 
@@ -18,6 +19,7 @@ export const makeRouter = () => {
 
     app.use("/api", router);
     app.use("/api", duoqRouter);
+    app.use("/api", liveRouter);
     const port = ENV.HTTP_PORT;
 
     app.use((err, req, res, next) => {

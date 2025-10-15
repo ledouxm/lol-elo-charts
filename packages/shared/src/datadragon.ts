@@ -50,7 +50,7 @@ export const getChampionById = async (id: string | number) => {
     const data = resp.data;
     ref.champions = data;
 
-    return Object.values(data).find((c: any) => c.key == id) as any;
+    return (Object.values(data).find((c: any) => c.key == id) as any) ?? null;
 };
 
 export const getSummonerSpellIconImageData = async (spellId: string | number) => {

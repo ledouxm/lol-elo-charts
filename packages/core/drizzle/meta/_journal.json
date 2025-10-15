@@ -155,6 +155,20 @@
       "when": 1759610468418,
       "tag": "0021_moaning_elektra",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1760550060874,
+      "tag": "0022_quick_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1760551087795,
+      "tag": "0023_young_crystal",
+      "breakpoints": true
     }
   ]
 }

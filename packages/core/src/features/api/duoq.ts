@@ -1,5 +1,5 @@
 import { db } from "@/db/db";
-import { lolParticipant, match, summoner } from "@/db/schema";
+import { lolParticipant, match, summoner, summonerPuuidCache } from "@/db/schema";
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import express from "express";
 import { getSummonerByName } from "../summoner";
@@ -106,12 +106,19 @@ duoqRouter.get("/available-summoners", async (req, res) => {
     );
 });
 
-const getSummonerPuuidFromDbWithFallback = async (summonerName: string) => {
+export const getSummonerPuuidFromDbWithFallback = async (summonerName: string) => {
     try {
         return await getSummonerPuuidFromDb(summonerName);
     } catch {
         const [name, tag] = summonerName.split("#");
         const summonerFromRiot = await getSummonerByName(name, tag);
+
+        await db.insert(summonerPuuidCache).values({
+            puuid: summonerFromRiot.puuid,
+            name: summonerFromRiot.fullname,
+            icon: summonerFromRiot.profileIconId,
+        });
+
         return {
             puuid: summonerFromRiot.puuid,
             icon: summonerFromRiot.profileIconId,
@@ -120,23 +127,38 @@ const getSummonerPuuidFromDbWithFallback = async (summonerName: string) => {
     }
 };
 
-const getSummonerPuuidFromDb = async (summonerName: string) => {
+export const getSummonerPuuidFromDb = async (summonerName: string) => {
     const formatedName = summonerName.replaceAll(" ", "").toLowerCase();
     const summonerInDb = await db
         .select()
         .from(summoner)
         .where(sql`LOWER(REPLACE(${summoner.currentName}, ' ', '')) = ${formatedName}`)
         .limit(1);
+
     if (summonerInDb.length > 0)
         return {
             puuid: summonerInDb[0].puuid,
             icon: summonerInDb[0].icon,
             name: summonerInDb[0].currentName,
         };
+
+    const summonerInDbCache = await db
+        .select()
+        .from(summonerPuuidCache)
+        .where(sql`LOWER(REPLACE(${summonerPuuidCache.name}, ' ', '')) = ${formatedName}`)
+        .limit(1);
+
+    if (summonerInDbCache.length > 0)
+        return {
+            puuid: summonerInDbCache[0].puuid,
+            icon: summonerInDbCache[0].icon,
+            name: summonerInDbCache[0].name,
+        };
+
     throw new Error("Summoner not found in DB");
 };
 
-const getDuoqMatchSummary = async (puuid1: string, puuid2: string) => {
+export const getDuoqMatchSummary = async (puuid1: string, puuid2: string) => {
     const p1 = alias(lolParticipant, "p1");
     const p2 = alias(lolParticipant, "p2");
 

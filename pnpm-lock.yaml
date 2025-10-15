@@ -119,7 +119,7 @@ importers:
         specifier: ^0.1.13
         version: 0.1.14
       twisted:
-        specifier: ^1.66.0
+        specifier: ^1.72.1
         version: 1.72.1(debug@4.4.3)
       xstate:
         specifier: ^5.9.0

@@ -1,0 +1,1 @@
+ALTER TABLE "summoner_puuid_cache" ADD COLUMN "icon" integer NOT NULL;
