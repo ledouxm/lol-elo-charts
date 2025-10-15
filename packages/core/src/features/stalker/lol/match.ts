@@ -80,7 +80,7 @@ const checkIfGameIsArenaAndStore = async (lastGameId: string, lastGame: MatchDTO
 
     if (!lastGame) return false;
 
-    if (lastGame.info.queueId !== 1700) return false;
+    if (lastGame.info.queueId !== 1700 && lastGame.info.queueId !== 1710) return false;
 
     await db.insert(arenaMatch).values({
         matchId: lastGameId,

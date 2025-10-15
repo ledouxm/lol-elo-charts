@@ -49,31 +49,40 @@ duoqRouter.get("/duoq", async (req, res) => {
 });
 
 duoqRouter.get("/duoq/matches", async (req, res) => {
-    const { cursor, puuid1, puuid2 } = req.query;
-    if (!puuid1 || !puuid2) {
-        return res.status(400).json({ error: "Both puuid1 and puuid2 are required" });
+    try {
+        const { cursor, puuid1, puuid2 } = req.query;
+        if (!puuid1 || !puuid2) {
+            return res.status(400).json({ error: "Both puuid1 and puuid2 are required" });
+        }
+
+        const { matchIds } = (await getDuoqMatchSummary(puuid1 as string, puuid2 as string)) ?? { matchIds: [] };
+
+        if (!matchIds?.length) return res.json({ matchIds: [], matches: [] });
+        debug(`Total duoq matches found: ${matchIds}, ${!matchIds}`);
+        const pageSize = 10;
+        const startIndex = cursor ? matchIds.indexOf(cursor as string) : 0;
+        const paginatedMatchIds = matchIds.slice(startIndex, startIndex + pageSize);
+        const nextCursorIndex = startIndex + pageSize < matchIds.length ? startIndex + pageSize : null;
+
+        const nextCursor = nextCursorIndex !== null ? matchIds[nextCursorIndex] : null;
+
+        console.log({ startIndex, paginatedMatchIds, nextCursor, matchIdLength: matchIds.length });
+
+        const matches = await db
+            .select({ details: match.details })
+            .from(match)
+            .where(inArray(match.matchId, paginatedMatchIds))
+            .orderBy(desc(match.matchId));
+
+        res.json({
+            matchIds: paginatedMatchIds,
+            matches: matches.map((m) => m.details),
+            nextCursor,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error fetching matches" });
     }
-
-    const { matchIds } = (await getDuoqMatchSummary(puuid1 as string, puuid2 as string)) ?? { matchIds: [] };
-
-    if (!matchIds?.length) return res.json({ matchIds: [], matches: [] });
-    debug(`Total duoq matches found: ${matchIds}, ${!matchIds}`);
-    const pageSize = 5;
-    const startIndex = cursor ? matchIds.indexOf(cursor as string) : 0;
-    const paginatedMatchIds = matchIds.slice(startIndex, startIndex + pageSize);
-    const nextCursor = startIndex + pageSize < matchIds.length ? startIndex + pageSize : null;
-
-    const matches = await db
-        .select({ details: match.details })
-        .from(match)
-        .where(inArray(match.matchId, paginatedMatchIds))
-        .orderBy(desc(match.matchId));
-
-    res.json({
-        matchIds: paginatedMatchIds,
-        matches: matches.map((m) => m.details),
-        nextCursor,
-    });
 });
 
 duoqRouter.get("/available-summoners", async (req, res) => {

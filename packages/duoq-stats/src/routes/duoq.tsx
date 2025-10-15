@@ -67,40 +67,6 @@ const Stats = ({ stats }: { stats: DuoqStats }) => {
                 <ProfileCard summoner={stats.summoner2} isRightSide />
             </Box>
 
-            {/* <Box width="400px" textAlign="center">
-                <Box display={stats.duoqSummary.playedWith === 0 ? "none" : "block"}>
-                    <Typography>
-                        As allies: {stats.duoqSummary.playedWith} game{stats.duoqSummary.playedWith !== 1 ? "s" : ""} (
-                        {stats.duoqSummary.wonTogether} won)
-                    </Typography>
-                    <LinearProgress
-                        color="success"
-                        sx={{ height: "20px" }}
-                        variant="determinate"
-                        value={(stats.duoqSummary.wonTogether / stats.duoqSummary.playedWith) * 100}
-                    />
-                </Box>
-                <Box mt="16px" display={stats.duoqSummary.playedAgainst === 0 ? "none" : "block"}>
-                    <Typography>
-                        As enemies: {stats.duoqSummary.playedAgainst} game
-                        {stats.duoqSummary.playedAgainst !== 1 ? "s" : ""}
-                    </Typography>
-                    <LinearProgress
-                        color="error"
-                        sx={{ height: "20px" }}
-                        variant="determinate"
-                        value={(stats.duoqSummary.p1WonAgainstP2 / stats.duoqSummary.playedAgainst) * 100}
-                    />
-                </Box>
-                <Box
-                    display={
-                        stats.duoqSummary.playedAgainst === 0 && stats.duoqSummary.playedWith === 0 ? "block" : "none"
-                    }
-                >
-                    Never played together
-                </Box>
-            </Box> */}
-
             <Matches stats={stats} />
         </Box>
     );

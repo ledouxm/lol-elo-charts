@@ -1,12 +1,10 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, LinearProgress, Typography } from "@mui/material";
-import { useState } from "react";
-import { api, type DuoqStats, type MatchesResponse } from "../api";
+import { Box, Button } from "@mui/material";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type Galeforce from "galeforce";
-import { useDuoqDataQueryWithParams } from "../utils";
-import { ChampionIconWithLevel } from "@/components/ChampionIconWithLevel";
-import { MatchPreview } from "./MatchPreview";
+import { useState } from "react";
+import { api, type DuoqStats, type MatchesResponse } from "../api";
 import { MatchDetails } from "./MatchDetails";
+import { MatchPreview } from "./MatchPreview";
 
 export const Matches = ({ stats }: { stats: DuoqStats }) => {
     const infiniteMatchesQuery = useInfiniteQuery({
@@ -27,6 +25,19 @@ export const Matches = ({ stats }: { stats: DuoqStats }) => {
             {pages.map((page, index) => (
                 <MatchPage key={index} page={page} />
             ))}
+            {infiniteMatchesQuery.hasNextPage ? (
+                <Box my={2} display="flex" justifyContent="center">
+                    <Button
+                        loading={infiniteMatchesQuery.isFetchingNextPage}
+                        variant="contained"
+                        color="primary"
+                        sx={{ bgcolor: "#BEBEBE" }}
+                        onClick={() => infiniteMatchesQuery.fetchNextPage()}
+                    >
+                        Load more
+                    </Button>
+                </Box>
+            ) : null}
         </Box>
     );
 };
