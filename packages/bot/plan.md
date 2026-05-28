@@ -31,7 +31,7 @@ src/
 - [x] Entry point `src/main.ts` — `Effect.runPromise(program.pipe(Effect.provide(AppLayer)))`
 - [x] `src/layers.ts` — root `AppLayer` composition
 - [x] `src/config.ts` — `Effect.Config` for env vars (replaces Zod `envVars.ts`)
-- [ ] Wire `AppConfig` into `AppLayer` via `Layer.effect` / `ConfigProvider`
+- [x] Wire `AppConfig` into `AppLayer` via `Layer.effect` / `ConfigProvider`
 
 **Why first:** Every other phase depends on having a runtime and config in place.
 

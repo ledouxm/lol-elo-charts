@@ -1,8 +1,105 @@
-import { Config, Effect } from "effect";
+import { Config, Context, Effect, Layer, Option } from "effect";
 
-export const AppConfig = Effect.gen(function* () {
-    const discordToken = yield* Config.string("DISCORD_TOKEN");
-    const databaseUrl = yield* Config.string("DATABASE_URL");
+export class AppConfig extends Context.Tag("AppConfig")<
+    AppConfig,
+    {
+        nodeEnv: string;
+        httpPort: number;
+        db: {
+            user: string;
+            password: string;
+            host: string;
+            port: number | undefined;
+            name: string;
+        };
+        discord: {
+            botToken: string;
+            notificationIntervalSec: number;
+        };
+        riot: {
+            apiKey: string;
+            playerRequestIntervalSec: number;
+        };
+        valorant: {
+            apiKey: string;
+            notificationIntervalSec: number;
+            playerRequestIntervalSec: number;
+        };
+        features: {
+            enableBets: boolean;
+            forceRecaps: boolean;
+            arenaCommandsEnabled: boolean;
+            arenaEnabled: boolean;
+            arenaNotificationEnabled: boolean;
+        };
+        cron: {
+            betsDelayMin: number;
+        };
+        debug: string;
+    }
+>() {}
 
-    return { discordToken, databaseUrl };
-});
+export const AppConfigLayer = Layer.effect(
+    AppConfig,
+    Effect.gen(function* () {
+        const nodeEnv = yield* Config.string("NODE_ENV").pipe(Config.withDefault("development"));
+        const httpPort = yield* Config.number("HTTP_PORT").pipe(Config.withDefault(3000));
+        const debug = yield* Config.string("DEBUG").pipe(Config.withDefault("elo-stalker*"));
+
+        const dbUser = yield* Config.string("POSTGRES_USER");
+        const dbPassword = yield* Config.string("POSTGRES_PASSWORD");
+        const dbHost = yield* Config.string("POSTGRES_HOST");
+        const dbPort = yield* Config.number("POSTGRES_PORT").pipe(Config.option);
+        const dbName = yield* Config.string("POSTGRES_DB");
+
+        const botToken = yield* Config.string("BOT_TOKEN");
+        const discordNotificationIntervalSec = yield* Config.number("DISCORD_NOTIFICATION_INTERVAL_SEC").pipe(
+            Config.withDefault(120)
+        );
+
+        const rgApiKey = yield* Config.string("RG_API_KEY");
+        const playerRequestIntervalSec = yield* Config.number("PLAYER_REQUEST_INTERVAL_SEC").pipe(
+            Config.withDefault(5)
+        );
+
+        const valorantApiKey = yield* Config.string("VALORANT_API_KEY");
+        const valorantNotificationIntervalSec = yield* Config.number("VALORANT_DISCORD_NOTIFICATION_INTERVAL_SEC").pipe(
+            Config.withDefault(120)
+        );
+        const valorantPlayerRequestIntervalSec = yield* Config.number("VALORANT_PLAYER_REQUEST_INTERVAL_SEC").pipe(
+            Config.withDefault(5)
+        );
+
+        const enableBets = yield* Config.boolean("ENABLE_BETS").pipe(Config.withDefault(false));
+        const forceRecaps = yield* Config.boolean("FORCE_RECAPS").pipe(Config.withDefault(false));
+        const arenaCommandsEnabled = yield* Config.boolean("ARENA_COMMANDS_ENABLED").pipe(Config.withDefault(false));
+        const arenaEnabled = yield* Config.boolean("ARENA_ENABLED").pipe(Config.withDefault(false));
+        const arenaNotificationEnabled = yield* Config.boolean("ARENA_NOTIFICATION_ENABLED").pipe(
+            Config.withDefault(false)
+        );
+
+        const betsDelayMin = yield* Config.number("CRON_BETS_DELAY_MIN").pipe(Config.withDefault(5));
+
+        return {
+            nodeEnv,
+            httpPort,
+            debug,
+            db: { user: dbUser, password: dbPassword, host: dbHost, port: Option.getOrUndefined(dbPort), name: dbName },
+            discord: { botToken, notificationIntervalSec: discordNotificationIntervalSec },
+            riot: { apiKey: rgApiKey, playerRequestIntervalSec },
+            valorant: {
+                apiKey: valorantApiKey,
+                notificationIntervalSec: valorantNotificationIntervalSec,
+                playerRequestIntervalSec: valorantPlayerRequestIntervalSec,
+            },
+            features: {
+                enableBets,
+                forceRecaps,
+                arenaCommandsEnabled,
+                arenaEnabled,
+                arenaNotificationEnabled,
+            },
+            cron: { betsDelayMin },
+        };
+    })
+);
