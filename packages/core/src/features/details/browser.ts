@@ -21,13 +21,6 @@ export const getBrowser = async () => {
     return ref.browser;
 };
 
-export const getPage = async () => {
-    if (ref.page) return ref.page;
-
-    ref.page = await (await getBrowser()).newPage();
-    return ref.page;
-};
-
 export const getScreenshotBuffer = async ({
     html,
     clip,
