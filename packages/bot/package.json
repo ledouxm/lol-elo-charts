@@ -6,13 +6,20 @@
         "dev": "node --experimental-strip-types --watch src/main.ts",
         "start": "node dist/main.js",
         "build": "tsup src/main.ts --format esm --dts",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "migrate": "drizzle-kit generate:pg"
     },
     "dependencies": {
-        "effect": "^3.13.0"
+        "@effect/sql-kysely": "^0.47.0",
+        "@effect/sql-pg": "^0.52.1",
+        "drizzle-orm": "^0.27.2",
+        "effect": "^3.21.2",
+        "pg": "^8.21.0"
     },
     "devDependencies": {
         "@types/node": "^22.0.0",
+        "@types/pg": "^8.20.0",
+        "drizzle-kit": "^0.19.13",
         "tsup": "^8.0.0",
         "tsx": "^4.0.0",
         "typescript": "^5.5.0"

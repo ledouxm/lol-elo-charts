@@ -42,8 +42,8 @@ src/
 **Goal:** Wrap Drizzle behind a typed `Database` service.
 
 - [x] `DatabaseService` tag defined in `src/db/index.ts`
-- [ ] Implement `DatabaseLayer` — open postgres connection, run migrations
-- [ ] Wrap each Drizzle query in `Effect.tryPromise` with `DbError`
+- [x] Implement `DatabaseLayer` — open postgres connection
+- [ ] Use `const db = yield* SqliteDB` and then the kysely syntax to replace the queries
 - [ ] Expose methods: `getActiveSummoners`, `insertRank`, `upsertSummoner`, etc.
 
 **Why second:** Everything else (stalker, cron, API) depends on the DB. Getting this right unlocks all other phases.

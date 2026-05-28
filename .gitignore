@@ -8,3 +8,4 @@ dist-ssr
 .vercel
 temp
 styled-system
+repos/*

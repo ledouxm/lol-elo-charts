@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { AppLayer } from "./layers.js";
+import { AppLayer } from "./layers";
 
 const program = Effect.gen(function* () {
     yield* Effect.logInfo("Bot starting...");
