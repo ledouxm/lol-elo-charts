@@ -1,17 +1,37 @@
 # Effect Migration Plan
 
-Migrating `packages/core` to Effect incrementally, step by step. Each phase is self-contained — the app stays runnable between phases.
+Migrating `packages/core` to Effect in `packages/bot`, step by step.
+
+## Folder structure
+
+```
+src/
+├── main.ts                        ✅ entry point — Effect.runPromise(program.pipe(provide(AppLayer)))
+├── layers.ts                      ✅ root AppLayer composition
+├── config.ts                      ✅ Effect Config (DISCORD_TOKEN, DATABASE_URL, …)
+├── errors.ts                      ✅ Data.TaggedError — RiotApiError, ValorantApiError, DbError, DiscordError
+├── db/
+│   └── index.ts                   ✅ DatabaseService tag stub
+└── features/
+    ├── stalker/
+    │   ├── index.ts               ✅ StalkerService tag stub
+    │   ├── lol/index.ts           ✅ LolStalkerLayer stub
+    │   └── valorant/index.ts      ✅ ValorantStalkerLayer stub
+    ├── discord/index.ts           ✅ DiscordService tag stub
+    ├── api/index.ts               ✅ ApiLayer stub
+    └── cron/index.ts              ✅ CronLayer stub
+```
 
 ---
 
-## Phase 1 — Foundation: runtime + config
+## Phase 1 — Foundation: runtime + config ✅
 
 **Goal:** Establish the Effect runtime and replace env validation with `Config`.
 
-- Replace `envVars.ts` (Zod schema) with Effect `Config` / `ConfigProvider`
-- Define a root `Layer` composition file (e.g. `src/layers.ts`)
-- Replace the top-level `main.tsx` startup with a single `Effect.runPromise(program.pipe(Effect.provide(AppLayer)))`
-- Keep all existing code untouched — just wrap the entry point
+- [x] Entry point `src/main.ts` — `Effect.runPromise(program.pipe(Effect.provide(AppLayer)))`
+- [x] `src/layers.ts` — root `AppLayer` composition
+- [x] `src/config.ts` — `Effect.Config` for env vars (replaces Zod `envVars.ts`)
+- [ ] Wire `AppConfig` into `AppLayer` via `Layer.effect` / `ConfigProvider`
 
 **Why first:** Every other phase depends on having a runtime and config in place.
 
@@ -21,10 +41,10 @@ Migrating `packages/core` to Effect incrementally, step by step. Each phase is s
 
 **Goal:** Wrap Drizzle behind a typed `Database` service.
 
-- Define a `Database` service tag (`Context.Tag<Database>`)
-- Wrap each Drizzle query in `Effect.tryPromise` with a typed `DbError`
-- Expose methods like `getActiveSummoners`, `insertRank`, `upsertSummoner`, etc.
-- Provide the service via `Layer.effect(Database, ...)` that opens the connection and runs migrations
+- [x] `DatabaseService` tag defined in `src/db/index.ts`
+- [ ] Implement `DatabaseLayer` — open postgres connection, run migrations
+- [ ] Wrap each Drizzle query in `Effect.tryPromise` with `DbError`
+- [ ] Expose methods: `getActiveSummoners`, `insertRank`, `upsertSummoner`, etc.
 
 **Why second:** Everything else (stalker, cron, API) depends on the DB. Getting this right unlocks all other phases.
 
@@ -34,19 +54,14 @@ Migrating `packages/core` to Effect incrementally, step by step. Each phase is s
 
 **Goal:** Replace `setInterval` + mutable state with Effect primitives.
 
-Current shape:
-- Two `setInterval` loops (fetch one player, send batched notifications)
-- Mutable `currentChanges: Change[]` buffer
+- [x] `StalkerService` tag + `LolStalkerLayer` / `ValorantStalkerLayer` stubs in `src/features/stalker/`
+- [ ] `Queue.unbounded<Change>()` replaces `currentChanges: Change[]` mutable buffer
+- [ ] `Effect.repeat(fetchOnePlayer, Schedule.fixed(...))` replaces fetch `setInterval`
+- [ ] `Effect.repeat(flushNotifications, Schedule.fixed(...))` replaces notification `setInterval`
+- [ ] Both fibers via `Effect.forkScoped` or `Effect.all({ concurrency: "unbounded" })`
+- [ ] Generic `Stalker` base class becomes a parameterized `Layer` factory
 
-Effect shape:
-- `Queue.unbounded<Change>()` replaces the mutable buffer
-- `Effect.repeat(fetchOnePlayer, Schedule.fixed(Duration.seconds(N)))` replaces the fetch interval
-- `Effect.repeat(flushNotifications, Schedule.fixed(Duration.seconds(M)))` replaces the notification interval
-- Both loops run as concurrent fibers via `Effect.forkScoped` or `Effect.all({ concurrency: "unbounded" })`
-- The generic `Stalker<Player, Match, RemoteRank, DbRank>` base class becomes a parameterized `Layer` factory
-- `lolStalker` and `valorantStalker` become `Layer` implementations of a `StalkerService` interface
-
-**Key patterns to learn here:** `Queue`, `Ref`, `Schedule`, `Fiber`, `Scope`.
+**Key patterns:** `Queue`, `Ref`, `Schedule`, `Fiber`, `Scope`.
 
 ---
 
@@ -54,10 +69,9 @@ Effect shape:
 
 **Goal:** Type all error channels explicitly.
 
-- Define `Data.TaggedError` classes for each failure domain:
-  - `RiotApiError`, `ValorantApiError`, `DbError`, `DiscordError`
-- Replace bare `try/catch` and `unknown` error types with typed `Effect.tryPromise({ try, catch })`
-- Add `Effect.catchTag` / `Effect.catchAll` at the stalker boundary to decide: retry, skip, or notify
+- [x] `RiotApiError`, `ValorantApiError`, `DbError`, `DiscordError` defined in `src/errors.ts`
+- [ ] Replace bare `try/catch` with `Effect.tryPromise({ try, catch })` at every boundary
+- [ ] `Effect.catchTag` / `Effect.catchAll` at the stalker boundary — retry, skip, or notify
 
 **Why here:** Once the stalker is in Effect, typed errors make retry/fallback logic clean to express.
 
@@ -67,9 +81,9 @@ Effect shape:
 
 **Goal:** Replace `node-cron` with Effect-managed scheduled fibers.
 
-- Replace each `cron.schedule(expr, fn)` call in `startCronJobs.ts` with `Effect.repeat(job, Schedule.cron(expr))`
-- Each job is an `Effect` — DB access uses the `Database` service from Phase 2
-- All jobs are started as fibers inside the root scope
+- [x] `CronLayer` stub in `src/features/cron/index.ts`
+- [ ] `Effect.repeat(job, Schedule.cron(expr))` replaces each `cron.schedule(expr, fn)`
+- [ ] All jobs started as fibers inside the root scope
 
 ---
 
@@ -77,12 +91,11 @@ Effect shape:
 
 **Goal:** Replace Express with `@effect/platform` `HttpRouter`.
 
-- Rewrite `features/api/router.ts`, `duoq.ts`, `live.ts` as `HttpRouter` handlers
-- Request/response types become typed schemas (`Schema` from `@effect/schema`)
-- Middleware (CORS, request tracking) becomes `HttpMiddleware`
-- Mount via `HttpServer.serve` instead of `app.listen`
-
-**Note:** The endpoints are small — this is mostly mechanical. Start with `/api/duoq` as a pilot.
+- [x] `ApiLayer` stub in `src/features/api/index.ts`
+- [ ] Rewrite `router.ts`, `duoq.ts`, `live.ts` as `HttpRouter` handlers — start with `/api/duoq`
+- [ ] Typed schemas via `Schema` from `effect`
+- [ ] CORS / request tracking as `HttpMiddleware`
+- [ ] `HttpServer.serve` replaces `app.listen`
 
 ---
 
@@ -90,10 +103,10 @@ Effect shape:
 
 **Goal:** Wrap discord.js event handlers in Effect at the boundaries.
 
-- Keep `discordx` decorator-based commands as-is (decorators + Effect don't mix cleanly)
-- Wrap command handler bodies in `Effect.runPromise(effect.pipe(Effect.provide(AppLayer)))`
-- Define a `DiscordService` tag that exposes `sendMessage`, `sendEmbed`, etc. as Effects
-- The stalker's `sendDiscordMessages` call becomes `Effect.flatMap(DiscordService, s => s.sendEmbed(...))`
+- [x] `DiscordService` tag + `sendMessage` stub in `src/features/discord/index.ts`
+- [ ] Keep `discordx` decorators as-is — wrap command handler bodies only
+- [ ] `Effect.runPromise(effect.pipe(Effect.provide(AppLayer)))` inside each command handler
+- [ ] `sendDiscordMessages` → `Effect.flatMap(Discord, s => s.sendEmbed(...))`
 
 **Why last:** discordx is the most opaque boundary. Keeping decorators intact and wrapping only the interiors is the least risky approach.
 
