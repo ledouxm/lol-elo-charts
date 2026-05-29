@@ -1,4 +1,6 @@
 {
+  "id": "facb1c9e-1a96-4491-89df-42d5640c5b86",
+  "prevId": "e8c45ee0-6c52-4b02-9c88-e63fdc801885",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -62,8 +64,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "arena_player_puuid_match_id": {
-          "name": "arena_player_puuid_match_id",
+        "arena_player_puuid_match_id_pk": {
+          "name": "arena_player_puuid_match_id_pk",
           "columns": [
             "puuid",
             "match_id"
@@ -113,13 +115,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "gambler_id": {
           "name": "gambler_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -184,9 +187,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "discord_id": {
           "name": "discord_id",
@@ -271,8 +275,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "lol_participant_match_id_puuid": {
-          "name": "lol_participant_match_id_puuid",
+        "lol_participant_match_id_puuid_pk": {
+          "name": "lol_participant_match_id_puuid_pk",
           "columns": [
             "match_id",
             "puuid"
@@ -287,9 +291,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "match_id": {
           "name": "match_id",
@@ -364,9 +369,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "summoner_id": {
           "name": "summoner_id",
@@ -390,6 +396,7 @@
         "type": {
           "name": "type",
           "type": "player_of_the_day_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         }
@@ -405,9 +412,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "master": {
           "name": "master",
@@ -446,12 +454,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
-        "summoner_id": {
-          "name": "summoner_id",
+        "summoner_puuid": {
+          "name": "summoner_puuid",
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
@@ -459,12 +468,14 @@
         "tier": {
           "name": "tier",
           "type": "tier",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
         "division": {
           "name": "division",
           "type": "division",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -556,8 +567,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "summoner_puuid_channel_id": {
-          "name": "summoner_puuid_channel_id",
+        "summoner_puuid_channel_id_pk": {
+          "name": "summoner_puuid_channel_id_pk",
           "columns": [
             "puuid",
             "channel_id"
@@ -639,8 +650,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "valorant_player_puuid_channel_id": {
-          "name": "valorant_player_puuid_channel_id",
+        "valorant_player_puuid_channel_id_pk": {
+          "name": "valorant_player_puuid_channel_id_pk",
           "columns": [
             "puuid",
             "channel_id"
@@ -655,9 +666,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "player_id": {
           "name": "player_id",
@@ -723,14 +735,10 @@
     }
   },
   "schemas": {},
+  "sequences": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {
-      "\"summoner\".\"name\"": "\"summoner\".\"current_name\""
-    }
-  },
-  "id": "f08a9eba-edb0-4364-a069-56337c814905",
-  "prevId": "3a06605e-6aec-4428-ae6f-5675ebe2ce49",
-  "sequences": {}
+    "tables": {}
+  }
 }

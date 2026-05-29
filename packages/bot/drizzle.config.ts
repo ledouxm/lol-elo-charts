@@ -1,9 +1,10 @@
+import { NodeContext } from "@effect/platform-node";
 import type { Config as DrizzleConfig } from "drizzle-kit";
-
 import { Effect, Redacted } from "effect";
+import { AppConfig, AppConfigLayer } from "./src/app.config.ts";
 
-import { AppConfig } from "#/app.config.ts";
-import { ConfigWithDefaultEnvLayer } from "#/app.runtime.ts";
+import dotenv from "dotenv";
+dotenv.config({ path: "../../.env" });
 
 const getConfig = Effect.gen(function* () {
     const { db } = yield* AppConfig;
@@ -21,4 +22,6 @@ const getConfig = Effect.gen(function* () {
     return base;
 });
 
-export default Effect.runSync(getConfig.pipe(Effect.provide(ConfigWithDefaultEnvLayer)));
+const drizzleConfig = Effect.runSync(getConfig.pipe(Effect.provide(AppConfigLayer), Effect.provide(NodeContext.layer)));
+
+export default drizzleConfig;

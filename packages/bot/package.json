@@ -14,8 +14,9 @@
         "start": "node dist/main.js",
         "build": "tsup src/main.ts --format esm --dts",
         "typecheck": "tsc --noEmit",
-        "migrate": "drizzle-kit generate:pg",
-        "migration:up": "drizzle-kit migrate"
+        "migration:create": "drizzle-kit generate",
+        "migration:up": "drizzle-kit migrate",
+        "drizzle": "drizzle-kit"
     },
     "dependencies": {
         "@effect/platform": "^0.96.1",
@@ -23,7 +24,8 @@
         "@effect/sql": "^0.51.1",
         "@effect/sql-kysely": "^0.47.0",
         "@effect/sql-pg": "^0.52.1",
-        "drizzle-orm": "^0.27.2",
+        "dotenv": "^17.4.2",
+        "drizzle-orm": "^0.32.2",
         "effect": "^3.21.2",
         "galeforce": "^0.6.1",
         "kysely": "^0.29.2",
@@ -33,7 +35,7 @@
     "devDependencies": {
         "@types/node": "^22.0.0",
         "@types/pg": "^8.20.0",
-        "drizzle-kit": "^0.31.8",
+        "drizzle-kit": "^0.23.2",
         "tsup": "^8.0.0",
         "tsx": "^4.0.0",
         "typescript": "^5.5.0"

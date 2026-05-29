@@ -1,10 +1,8 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "id": "e8c45ee0-6c52-4b02-9c88-e63fdc801885",
-  "prevId": "f08a9eba-edb0-4364-a069-56337c814905",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "arena_match": {
+    "public.arena_match": {
       "name": "arena_match",
       "schema": "",
       "columns": {
@@ -26,7 +24,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "arena_player": {
+    "public.arena_player": {
       "name": "arena_player",
       "schema": "",
       "columns": {
@@ -74,7 +72,7 @@
       },
       "uniqueConstraints": {}
     },
-    "summoner_puuid_cache": {
+    "public.summoner_puuid_cache": {
       "name": "summoner_puuid_cache",
       "schema": "",
       "columns": {
@@ -109,7 +107,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "bet": {
+    "public.bet": {
       "name": "bet",
       "schema": "",
       "columns": {
@@ -180,7 +178,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "gambler": {
+    "public.gambler": {
       "name": "gambler",
       "schema": "",
       "columns": {
@@ -247,7 +245,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "lol_participant": {
+    "public.lol_participant": {
       "name": "lol_participant",
       "schema": "",
       "columns": {
@@ -283,7 +281,7 @@
       },
       "uniqueConstraints": {}
     },
-    "match": {
+    "public.match": {
       "name": "match",
       "schema": "",
       "columns": {
@@ -360,7 +358,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "player_of_the_day": {
+    "public.player_of_the_day": {
       "name": "player_of_the_day",
       "schema": "",
       "columns": {
@@ -401,7 +399,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "apex": {
+    "public.apex": {
       "name": "apex",
       "schema": "",
       "columns": {
@@ -442,7 +440,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "rank": {
+    "public.rank": {
       "name": "rank",
       "schema": "",
       "columns": {
@@ -489,7 +487,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "summoner": {
+    "public.summoner": {
       "name": "summoner",
       "schema": "",
       "columns": {
@@ -568,7 +566,7 @@
       },
       "uniqueConstraints": {}
     },
-    "valorant_match": {
+    "public.valorant_match": {
       "name": "valorant_match",
       "schema": "",
       "columns": {
@@ -590,7 +588,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "valorant_player": {
+    "public.valorant_player": {
       "name": "valorant_player",
       "schema": "",
       "columns": {
@@ -651,7 +649,7 @@
       },
       "uniqueConstraints": {}
     },
-    "valorant_rank": {
+    "public.valorant_rank": {
       "name": "valorant_rank",
       "schema": "",
       "columns": {
@@ -688,37 +686,40 @@
     }
   },
   "enums": {
-    "player_of_the_day_type": {
+    "public.player_of_the_day_type": {
       "name": "player_of_the_day_type",
-      "values": {
-        "winner": "winner",
-        "loser": "loser"
-      }
+      "schema": "public",
+      "values": [
+        "winner",
+        "loser"
+      ]
     },
-    "division": {
+    "public.division": {
       "name": "division",
-      "values": {
-        "IV": "IV",
-        "III": "III",
-        "II": "II",
-        "I": "I",
-        "NA": "NA"
-      }
+      "schema": "public",
+      "values": [
+        "IV",
+        "III",
+        "II",
+        "I",
+        "NA"
+      ]
     },
-    "tier": {
+    "public.tier": {
       "name": "tier",
-      "values": {
-        "IRON": "IRON",
-        "BRONZE": "BRONZE",
-        "SILVER": "SILVER",
-        "GOLD": "GOLD",
-        "PLATINUM": "PLATINUM",
-        "EMERALD": "EMERALD",
-        "DIAMOND": "DIAMOND",
-        "MASTER": "MASTER",
-        "GRANDMASTER": "GRANDMASTER",
-        "CHALLENGER": "CHALLENGER"
-      }
+      "schema": "public",
+      "values": [
+        "IRON",
+        "BRONZE",
+        "SILVER",
+        "GOLD",
+        "PLATINUM",
+        "EMERALD",
+        "DIAMOND",
+        "MASTER",
+        "GRANDMASTER",
+        "CHALLENGER"
+      ]
     }
   },
   "schemas": {},
@@ -728,5 +729,8 @@
     "columns": {
       "\"rank\".\"summoner_id\"": "\"rank\".\"summoner_puuid\""
     }
-  }
+  },
+  "id": "e8c45ee0-6c52-4b02-9c88-e63fdc801885",
+  "prevId": "f08a9eba-edb0-4364-a069-56337c814905",
+  "sequences": {}
 }
