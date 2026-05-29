@@ -21,4 +21,4 @@ const getConfig = Effect.gen(function* () {
     return base;
 });
 
-export default Effect.runPromise(getConfig.pipe(Effect.provide(ConfigWithDefaultEnvLayer)));
+export default Effect.runSync(getConfig.pipe(Effect.provide(ConfigWithDefaultEnvLayer)));
