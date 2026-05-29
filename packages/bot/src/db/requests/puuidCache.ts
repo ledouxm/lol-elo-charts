@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { sql } from "kysely";
-import { PgDB } from "../index";
+import { PgDB } from "../db";
 
 export const getSummonerByNormalizedName = (normalizedName: string) =>
     Effect.gen(function* () {

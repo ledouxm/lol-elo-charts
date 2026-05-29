@@ -1,11 +1,11 @@
 import { Effect } from "effect";
-import { PgDB } from "../index";
+import { PgDB } from "../db";
 
 export const getActiveValorantPlayers = (channelId?: string) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
         const query = db.selectFrom("valorantPlayer").selectAll().where("isActive", "=", true);
-        return yield* (channelId ? query.where("channelId", "=", channelId) : query);
+        return yield* channelId ? query.where("channelId", "=", channelId) : query;
     });
 
 export const getValorantPlayerByPuuidAndChannel = (puuid: string, channelId: string) =>
@@ -16,8 +16,7 @@ export const getValorantPlayerByPuuidAndChannel = (puuid: string, channelId: str
             .selectAll()
             .where("puuid", "=", puuid)
             .where("channelId", "=", channelId)
-            .limit(1)
-            ;
+            .limit(1);
         return rows[0] ?? null;
     });
 
@@ -29,8 +28,7 @@ export const getValorantPlayerByName = (name: string, channelId: string) =>
             .selectAll()
             .where("currentName", "=", name)
             .where("channelId", "=", channelId)
-            .limit(1)
-            ;
+            .limit(1);
         return rows[0] ?? null;
     });
 
@@ -50,11 +48,7 @@ export const insertValorantPlayer = (values: {
 export const reactivateValorantPlayer = (puuid: string, currentName: string) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
-        yield* db
-            .updateTable("valorantPlayer")
-            .set({ isActive: true, currentName })
-            .where("puuid", "=", puuid)
-            ;
+        yield* db.updateTable("valorantPlayer").set({ isActive: true, currentName }).where("puuid", "=", puuid);
     });
 
 export const deactivateValorantPlayer = (name: string, channelId: string) =>
@@ -64,8 +58,7 @@ export const deactivateValorantPlayer = (name: string, channelId: string) =>
             .updateTable("valorantPlayer")
             .set({ isActive: false })
             .where("currentName", "=", name)
-            .where("channelId", "=", channelId)
-            ;
+            .where("channelId", "=", channelId);
     });
 
 export const updateValorantPlayerLastGame = (puuid: string, lastGameId: string) =>
@@ -88,8 +81,7 @@ export const getLastValorantRank = (playerId: string) =>
             .selectAll()
             .where("playerId", "=", playerId)
             .orderBy("createdAt", "desc")
-            .limit(1)
-            ;
+            .limit(1);
         return rows[0] ?? null;
     });
 
@@ -102,12 +94,7 @@ export const insertValorantRank = (values: { playerId: string; elo: number }) =>
 export const getValorantMatchById = (matchId: string) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
-        const rows = yield* db
-            .selectFrom("valorantMatch")
-            .selectAll()
-            .where("id", "=", matchId)
-            .limit(1)
-            ;
+        const rows = yield* db.selectFrom("valorantMatch").selectAll().where("id", "=", matchId).limit(1);
         return rows[0] ?? null;
     });
 

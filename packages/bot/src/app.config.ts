@@ -1,4 +1,5 @@
-import { Config, Context, Effect, Layer, Option } from "effect";
+import { Config, Context, Effect, Layer, Option, Redacted } from "effect";
+import { RedactedTypeId } from "effect/Redacted";
 
 export class AppConfig extends Context.Tag("AppConfig")<
     AppConfig,
@@ -7,21 +8,22 @@ export class AppConfig extends Context.Tag("AppConfig")<
         httpPort: number;
         db: {
             user: string;
-            password: string;
+            password: Redacted.Redacted<string>;
             host: string;
             port: number | undefined;
             name: string;
+            url: Redacted.Redacted<string>;
         };
         discord: {
-            botToken: string;
+            botToken: Redacted.Redacted<string>;
             notificationIntervalSec: number;
         };
         riot: {
-            apiKey: string;
+            apiKey: Redacted.Redacted<string>;
             playerRequestIntervalSec: number;
         };
         valorant: {
-            apiKey: string;
+            apiKey: Redacted.Redacted<string>;
             notificationIntervalSec: number;
             playerRequestIntervalSec: number;
         };
@@ -51,6 +53,7 @@ export const AppConfigLayer = Layer.effect(
         const dbHost = yield* Config.string("POSTGRES_HOST");
         const dbPort = yield* Config.number("POSTGRES_PORT").pipe(Config.option);
         const dbName = yield* Config.string("POSTGRES_DB");
+        const dbUrl = `postgresql://${dbUser}:${dbPassword}@${dbHost}:${Option.getOrUndefined(dbPort) ?? 5432}/${dbName}`;
 
         const botToken = yield* Config.string("BOT_TOKEN");
         const discordNotificationIntervalSec = yield* Config.number("DISCORD_NOTIFICATION_INTERVAL_SEC").pipe(
@@ -84,11 +87,18 @@ export const AppConfigLayer = Layer.effect(
             nodeEnv,
             httpPort,
             debug,
-            db: { user: dbUser, password: dbPassword, host: dbHost, port: Option.getOrUndefined(dbPort), name: dbName },
-            discord: { botToken, notificationIntervalSec: discordNotificationIntervalSec },
-            riot: { apiKey: rgApiKey, playerRequestIntervalSec },
+            db: {
+                user: dbUser,
+                password: Redacted.make(dbPassword),
+                host: dbHost,
+                port: Option.getOrUndefined(dbPort),
+                name: dbName,
+                url: Redacted.make(dbUrl),
+            },
+            discord: { botToken: Redacted.make(botToken), notificationIntervalSec: discordNotificationIntervalSec },
+            riot: { apiKey: Redacted.make(rgApiKey), playerRequestIntervalSec },
             valorant: {
-                apiKey: valorantApiKey,
+                apiKey: Redacted.make(valorantApiKey),
                 notificationIntervalSec: valorantNotificationIntervalSec,
                 playerRequestIntervalSec: valorantPlayerRequestIntervalSec,
             },

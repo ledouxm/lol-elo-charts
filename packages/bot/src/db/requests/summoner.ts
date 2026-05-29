@@ -1,11 +1,11 @@
 import { Effect } from "effect";
-import { PgDB } from "../index";
+import { PgDB } from "../db";
 
 export const getActiveSummoners = (channelId?: string) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
         const query = db.selectFrom("summoner").selectAll().where("isActive", "=", true);
-        return yield* (channelId ? query.where("channelId", "=", channelId) : query);
+        return yield* channelId ? query.where("channelId", "=", channelId) : query;
     });
 
 export const getSummonerByPuuidAndChannel = (puuid: string, channelId: string) =>
@@ -16,8 +16,7 @@ export const getSummonerByPuuidAndChannel = (puuid: string, channelId: string) =
             .selectAll()
             .where("puuid", "=", puuid)
             .where("channelId", "=", channelId)
-            .limit(1)
-            ;
+            .limit(1);
         return rows[0] ?? null;
     });
 
@@ -29,8 +28,7 @@ export const getSummonerByName = (name: string, channelId: string) =>
             .selectAll()
             .where("currentName", "=", name)
             .where("channelId", "=", channelId)
-            .limit(1)
-            ;
+            .limit(1);
         return rows[0] ?? null;
     });
 
@@ -49,11 +47,7 @@ export const insertSummoner = (values: {
 export const reactivateSummoner = (puuid: string, currentName: string) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
-        yield* db
-            .updateTable("summoner")
-            .set({ isActive: true, currentName })
-            .where("puuid", "=", puuid)
-            ;
+        yield* db.updateTable("summoner").set({ isActive: true, currentName }).where("puuid", "=", puuid);
     });
 
 export const deactivateSummoner = (name: string, channelId: string) =>
@@ -63,8 +57,7 @@ export const deactivateSummoner = (name: string, channelId: string) =>
             .updateTable("summoner")
             .set({ isActive: false })
             .where("currentName", "=", name)
-            .where("channelId", "=", channelId)
-            ;
+            .where("channelId", "=", channelId);
     });
 
 export const updateSummonerName = (puuid: string, currentName: string) =>
@@ -76,9 +69,5 @@ export const updateSummonerName = (puuid: string, currentName: string) =>
 export const updateSummonerLastGame = (puuid: string, lastGameId: string, lastGameEndedAt: Date) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
-        yield* db
-            .updateTable("summoner")
-            .set({ lastGameId, lastGameEndedAt })
-            .where("puuid", "=", puuid)
-            ;
+        yield* db.updateTable("summoner").set({ lastGameId, lastGameEndedAt }).where("puuid", "=", puuid);
     });

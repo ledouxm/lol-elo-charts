@@ -1,9 +1,11 @@
 import { Effect } from "effect";
-import { AppLayer } from "./app.layer";
-import { AppRuntime } from "./app.runtime";
+import { AppRuntime } from "./app.runtime.ts";
+import { AppDatabase } from "./db/db.ts";
 
 const program = Effect.gen(function* () {
-    yield* Effect.logInfo("Bot starting...");
+    const db = yield* AppDatabase;
+    const result = yield* db.execute(db.selectFrom("summoner").selectAll().limit(1));
+    yield* Effect.logInfo("Bot starting...", result);
 });
 
 AppRuntime.runPromise(program);

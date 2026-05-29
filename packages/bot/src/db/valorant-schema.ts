@@ -1,5 +1,4 @@
-import { ValorantMatch } from "@/features/stalker/valorant/ValorantService";
-import { InferModel } from "drizzle-orm";
+import { type InferModel } from "drizzle-orm";
 import { boolean, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const valorantPlayer = pgTable(

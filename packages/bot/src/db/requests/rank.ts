@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { PgDB } from "../index";
+import { PgDB } from "../db";
 
 export const getLastRankForSummoner = (puuid: string) =>
     Effect.gen(function* () {
@@ -9,20 +9,14 @@ export const getLastRankForSummoner = (puuid: string) =>
             .selectAll()
             .where("summonerId", "=", puuid)
             .orderBy("createdAt", "desc")
-            .limit(1)
-            ;
+            .limit(1);
         return rows[0] ?? null;
     });
 
 export const getLatestRankPerSummoner = (puuids: string[]) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
-        return yield* db
-            .selectFrom("rank")
-            .selectAll()
-            .where("summonerId", "in", puuids)
-            .orderBy("createdAt", "desc")
-            ;
+        return yield* db.selectFrom("rank").selectAll().where("summonerId", "in", puuids).orderBy("createdAt", "desc");
     });
 
 export const getRankHistoryForSummoner = (puuid: string, from: Date, to: Date) =>
@@ -34,8 +28,7 @@ export const getRankHistoryForSummoner = (puuid: string, from: Date, to: Date) =
             .where("summonerId", "=", puuid)
             .where("createdAt", ">=", from)
             .where("createdAt", "<=", to)
-            .orderBy("createdAt", "asc")
-            ;
+            .orderBy("createdAt", "asc");
     });
 
 export const getStartOfDayRank = (puuid: string, dayStart: Date) =>
@@ -47,17 +40,11 @@ export const getStartOfDayRank = (puuid: string, dayStart: Date) =>
             .where("summonerId", "=", puuid)
             .where("createdAt", "<=", dayStart)
             .orderBy("createdAt", "desc")
-            .limit(1)
-            ;
+            .limit(1);
         return rows[0] ?? null;
     });
 
-export const insertRank = (values: {
-    summonerId: string;
-    tier: string;
-    division: string;
-    leaguePoints: number;
-}) =>
+export const insertRank = (values: { summonerId: string; tier: string; division: string; leaguePoints: number }) =>
     Effect.gen(function* () {
         const db = yield* PgDB;
         yield* db.insertInto("rank").values(values);

@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { sql } from "kysely";
-import { PgDB } from "../index";
+import { PgDB } from "../db";
 
 export const insertPlayerOfTheDay = (values: { summonerId: string; channelId: string; type: "winner" | "loser" }) =>
     Effect.gen(function* () {

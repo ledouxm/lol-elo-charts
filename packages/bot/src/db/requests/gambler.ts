@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { PgDB } from "../index";
+import { PgDB } from "../db";
 
 export const getGamblerByDiscordId = (discordId: string, channelId: string) =>
     Effect.gen(function* () {
