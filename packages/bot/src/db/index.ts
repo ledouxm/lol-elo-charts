@@ -24,3 +24,4 @@ const PgLive = Pg.PgClient.layer({
 });
 
 export const KyselyLive = Layer.effect(PgDB, PgKysely.make<Database>()).pipe(Layer.provide(PgLive));
+type a = PgKysely.EffectKysely<Database>;

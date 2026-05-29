@@ -10,10 +10,12 @@
         "migrate": "drizzle-kit generate:pg"
     },
     "dependencies": {
+        "@effect/sql": "^0.51.1",
         "@effect/sql-kysely": "^0.47.0",
         "@effect/sql-pg": "^0.52.1",
         "drizzle-orm": "^0.27.2",
         "effect": "^3.21.2",
+        "kysely": "^0.29.2",
         "pg": "^8.21.0"
     },
     "devDependencies": {

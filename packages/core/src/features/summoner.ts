@@ -104,17 +104,6 @@ export const removeSummoner = async (name: string, channelId: string) => {
     }
 };
 
-export const giveEveryone500Points = async () => {
-    const gamblers = await db.select().from(gambler);
-
-    for (const g of gamblers) {
-        await db
-            .update(gambler)
-            .set({ points: g.points + 500 })
-            .where(eq(gambler.id, gambler.id));
-    }
-};
-
 // export const getRankEmbed =
 
 export const getSummonerCurrentGame = async (summonerId: string) => {
