@@ -1,7 +1,7 @@
 import { Context, Layer, Redacted } from "effect";
 import { Kyselify } from "drizzle-orm/kysely";
 import * as lolSchema from "./schema";
-import * as valorantSchema from "./valorantSchema";
+import * as valorantSchema from "./valorant-schema";
 import { PgTable } from "drizzle-orm/pg-core";
 import * as PgKysely from "@effect/sql-kysely/Pg";
 import * as Pg from "@effect/sql-pg";
