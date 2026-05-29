@@ -14,7 +14,8 @@
         "start": "node dist/main.js",
         "build": "tsup src/main.ts --format esm --dts",
         "typecheck": "tsc --noEmit",
-        "migrate": "drizzle-kit generate:pg"
+        "migrate": "drizzle-kit generate:pg",
+        "migration:up": "drizzle-kit migrate"
     },
     "dependencies": {
         "@effect/platform": "^0.96.1",
@@ -32,7 +33,7 @@
     "devDependencies": {
         "@types/node": "^22.0.0",
         "@types/pg": "^8.20.0",
-        "drizzle-kit": "^0.19.13",
+        "drizzle-kit": "^0.31.8",
         "tsup": "^8.0.0",
         "tsx": "^4.0.0",
         "typescript": "^5.5.0"

@@ -4,7 +4,7 @@ import { Layer, Logger, LogLevel, ManagedRuntime } from "effect";
 import path from "node:path";
 
 const __dirname = new URL(".", import.meta.url).pathname;
-const envFilePath = path.resolve(path.join(__dirname, "../.env"));
+const envFilePath = path.resolve(path.join(__dirname, "../../.env"));
 
 export const DotEnvProvider = Layer.mergeAll(PlatformConfigProvider.layerDotEnvAdd(envFilePath)).pipe(
     Layer.provideMerge(NodeContext.layer)

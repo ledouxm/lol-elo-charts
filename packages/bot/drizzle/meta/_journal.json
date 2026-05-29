@@ -1,27 +1,27 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1780006062822,
-      "tag": "0000_redundant_jack_flag",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1780058481917,
-      "tag": "0001_nappy_thunderbolts",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1780058519089,
-      "tag": "0002_demonic_argent",
-      "breakpoints": true
-    }
-  ]
+    "version": "5",
+    "dialect": "pg",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "5",
+            "when": 1780006062822,
+            "tag": "0000_redundant_jack_flag",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "5",
+            "when": 1780058481917,
+            "tag": "0001_nappy_thunderbolts",
+            "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "5",
+            "when": 1780058519089,
+            "tag": "0002_demonic_argent",
+            "breakpoints": true
+        }
+    ]
 }

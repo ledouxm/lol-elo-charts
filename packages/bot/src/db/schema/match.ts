@@ -1,8 +1,9 @@
-import { boolean, integer, jsonb, pgTable, primaryKey, serial, timestamp, varchar, text } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { boolean, integer, jsonb, pgTable, primaryKey, timestamp, varchar, text } from "drizzle-orm/pg-core";
 import Galeforce from "galeforce";
 
 export const match = pgTable("match", {
-    id: serial("id").primaryKey(),
+    id: text("id").primaryKey().default(sql`gen_random_uuid()`),
     matchId: varchar("match_id", { length: 25 }).notNull(),
     summonerId: varchar("summoner_id", { length: 100 }).notNull(),
     createdAt: timestamp("created_at").defaultNow(),

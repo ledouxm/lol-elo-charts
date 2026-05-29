@@ -1,5 +1,5 @@
-import { type InferModel } from "drizzle-orm";
-import { integer, pgEnum, pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import { type InferModel, sql } from "drizzle-orm";
+import { integer, pgEnum, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const divisionEnum = pgEnum("division", ["IV", "III", "II", "I", "NA"]);
 export const tierEnum = pgEnum("tier", [
@@ -16,7 +16,7 @@ export const tierEnum = pgEnum("tier", [
 ]);
 
 export const rank = pgTable("rank", {
-    id: serial("id").primaryKey(),
+    id: text("id").primaryKey().default(sql`gen_random_uuid()`),
     summonerPuuid: varchar("summoner_puuid", { length: 100 }).notNull(),
     tier: tierEnum("tier"),
     division: divisionEnum("division"),
@@ -25,7 +25,7 @@ export const rank = pgTable("rank", {
 });
 
 export const apex = pgTable("apex", {
-    id: serial("id").primaryKey(),
+    id: text("id").primaryKey().default(sql`gen_random_uuid()`),
     master: integer("master"),
     grandmaster: integer("grandmaster"),
     challenger: integer("challenger"),

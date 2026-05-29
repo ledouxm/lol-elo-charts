@@ -1,8 +1,10 @@
-import { type InferModel } from "drizzle-orm";
-import { boolean, integer, numeric, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { type InferModel, sql } from "drizzle-orm";
+import { boolean, integer, numeric, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const gambler = pgTable("gambler", {
-    id: serial("id").primaryKey(),
+    id: text("id")
+        .primaryKey()
+        .default(sql`gen_random_uuid()`),
     discordId: varchar("discord_id", { length: 50 }),
     channelId: varchar("channel_id", { length: 100 }).notNull(),
     name: text("name"),
@@ -14,8 +16,10 @@ export const gambler = pgTable("gambler", {
 });
 
 export const bet = pgTable("bet", {
-    id: serial("id").primaryKey(),
-    gamblerId: integer("gambler_id").notNull(),
+    id: text("id")
+        .primaryKey()
+        .default(sql`gen_random_uuid()`),
+    gamblerId: text("gambler_id").notNull(),
     summonerId: varchar("summoner_id", { length: 100 }),
     points: integer("points").notNull(),
     createdAt: timestamp("created_at").defaultNow(),

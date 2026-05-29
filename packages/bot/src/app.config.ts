@@ -1,5 +1,6 @@
 import { Config, Context, Effect, Layer, Option, Redacted } from "effect";
 import { RedactedTypeId } from "effect/Redacted";
+import { DotEnvProvider } from "./features/dotenv.runtime.ts";
 
 export class AppConfig extends Context.Tag("AppConfig")<
     AppConfig,
@@ -51,6 +52,12 @@ export const AppConfigLayer = Layer.effect(
         const dbUser = yield* Config.string("POSTGRES_USER");
         const dbPassword = yield* Config.string("POSTGRES_PASSWORD");
         const dbHost = yield* Config.string("POSTGRES_HOST");
+
+        console.log("Database config:", {
+            dbUser,
+            dbPassword: dbPassword,
+            dbHost,
+        });
         const dbPort = yield* Config.number("POSTGRES_PORT").pipe(Config.option);
         const dbName = yield* Config.string("POSTGRES_DB");
         const dbUrl = `postgresql://${dbUser}:${dbPassword}@${dbHost}:${Option.getOrUndefined(dbPort) ?? 5432}/${dbName}`;

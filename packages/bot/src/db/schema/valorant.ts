@@ -1,5 +1,5 @@
-import { type InferModel } from "drizzle-orm";
-import { boolean, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { type InferModel, sql } from "drizzle-orm";
+import { boolean, integer, jsonb, pgTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const valorantPlayer = pgTable(
     "valorant_player",
@@ -19,7 +19,7 @@ export const valorantPlayer = pgTable(
     }
 );
 export const valorantRank = pgTable("valorant_rank", {
-    id: serial("id").primaryKey(),
+    id: text("id").primaryKey().default(sql`gen_random_uuid()`),
     playerId: varchar("player_id", { length: 100 }).notNull(),
     elo: integer("elo").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
