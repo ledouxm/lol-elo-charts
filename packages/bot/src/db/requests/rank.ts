@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { AppDatabase } from "../db.ts";
-import type { InsertRankWithoutLiterals } from "../schema.ts";
+import type { InsertRankWithoutLiterals } from "../schema/index.ts";
 
 export const getLastRankForSummoner = (puuid: string) =>
     Effect.gen(function* () {
@@ -51,5 +51,7 @@ export const getStartOfDayRank = (puuid: string, dayStart: Date) =>
 export const insertRank = (values: Omit<InsertRankWithoutLiterals, "id" | "createdAt">) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
-        yield* db.execute(db.insertInto("rank").values(values as Parameters<ReturnType<typeof db.insertInto<"rank">>["values"]>[0]));
+        yield* db.execute(
+            db.insertInto("rank").values(values as Parameters<ReturnType<typeof db.insertInto<"rank">>["values"]>[0])
+        );
     });

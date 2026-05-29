@@ -1,0 +1,1 @@
+ALTER TABLE "rank" RENAME COLUMN "summoner_id" TO "summoner_puuid";
