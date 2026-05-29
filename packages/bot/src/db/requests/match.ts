@@ -1,40 +1,46 @@
 import { Effect } from "effect";
-import { PgDB } from "../db";
+import { AppDatabase } from "../db.ts";
 
 export const getMatchByMatchId = (matchId: string) =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
-        const rows = yield* db.selectFrom("match").selectAll().where("match_id", "=", matchId).limit(1);
+        const db = yield* AppDatabase;
+        const rows = yield* db.execute(
+            db.selectFrom("match").selectAll().where("match_id", "=", matchId).limit(1)
+        );
         return rows[0] ?? null;
     });
 
 export const getMatchByMatchIdAndSummoner = (matchId: string, summonerId: string) =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
-        const rows = yield* db
-            .selectFrom("match")
-            .selectAll()
-            .where("match_id", "=", matchId)
-            .where("summoner_id", "=", summonerId)
-            .limit(1);
+        const db = yield* AppDatabase;
+        const rows = yield* db.execute(
+            db
+                .selectFrom("match")
+                .selectAll()
+                .where("match_id", "=", matchId)
+                .where("summoner_id", "=", summonerId)
+                .limit(1)
+        );
         return rows[0] ?? null;
     });
 
 export const getMatchesByIds = (matchIds: string[]) =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
-        return yield* db.selectFrom("match").selectAll().where("match_id", "in", matchIds);
+        const db = yield* AppDatabase;
+        return yield* db.execute(db.selectFrom("match").selectAll().where("match_id", "in", matchIds));
     });
 
 export const getTodaysWinLoss = (summonerId: string, dayStart: Date, dayEnd: Date) =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
-        return yield* db
-            .selectFrom("match")
-            .select(["is_win"])
-            .where("summoner_id", "=", summonerId)
-            .where("ended_at", ">=", dayStart)
-            .where("ended_at", "<=", dayEnd);
+        const db = yield* AppDatabase;
+        return yield* db.execute(
+            db
+                .selectFrom("match")
+                .select(["is_win"])
+                .where("summoner_id", "=", summonerId)
+                .where("ended_at", ">=", dayStart)
+                .where("ended_at", "<=", dayEnd)
+        );
     });
 
 export const insertMatch = (values: {
@@ -49,6 +55,6 @@ export const insertMatch = (values: {
     details: unknown;
 }) =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
-        yield* db.insertInto("match").values(values);
+        const db = yield* AppDatabase;
+        yield* db.execute(db.insertInto("match").values(values));
     });

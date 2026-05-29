@@ -1,39 +1,39 @@
 import { Effect } from "effect";
 import { sql } from "kysely";
-import { PgDB } from "../db";
+import { AppDatabase } from "../db.ts";
 
 export const insertRequest = () =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
-        yield* db.insertInto("request").values({ createdAt: new Date() });
+        const db = yield* AppDatabase;
+        yield* db.execute(db.insertInto("request").values({ created_at: new Date() }));
     });
 
 export const getRequestsPerMinute = (start: Date, end?: Date) =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
+        const db = yield* AppDatabase;
         const query = db
             .selectFrom("request")
             .select([sql<number>`COUNT(*)`.as("count"), sql`DATE_TRUNC('minute', created_at)`.as("date")])
-            .where("createdAt", ">=", start)
+            .where("created_at", ">=", start)
             .groupBy(sql`DATE_TRUNC('minute', created_at)`)
             .orderBy(sql`DATE_TRUNC('minute', created_at)`, "asc");
-        return yield* end ? query.where("createdAt", "<=", end) : query;
+        return yield* db.execute(end ? query.where("created_at", "<=", end) : query);
     });
 
 export const getRequestsPerSecond = (start: Date, end?: Date) =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
+        const db = yield* AppDatabase;
         const query = db
             .selectFrom("request")
             .select([sql<number>`COUNT(*)`.as("count"), sql`DATE_TRUNC('second', created_at)`.as("date")])
-            .where("createdAt", ">=", start)
+            .where("created_at", ">=", start)
             .groupBy(sql`DATE_TRUNC('second', created_at)`)
             .orderBy(sql`DATE_TRUNC('second', created_at)`, "asc");
-        return yield* end ? query.where("createdAt", "<=", end) : query;
+        return yield* db.execute(end ? query.where("created_at", "<=", end) : query);
     });
 
 export const clearRequests = () =>
     Effect.gen(function* () {
-        const db = yield* PgDB;
-        yield* db.deleteFrom("request");
+        const db = yield* AppDatabase;
+        yield* db.execute(db.deleteFrom("request"));
     });
