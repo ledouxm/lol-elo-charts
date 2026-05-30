@@ -17,3 +17,5 @@ export const schema = {
     ...summoner,
     ...valorant,
 };
+
+export type InsertRank = typeof schema.rank.$inferInsert;

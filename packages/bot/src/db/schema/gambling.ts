@@ -1,4 +1,4 @@
-import { type InferModel, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { boolean, integer, numeric, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const gambler = pgTable("gambler", {
@@ -29,6 +29,3 @@ export const bet = pgTable("bet", {
     isWin: boolean("is_win"),
     odds: numeric("odds", { precision: 4, scale: 2 }),
 });
-
-export type Gambler = InferModel<typeof gambler, "select">;
-export type Bet = InferModel<typeof bet, "select">;

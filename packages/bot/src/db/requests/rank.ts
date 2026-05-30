@@ -1,12 +1,12 @@
 import { Effect } from "effect";
 import { AppDatabase } from "../db.ts";
-import type { InsertRankWithoutLiterals } from "../schema/index.ts";
+import type { InsertRank } from "../schema/index.ts";
 
 export const getLastRankForSummoner = (puuid: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         const rows = yield* db.execute(
-            db.selectFrom("rank").selectAll().where("summoner_id", "=", puuid).orderBy("created_at", "desc").limit(1)
+            db.selectFrom("rank").selectAll().where("summoner_puuid", "=", puuid).orderBy("created_at", "desc").limit(1)
         );
         return rows[0] ?? null;
     });
@@ -15,7 +15,7 @@ export const getLatestRankPerSummoner = (puuids: string[]) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         return yield* db.execute(
-            db.selectFrom("rank").selectAll().where("summoner_id", "in", puuids).orderBy("created_at", "desc")
+            db.selectFrom("rank").selectAll().where("summoner_puuid", "in", puuids).orderBy("created_at", "desc")
         );
     });
 
@@ -26,7 +26,7 @@ export const getRankHistoryForSummoner = (puuid: string, from: Date, to: Date) =
             db
                 .selectFrom("rank")
                 .selectAll()
-                .where("summoner_id", "=", puuid)
+                .where("summoner_puuid", "=", puuid)
                 .where("created_at", ">=", from)
                 .where("created_at", "<=", to)
                 .orderBy("created_at", "asc")
@@ -40,7 +40,7 @@ export const getStartOfDayRank = (puuid: string, dayStart: Date) =>
             db
                 .selectFrom("rank")
                 .selectAll()
-                .where("summoner_id", "=", puuid)
+                .where("summoner_puuid", "=", puuid)
                 .where("created_at", "<=", dayStart)
                 .orderBy("created_at", "desc")
                 .limit(1)
@@ -48,10 +48,8 @@ export const getStartOfDayRank = (puuid: string, dayStart: Date) =>
         return rows[0] ?? null;
     });
 
-export const insertRank = (values: Omit<InsertRankWithoutLiterals, "id" | "createdAt">) =>
+export const insertRank = (values: InsertRank) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
-        yield* db.execute(
-            db.insertInto("rank").values(values as Parameters<ReturnType<typeof db.insertInto<"rank">>["values"]>[0])
-        );
+        yield* db.execute(db.insertInto("rank").values(values));
     });

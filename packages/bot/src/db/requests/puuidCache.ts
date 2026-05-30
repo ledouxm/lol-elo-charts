@@ -41,7 +41,7 @@ export const searchSummonersByName = (namePattern: string) =>
             db
                 .selectFrom("summoner")
                 .select(["puuid", "current_name", "icon"])
-                .where("name", "ilike", `%${namePattern}%`)
+                .where("current_name", "ilike", `%${namePattern}%`)
                 .orderBy("last_game_ended_at", "desc")
                 .limit(10)
         );

@@ -1,4 +1,3 @@
-import { type InferModel } from "drizzle-orm";
 import { integer, pgTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const arenaMatch = pgTable("arena_match", {
@@ -21,5 +20,3 @@ export const arenaPlayer = pgTable(
         };
     }
 );
-
-export type ArenaPlayer = InferModel<typeof arenaPlayer, "select">;

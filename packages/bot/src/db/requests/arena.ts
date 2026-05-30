@@ -1,5 +1,6 @@
 import { Effect } from "effect";
-import { AppDatabase } from "../db.ts";
+import { AppDatabase, type Database } from "../db.ts";
+import type { InsertExpression } from "node_modules/kysely/dist/parser/insert-values-parser.js";
 
 export const getArenaMatchById = (matchId: string) =>
     Effect.gen(function* () {
@@ -10,14 +11,14 @@ export const getArenaMatchById = (matchId: string) =>
         return rows[0] ?? null;
     });
 
-export const insertArenaMatch = (values: { matchId: string; endedAt: Date }) =>
+export const insertArenaMatch = (values: { match_id: string; ended_at: Date }) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         yield* db.execute(db.insertInto("arenaMatch").values(values));
     });
 
 export const insertArenaPlayers = (
-    values: Array<{ puuid: string; name: string; placement: number; champion: string; matchId: string }>
+    values: Array<{ puuid: string; name: string; placement: number; champion: string; match_id: string }>
 ) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;

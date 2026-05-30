@@ -15,30 +15,30 @@ export const getActiveBets = () =>
         );
     });
 
-export const getActiveBetsByGambler = (gamblerId: number) =>
+export const getActiveBetsByGambler = (gambler_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         return yield* db.execute(
-            db.selectFrom("bet").selectAll().where("gambler_id", "=", gamblerId).where("ended_at", "is", null)
+            db.selectFrom("bet").selectAll().where("gambler_id", "=", gambler_id).where("ended_at", "is", null)
         );
     });
 
-export const getActiveBetForGamblerAndSummoner = (gamblerId: number, summonerId: string) =>
+export const getActiveBetForGamblerAndSummoner = (gambler_id: string, summoner_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         const rows = yield* db.execute(
             db
                 .selectFrom("bet")
                 .selectAll()
-                .where("gambler_id", "=", gamblerId)
-                .where("summoner_id", "=", summonerId)
+                .where("gambler_id", "=", gambler_id)
+                .where("summoner_id", "=", summoner_id)
                 .where("ended_at", "is", null)
                 .limit(1)
         );
         return rows[0] ?? null;
     });
 
-export const getActiveBetsByChannel = (channelId: string) =>
+export const getActiveBetsByChannel = (channel_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         return yield* db.execute(
@@ -47,12 +47,12 @@ export const getActiveBetsByChannel = (channelId: string) =>
                 .innerJoin("summoner", "summoner.puuid", "bet.summoner_id")
                 .innerJoin("gambler", "gambler.id", "bet.gambler_id")
                 .selectAll()
-                .where("summoner.channel_id", "=", channelId)
+                .where("summoner.channel_id", "=", channel_id)
                 .where("bet.ended_at", "is", null)
         );
     });
 
-export const getMyActiveBets = (discordId: string, channelId: string) =>
+export const getMyActiveBets = (discord_id: string, channel_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         return yield* db.execute(
@@ -61,14 +61,14 @@ export const getMyActiveBets = (discordId: string, channelId: string) =>
                 .innerJoin("summoner", "summoner.puuid", "bet.summoner_id")
                 .innerJoin("gambler", "gambler.id", "bet.gambler_id")
                 .selectAll()
-                .where("gambler.discord_id", "=", discordId)
-                .where("gambler.channel_id", "=", channelId)
+                .where("gambler.discord_id", "=", discord_id)
+                .where("gambler.channel_id", "=", channel_id)
                 .where("bet.ended_at", "is", null)
         );
     });
 
 export const insertBet = (values: {
-    gambler_id: number;
+    gambler_id: string;
     summoner_id: string;
     points: number;
     has_bet_on_win: boolean;
@@ -79,18 +79,18 @@ export const insertBet = (values: {
         yield* db.execute(db.insertInto("bet").values(values));
     });
 
-export const resolveBet = (betId: number, isWin: boolean, matchId: string) =>
+export const resolveBet = (bet_id: string, is_win: boolean, match_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         yield* db.execute(
             db
                 .updateTable("bet")
-                .set({ ended_at: new Date(), is_win: isWin, match_id: matchId })
-                .where("id", "=", betId)
+                .set({ ended_at: new Date(), is_win: is_win, match_id: match_id })
+                .where("id", "=", bet_id)
         );
     });
 
-export const getBetWithRelations = (betId: number) =>
+export const getBetWithRelations = (bet_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         const rows = yield* db.execute(
@@ -99,13 +99,13 @@ export const getBetWithRelations = (betId: number) =>
                 .innerJoin("gambler", "gambler.id", "bet.gambler_id")
                 .innerJoin("summoner", "summoner.puuid", "bet.summoner_id")
                 .selectAll()
-                .where("bet.id", "=", betId)
+                .where("bet.id", "=", bet_id)
                 .limit(1)
         );
         return rows[0] ?? null;
     });
 
-export const getLeaderboard = (channelId: string) =>
+export const getLeaderboard = (channel_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         return yield* db.execute(
@@ -119,13 +119,13 @@ export const getLeaderboard = (channelId: string) =>
                     sql<number>`SUM(CASE WHEN bet.is_win = TRUE THEN 1 ELSE 0 END)`.as("wins"),
                     sql<number>`SUM(CASE WHEN bet.is_win = FALSE THEN 1 ELSE 0 END)`.as("losses"),
                 ])
-                .where("gambler.channel_id", "=", channelId)
+                .where("gambler.channel_id", "=", channel_id)
                 .groupBy(["gambler.id", "gambler.name", "gambler.points"])
                 .orderBy("gambler.points", "desc")
         );
     });
 
-export const getBetsRecapByChannel = (channelId: string) =>
+export const getBetsRecapByChannel = (channel_id: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         return yield* db.execute(
@@ -138,7 +138,7 @@ export const getBetsRecapByChannel = (channelId: string) =>
                     sql<number>`SUM(CASE WHEN bet.is_win = TRUE THEN 1 ELSE 0 END)`.as("wins"),
                     sql<number>`SUM(CASE WHEN bet.is_win = FALSE THEN 1 ELSE 0 END)`.as("losses"),
                 ])
-                .where("gambler.channel_id", "=", channelId)
+                .where("gambler.channel_id", "=", channel_id)
                 .groupBy(["gambler.id", "gambler.name"])
         );
     });

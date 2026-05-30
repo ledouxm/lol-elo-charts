@@ -1,4 +1,3 @@
-import { type InferModel } from "drizzle-orm";
 import { integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const summonerPuuidCache = pgTable("summoner_puuid_cache", {
@@ -7,5 +6,3 @@ export const summonerPuuidCache = pgTable("summoner_puuid_cache", {
     icon: integer("icon").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
 });
-
-export type SummonerPuuidCache = InferModel<typeof summonerPuuidCache, "select">;

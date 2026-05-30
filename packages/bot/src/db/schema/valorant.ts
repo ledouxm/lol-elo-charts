@@ -19,7 +19,9 @@ export const valorantPlayer = pgTable(
     }
 );
 export const valorantRank = pgTable("valorant_rank", {
-    id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+    id: text("id")
+        .primaryKey()
+        .default(sql`gen_random_uuid()`),
     playerId: varchar("player_id", { length: 100 }).notNull(),
     elo: integer("elo").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
@@ -27,8 +29,5 @@ export const valorantRank = pgTable("valorant_rank", {
 
 export const valorantMatch = pgTable("valorant_match", {
     id: text("id").primaryKey(),
-    details: jsonb("details").$type<ValorantMatch>(),
+    details: jsonb("details").$type<any>(),
 });
-
-export type InsertValorantRank = InferModel<typeof valorantRank, "insert">;
-export type ValorantPlayer = InferModel<typeof valorantPlayer, "select">;

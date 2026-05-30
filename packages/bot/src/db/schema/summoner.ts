@@ -1,4 +1,3 @@
-import { type InferModel } from "drizzle-orm";
 import { boolean, integer, pgTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const summoner = pgTable(
@@ -21,5 +20,3 @@ export const summoner = pgTable(
         };
     }
 );
-
-export type Summoner = InferModel<typeof summoner, "select">;
