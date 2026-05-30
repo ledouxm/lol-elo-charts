@@ -19,11 +19,11 @@ export const rank = pgTable("rank", {
     id: text("id")
         .primaryKey()
         .default(sql`gen_random_uuid()`),
-    summonerPuuid: varchar("summoner_puuid", { length: 100 }).notNull(),
+    summoner_puuid: varchar("summoner_puuid", { length: 100 }).notNull(),
     tier: tierEnum("tier"),
     division: divisionEnum("division"),
-    leaguePoints: integer("league_points"),
-    createdAt: timestamp("created_at").defaultNow(),
+    league_points: integer("league_points"),
+    created_at: timestamp("created_at").defaultNow(),
 });
 
 export const apex = pgTable("apex", {
@@ -33,5 +33,5 @@ export const apex = pgTable("apex", {
     master: integer("master"),
     grandmaster: integer("grandmaster"),
     challenger: integer("challenger"),
-    createdAt: timestamp("created_at").defaultNow(),
+    created_at: timestamp("created_at").defaultNow(),
 });

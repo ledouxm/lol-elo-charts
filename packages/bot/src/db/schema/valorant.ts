@@ -5,16 +5,16 @@ export const valorantPlayer = pgTable(
     "valorant_player",
     {
         puuid: varchar("puuid", { length: 100 }),
-        currentName: text("name").notNull(),
+        name: text("name").notNull(),
         picture: text("picture"),
         card: text("card"),
-        isActive: boolean("is_active").default(true),
-        lastGameId: varchar("last_game_id", { length: 100 }),
-        channelId: varchar("channel_id", { length: 100 }).notNull(),
+        is_active: boolean("is_active").default(true),
+        last_game_id: varchar("last_game_id", { length: 100 }),
+        channel_id: varchar("channel_id", { length: 100 }).notNull(),
     },
     (table) => {
         return {
-            pk: primaryKey(table.puuid, table.channelId),
+            pk: primaryKey(table.puuid, table.channel_id),
         };
     }
 );
@@ -22,9 +22,9 @@ export const valorantRank = pgTable("valorant_rank", {
     id: text("id")
         .primaryKey()
         .default(sql`gen_random_uuid()`),
-    playerId: varchar("player_id", { length: 100 }).notNull(),
+    player_id: varchar("player_id", { length: 100 }).notNull(),
     elo: integer("elo").notNull(),
-    createdAt: timestamp("created_at").defaultNow(),
+    created_at: timestamp("created_at").defaultNow(),
 });
 
 export const valorantMatch = pgTable("valorant_match", {

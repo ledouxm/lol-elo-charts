@@ -1,6 +1,5 @@
 import { Effect } from "effect";
-import { AppDatabase, type Database } from "../db.ts";
-import type { InsertExpression } from "node_modules/kysely/dist/parser/insert-values-parser.js";
+import { AppDatabase } from "../db.ts";
 
 export const getArenaMatchById = (matchId: string) =>
     Effect.gen(function* () {

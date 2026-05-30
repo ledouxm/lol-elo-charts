@@ -4,19 +4,19 @@ export const summoner = pgTable(
     "summoner",
     {
         puuid: varchar("puuid", { length: 100 }),
-        currentName: text("current_name"),
+        current_name: text("current_name"),
         id: varchar("id", { length: 100 }),
         icon: integer("icon"),
-        isActive: boolean("is_active").default(true),
-        checkedAt: timestamp("checked_at"),
-        channelId: varchar("channel_id", { length: 100 }).notNull(),
-        lastGameId: varchar("last_game_id", { length: 25 }),
-        lastNotifiedInGameId: varchar("last_notified_in_game_id", { length: 25 }),
-        lastGameEndedAt: timestamp("last_game_ended_at"),
+        is_active: boolean("is_active").default(true),
+        checked_at: timestamp("checked_at"),
+        channel_id: varchar("channel_id", { length: 100 }).notNull(),
+        last_game_id: varchar("last_game_id", { length: 25 }),
+        last_notified_in_game_id: varchar("last_notified_in_game_id", { length: 25 }),
+        last_game_ended_at: timestamp("last_game_ended_at"),
     },
     (table) => {
         return {
-            pk: primaryKey(table.puuid, table.channelId),
+            pk: primaryKey(table.puuid, table.channel_id),
         };
     }
 );

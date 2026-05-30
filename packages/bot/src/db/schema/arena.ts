@@ -1,8 +1,8 @@
 import { integer, pgTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const arenaMatch = pgTable("arena_match", {
-    matchId: varchar("match_id", { length: 25 }).primaryKey(),
-    endedAt: timestamp("ended_at"),
+    match_id: varchar("match_id", { length: 25 }).primaryKey(),
+    ended_at: timestamp("ended_at"),
 });
 
 export const arenaPlayer = pgTable(
@@ -12,11 +12,11 @@ export const arenaPlayer = pgTable(
         name: text("name"),
         placement: integer("placement"),
         champion: text("champion"),
-        matchId: varchar("match_id", { length: 25 }).notNull(),
+        match_id: varchar("match_id", { length: 25 }).notNull(),
     },
     (table) => {
         return {
-            pk: primaryKey(table.puuid, table.matchId),
+            pk: primaryKey(table.puuid, table.match_id),
         };
     }
 );
