@@ -7,7 +7,9 @@ import { DuoQLive } from "./duoq.live.ts";
 
 const ApiLive = HttpApiBuilder.api(AppApi).pipe(Layer.provide(DuoQLive));
 
-export const HttpServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
+export const HttpServerLive = HttpApiBuilder.serve(
+    (app) => app.pipe(HttpMiddleware.logger, HttpMiddleware.cors())
+).pipe(
     Layer.provide(ApiLive),
     Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 }))
 );

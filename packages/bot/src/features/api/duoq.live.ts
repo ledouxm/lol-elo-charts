@@ -4,6 +4,7 @@ import { AppApi } from "./api.ts";
 import { AppDatabase } from "../../db/db.ts";
 import { getDuoqMatchSummary, getSummonerPuuidFromDb, getSummonerPuuidFromDbWithFallback } from "../duoq.ts";
 import { GetDuoQMatchesError, GetDuoQMatchSummaryError, GetSummonerError } from "./duoq.api.ts";
+import { sql } from "kysely";
 
 export const DuoQLive = HttpApiBuilder.group(AppApi, "duoq", (handlers) =>
     handlers
@@ -82,6 +83,38 @@ export const DuoQLive = HttpApiBuilder.group(AppApi, "duoq", (handlers) =>
                     matches: matches.map((m) => m.details),
                     nextCursor,
                 };
+            })
+        )
+        .handle("availableSummoners", ({ urlParams }) =>
+            Effect.gen(function* () {
+                const db = yield* AppDatabase;
+                const { str } = urlParams;
+                const query = db
+                    .selectFrom("summoner")
+                    .select(["puuid", "current_name as name", "icon"])
+                    // .orderBy(asc(summoner.puuid), desc(summoner.lastGameEndedAt))
+                    .orderBy("puuid", "asc")
+                    .orderBy("last_game_ended_at", "desc")
+                    .limit(10);
+
+                if (str) {
+                    query.where(sql<any>`current_name ILIKE ${"%" + str + "%"}`);
+                }
+
+                const summoners = yield* db
+                    .execute(query)
+                    .pipe(
+                        Effect.catchTag(
+                            "SqlError",
+                            (e) =>
+                                void console.error(e) ||
+                                Effect.fail(
+                                    new GetSummonerError({ message: `DB error fetching summoners, ${e.message}` })
+                                )
+                        )
+                    );
+
+                return summoners as Array<{ puuid: string; name: string; icon: number }>;
             })
         )
 );

@@ -74,4 +74,13 @@ export class DuoQApi extends HttpApiGroup.make("duoq")
             .addError(GetDuoQMatchesError)
             .addSuccess(DuoqMatchesSchema)
     )
-    .prefix("/duoq") {}
+    .add(
+        HttpApiEndpoint.get("availableSummoners", "/available-summoners")
+            .setUrlParams(
+                Schema.Struct({
+                    str: Schema.UndefinedOr(Schema.String),
+                })
+            )
+            .addError(GetSummonerError)
+            .addSuccess(Schema.Array(MinimalSummonerSchema))
+    ) {}
