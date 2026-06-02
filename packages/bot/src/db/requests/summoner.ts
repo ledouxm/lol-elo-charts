@@ -22,14 +22,14 @@ export const getSummonerByPuuidAndChannel = (puuid: string, channelId: string) =
         return rows[0] ?? null;
     });
 
-export const getSummonerByName = (name: string, channelId: string) =>
+export const getSummonerByNameAndChannel = (current_name: string, channelId: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         const rows = yield* db.execute(
             db
                 .selectFrom("summoner")
                 .selectAll()
-                .where("name", "=", name)
+                .where("current_name", "=", current_name)
                 .where("channel_id", "=", channelId)
                 .limit(1)
         );
@@ -41,35 +41,35 @@ export const insertSummoner = (values: {
     id: string;
     channel_id: string;
     icon: number;
-    name: string;
+    current_name: string;
 }) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         yield* db.execute(db.insertInto("summoner").values(values));
     });
 
-export const reactivateSummoner = (puuid: string, name: string) =>
+export const reactivateSummoner = (puuid: string, current_name: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
-        yield* db.execute(db.updateTable("summoner").set({ is_active: true, name }).where("puuid", "=", puuid));
+        yield* db.execute(db.updateTable("summoner").set({ is_active: true, current_name }).where("puuid", "=", puuid));
     });
 
-export const deactivateSummoner = (name: string, channelId: string) =>
+export const deactivateSummoner = (current_name: string, channelId: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
         yield* db.execute(
             db
                 .updateTable("summoner")
                 .set({ is_active: false })
-                .where("name", "=", name)
+                .where("current_name", "=", current_name)
                 .where("channel_id", "=", channelId)
         );
     });
 
-export const updateSummonerName = (puuid: string, name: string) =>
+export const updateSummonerName = (puuid: string, current_name: string) =>
     Effect.gen(function* () {
         const db = yield* AppDatabase;
-        yield* db.execute(db.updateTable("summoner").set({ name }).where("puuid", "=", puuid));
+        yield* db.execute(db.updateTable("summoner").set({ current_name }).where("puuid", "=", puuid));
     });
 
 export const updateSummonerLastGame = (puuid: string, last_game_id: string, last_game_ended_at: Date) =>

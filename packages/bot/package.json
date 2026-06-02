@@ -16,7 +16,8 @@
         "typecheck": "tsc --noEmit",
         "migration:create": "drizzle-kit generate",
         "migration:up": "drizzle-kit migrate",
-        "drizzle": "drizzle-kit"
+        "drizzle": "drizzle-kit",
+        "client:generate": "typed-openapi ./riot.openapi.json --output ./src/riot-api.gen.ts"
     },
     "dependencies": {
         "@effect/platform": "^0.96.1",
@@ -29,6 +30,7 @@
         "effect": "^3.21.2",
         "galeforce": "^0.6.1",
         "kysely": "^0.28.2",
+        "ofetch": "^1.5.1",
         "pg": "^8.21.0",
         "twisted": "^1.73.0",
         "uuid": "^14.0.0"
@@ -39,6 +41,7 @@
         "drizzle-kit": "^0.23.2",
         "tsup": "^8.0.0",
         "tsx": "^4.0.0",
+        "typed-openapi": "^0.4.1",
         "typescript": "^5.5.0"
     }
 }
