@@ -17,7 +17,8 @@
         "migration:create": "drizzle-kit generate",
         "migration:up": "drizzle-kit migrate",
         "drizzle": "drizzle-kit",
-        "client:generate": "typed-openapi ./riot.openapi.json --output ./src/riot-api.gen.ts"
+        "client:generate": "typed-openapi ./riot.openapi.json --output ./src/riot-api.gen.ts",
+        "test": "vitest run"
     },
     "dependencies": {
         "@effect/platform": "^0.96.1",
@@ -36,12 +37,14 @@
         "uuid": "^14.0.0"
     },
     "devDependencies": {
+        "@effect/vitest": "^0.29.0",
         "@types/node": "^22.0.0",
         "@types/pg": "^8.20.0",
         "drizzle-kit": "^0.23.2",
         "tsup": "^8.0.0",
         "tsx": "^4.0.0",
         "typed-openapi": "^0.4.1",
-        "typescript": "^5.5.0"
+        "typescript": "^5.5.0",
+        "vitest": "^3.2.4"
     }
 }
