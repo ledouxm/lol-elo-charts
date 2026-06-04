@@ -8,9 +8,9 @@ dotenv.config({ path: "../../.env" });
 const program = Effect.gen(function* () {
     const db = yield* AppDatabase;
     const result = yield* db.execute(db.selectFrom("summoner").selectAll().limit(1));
-    yield* Effect.logInfo("Bot startinag...", result);
+    yield* Effect.logInfo("Bot starting...", result);
 });
 
 AppRuntime.runFork(Layer.launch(HttpServerLive));
-// AppRuntime.runPromise(program);
+AppRuntime.runPromise(program);
 process.on("SIGTERM", () => AppRuntime.dispose());
