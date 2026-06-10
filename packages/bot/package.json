@@ -26,6 +26,7 @@
         "@effect/sql": "^0.51.1",
         "@effect/sql-kysely": "^0.47.0",
         "@effect/sql-pg": "^0.52.1",
+        "discord.js": "^14.22.1",
         "dotenv": "^17.4.2",
         "drizzle-orm": "^0.32.2",
         "effect": "^3.21.2",
