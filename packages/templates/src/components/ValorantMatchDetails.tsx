@@ -35,15 +35,17 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
     const hasBlueSideWon = match.teams.blue.has_won;
     const blueResult: ValorantResult = isDraw ? "draw" : hasBlueSideWon ? "win" : "loss";
     const redResult: ValorantResult = isDraw ? "draw" : hasBlueSideWon ? "loss" : "win";
-    const hsValues = players_with_fb.map((p) =>
-        computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)
-    );
-    const fbValues = players_with_fb.map((p) => p.first_blood_count);
+    const hsValues = players_with_fb
+        .map((p) => computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots))
+        .filter((v) => Number.isFinite(v));
+    const fbValues = players_with_fb
+        .map((p) => p.first_blood_count ?? 0)
+        .filter((v) => Number.isFinite(v));
     const extremes: Extremes = {
-        hsMax: Math.max(...hsValues),
-        hsMin: Math.min(...hsValues),
-        fbMax: Math.max(...fbValues),
-        fbMin: Math.min(...fbValues)
+        hsMax: hsValues.length ? Math.max(...hsValues) : 0,
+        hsMin: hsValues.length ? Math.min(...hsValues) : 0,
+        fbMax: fbValues.length ? Math.max(...fbValues) : 0,
+        fbMin: fbValues.length ? Math.min(...fbValues) : 0,
     };
 
     const map = match.metadata?.map;
