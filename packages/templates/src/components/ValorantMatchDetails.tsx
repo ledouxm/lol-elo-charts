@@ -1,6 +1,9 @@
 import { setValorantContext, type DefaultValorantProps } from './utils';
 import {
     ValorantParticipant,
+    ValorantSide,
+    Round,
+    getParticipantTeam,
     sortByCombatScore,
     computeAverageCombatScore,
     markPremades,
@@ -9,14 +12,25 @@ import {
     getFirstBloodCounts
 } from "./utils";
 import {
-    MVP,
+    WIN,
+    LOSS,
     resultColor,
     resultLabel,
     extremeColor,
     getValorantMapImage,
     type ValorantResult
 } from "./valorantTheme";
-import { GRID, container, header, teamBlock, teamHeader, colHead, playerRow } from "./ValorantMatchDetails.styles";
+import { RoundEndIcon } from "./valorantIcons";
+import {
+    GRID,
+    container,
+    header,
+    teamBlock,
+    teamHeader,
+    colHead,
+    playerRow,
+    rounds as roundsCss
+} from "./ValorantMatchDetails.styles";
 
 type Extremes = { hsMax: number; hsMin: number; fbMax: number; fbMin: number };
 
@@ -27,6 +41,8 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
     const players_with_fb = getFirstBloodCounts(match.kills, match.players.all_players);
     const premades = markPremades(players_with_fb);
     const sortedPlayers = sortByCombatScore(premades);
+
+    const participantTeam = getParticipantTeam(participant, match);
 
     const blueWon = match.teams.blue.rounds_won;
     const redWon = match.teams.red.rounds_won;
@@ -77,7 +93,6 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
 
             <Team
                 players={sortedPlayers["Blue"]}
-                participant={participant}
                 result={blueResult}
                 totalRounds={totalRounds}
                 wonRounds={blueWon}
@@ -85,27 +100,47 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
             />
             <Team
                 players={sortedPlayers["Red"]}
-                participant={participant}
                 result={redResult}
                 totalRounds={totalRounds}
                 wonRounds={redWon}
                 extremes={extremes}
             />
+
+            <RoundsTimeline rounds={match.rounds} participantTeam={participantTeam} />
         </div>
     );
 
 };
 
+const RoundsTimeline = ({ rounds, participantTeam }: { rounds: Round; participantTeam: ValorantSide }) => (
+    <div className={roundsCss.section}>
+        <span className={roundsCss.label}>Rounds</span>
+        <div className={roundsCss.track}>
+            {rounds.map((r, index) => {
+                const won = participantTeam === r.winning_team;
+                const color = won ? WIN : LOSS;
+                const tile = roundsCss.tile({ playerWon: won });
+                return (
+                    <div key={index} className={tile.box} style={{ borderColor: color }}>
+                        <span className={tile.num}>{index + 1}</span>
+                        <span className={tile.icon} style={{ color }}>
+                            <RoundEndIcon type={r.end_type} size={13} />
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
+    </div>
+);
+
 const Team = ({
     players,
-    participant,
     result,
     totalRounds,
     wonRounds,
     extremes,
 }: {
     players: ValorantParticipant[];
-    participant: ValorantParticipant;
     result: ValorantResult;
     totalRounds: number;
     wonRounds: number;
@@ -133,9 +168,7 @@ const Team = ({
                 <span className={colHead.stat}>FB</span>
             </div>
             {players.map((p) => {
-                const isPlayer = p.puuid === participant.puuid;
-                const styles = playerRow({ isPlayer });
-                const accentColor = isPlayer ? MVP : (p.isPremade || "transparent");
+                const styles = playerRow();
                 const hsRaw = computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots);
                 const hs = Number.isFinite(hsRaw) ? hsRaw : 0;
                 const hsColor = extremeColor(hs, extremes.hsMax, extremes.hsMin);
@@ -144,7 +177,7 @@ const Team = ({
                     <div
                         className={styles.row}
                         key={p.puuid}
-                        style={{ gridTemplateColumns: GRID, borderLeftColor: accentColor }}
+                        style={{ gridTemplateColumns: GRID, borderLeftColor: p.isPremade || "transparent" }}
                     >
                         <img className={styles.agent} src={p.assets.agent.small} />
 

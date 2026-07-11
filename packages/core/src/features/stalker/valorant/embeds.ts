@@ -203,11 +203,6 @@ export const getComponentsRow = ({
             .setCustomId(`valorant.MatchDetails.${matchId}.${participantIndex}`)
             .setStyle(ButtonStyle.Secondary);
 
-    const roundsButton = new ButtonBuilder()
-        .setLabel("Rounds")
-        .setCustomId(`valorant.RoundsDetails.${matchId}.${participantIndex}`)
-        .setStyle(ButtonStyle.Secondary);
-
     // const statsButton = new ButtonBuilder()
     //     .setLabel("Stats")
     //     .setCustomId(`stats-${matchId}-${participantIndex}`)
@@ -215,7 +210,6 @@ export const getComponentsRow = ({
 
     return new ActionRowBuilder().addComponents(
         detailsButton,
-        roundsButton,
         // statsButton,
         ...(additionalComponents || [])
     );

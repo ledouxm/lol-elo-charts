@@ -123,6 +123,73 @@ export const colHead = {
     }),
 };
 
+export const rounds = {
+    section: css({
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px",
+        mt: "2px",
+        pt: "10px",
+        borderTop: "1px solid #22303c",
+    }),
+    label: css({
+        fontSize: "11px",
+        letterSpacing: "2px",
+        textTransform: "uppercase",
+        color: "#67737e",
+        px: "2px",
+    }),
+    track: css({
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        gap: "3px",
+    }),
+    tile: sva({
+        slots: ["box", "num", "icon"],
+        base: {
+            box: {
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "1px",
+                w: "26px",
+                h: "36px",
+                borderRadius: "5px",
+                borderBottom: "2px solid",
+            },
+            num: {
+                fontSize: "10px",
+                fontWeight: "700",
+                color: "#9aa6b0",
+                fontVariantNumeric: "tabular-nums",
+            },
+            icon: {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+            },
+        },
+        variants: {
+            playerWon: {
+                true: {
+                    box: {
+                        background: "linear-gradient(180deg, rgba(58,214,160,0.22), rgba(58,214,160,0.06))",
+                        boxShadow: "inset 0 0 0 1px rgba(58,214,160,0.25)",
+                    },
+                },
+                false: {
+                    box: {
+                        background: "linear-gradient(180deg, rgba(255,70,85,0.22), rgba(255,70,85,0.06))",
+                        boxShadow: "inset 0 0 0 1px rgba(255,70,85,0.25)",
+                    },
+                },
+            },
+        },
+    }),
+};
+
 export const playerRow = sva({
     slots: [
         "row",
@@ -225,16 +292,6 @@ export const playerRow = sva({
             fontWeight: "600",
             color: "#ece8e1",
             fontVariantNumeric: "tabular-nums",
-        },
-    },
-    variants: {
-        isPlayer: {
-            true: {
-                row: {
-                    background: "linear-gradient(90deg, rgba(245,194,107,0.16), rgba(245,194,107,0.03))",
-                    boxShadow: "inset 0 0 0 1px rgba(245,194,107,0.35)",
-                },
-            },
         },
     },
 });
