@@ -136,7 +136,8 @@ const Team = ({
                 const isPlayer = p.puuid === participant.puuid;
                 const styles = playerRow({ isPlayer });
                 const accentColor = isPlayer ? MVP : (p.isPremade || "transparent");
-                const hs = computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots);
+                const hsRaw = computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots);
+                const hs = Number.isFinite(hsRaw) ? hsRaw : 0;
                 const hsColor = extremeColor(hs, extremes.hsMax, extremes.hsMin);
                 const fbColor = extremeColor(p.first_blood_count, extremes.fbMax, extremes.fbMin);
                 return (
