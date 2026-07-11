@@ -1,6 +1,4 @@
 import { setValorantContext, type DefaultValorantProps } from './utils';
-import { Flex } from "../../styled-system/jsx";
-import { sva, css } from "../../styled-system/css";
 import {
     ValorantParticipant,
     sortByCombatScore,
@@ -10,6 +8,17 @@ import {
     getValorantRankImage,
     getFirstBloodCounts
 } from "./utils";
+import {
+    MVP,
+    resultColor,
+    resultLabel,
+    extremeColor,
+    getValorantMapImage,
+    type ValorantResult
+} from "./valorantTheme";
+import { GRID, container, header, teamBlock, teamHeader, colHead, playerRow } from "./ValorantMatchDetails.styles";
+
+type Extremes = { hsMax: number; hsMin: number; fbMax: number; fbMin: number };
 
 export const ValorantMatchDetails = (props: DefaultValorantProps) => {
     setValorantContext(props);
@@ -18,28 +27,69 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
     const players_with_fb = getFirstBloodCounts(match.kills, match.players.all_players);
     const premades = markPremades(players_with_fb);
     const sortedPlayers = sortByCombatScore(premades);
+
+    const blueWon = match.teams.blue.rounds_won;
+    const redWon = match.teams.red.rounds_won;
+    const totalRounds = blueWon + redWon;
+    const isDraw = blueWon === redWon || (!match.teams.blue.has_won && !match.teams.red.has_won);
     const hasBlueSideWon = match.teams.blue.has_won;
-    const rounds = {
-        "red": match.teams.red.rounds_won,
-        "blue": match.teams.blue.rounds_won
-    };    
+    const blueResult: ValorantResult = isDraw ? "draw" : hasBlueSideWon ? "win" : "loss";
+    const redResult: ValorantResult = isDraw ? "draw" : hasBlueSideWon ? "loss" : "win";
+    const hsValues = players_with_fb.map((p) =>
+        computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)
+    );
+    const fbValues = players_with_fb.map((p) => p.first_blood_count);
+    const extremes: Extremes = {
+        hsMax: Math.max(...hsValues),
+        hsMin: Math.min(...hsValues),
+        fbMax: Math.max(...fbValues),
+        fbMin: Math.min(...fbValues)
+    };
+
+    const map = match.metadata?.map;
+    const mode = match.metadata?.mode;
+    const mapImage = getValorantMapImage(map);
+
     return (
-        <Flex flexDirection="column" justifyContent="space-between" w="700px" p="5px">
+        <div className={container}>
+            <div
+                className={header.wrap}
+                style={
+                    mapImage
+                        ? {
+                              backgroundImage: `linear-gradient(90deg, rgba(11,20,28,0.94) 32%, rgba(11,20,28,0.4)), linear-gradient(0deg, rgba(11,20,28,0.9), rgba(11,20,28,0.15)), url(${mapImage})`
+                          }
+                        : undefined
+                }
+            >
+                <div className={header.meta}>
+                    <div className={header.map}>{map ?? "Valorant"}</div>
+                    <div className={header.mode}>{mode ?? "Competitive"}</div>
+                </div>
+                <div className={header.score}>
+                    <span style={{ color: resultColor[blueResult] }}>{blueWon}</span>
+                    <span className={header.colon}>:</span>
+                    <span style={{ color: resultColor[redResult] }}>{redWon}</span>
+                </div>
+            </div>
+
             <Team
                 players={sortedPlayers["Blue"]}
                 participant={participant}
-                isWinner={hasBlueSideWon}
-                totalRounds={rounds.blue + rounds.red}
-                wonRounds={rounds.blue}
+                result={blueResult}
+                totalRounds={totalRounds}
+                wonRounds={blueWon}
+                extremes={extremes}
             />
             <Team
                 players={sortedPlayers["Red"]}
                 participant={participant}
-                isWinner={!hasBlueSideWon}
-                totalRounds={rounds.blue + rounds.red}
-                wonRounds={rounds.red}
+                result={redResult}
+                totalRounds={totalRounds}
+                wonRounds={redWon}
+                extremes={extremes}
             />
-        </Flex>
+        </div>
     );
 
 };
@@ -47,179 +97,95 @@ export const ValorantMatchDetails = (props: DefaultValorantProps) => {
 const Team = ({
     players,
     participant,
-    isWinner,
+    result,
     totalRounds,
     wonRounds,
+    extremes,
 }: {
     players: ValorantParticipant[];
     participant: ValorantParticipant;
-    isWinner: boolean;
+    result: ValorantResult;
     totalRounds: number;
     wonRounds: number;
+    extremes: Extremes;
 }) => {
+    const accent = resultColor[result];
     return (
-        <div
-            className={css({
-                display: "flex",
-                flexDirection: "column",
-                gap: "5px",
-            })}
-        >
+        <div className={teamBlock}>
+            <div className={teamHeader.wrap} style={{ borderColor: accent }}>
+                <div className={teamHeader.stripe} style={{ backgroundColor: accent }} />
+                <span className={teamHeader.result} style={{ color: accent }}>
+                    {resultLabel[result]}
+                </span>
+                <span className={teamHeader.record} style={{ color: accent }}>
+                    {wonRounds}
+                </span>
+            </div>
 
-            <div
-                className={css({
-                    fontSize: "24px",
-                    mt: "-5px",
-                    color: isWinner ? "green" : "red",
-                    alignSelf: "flex-middle",
-                })}
-            >
-                {isWinner ? "Victory - " + wonRounds : "Defeat - " + wonRounds} 
-
+            <div className={colHead.wrap} style={{ gridTemplateColumns: GRID }}>
+                <span />
+                <span className={colHead.label}>Player</span>
+                <span className={colHead.stat}>K / D / A</span>
+                <span className={colHead.stat}>ACS</span>
+                <span className={colHead.stat}>HS%</span>
+                <span className={colHead.stat}>FB</span>
             </div>
             {players.map((p) => {
-                const styles = playerRow({ isPlayer: p.puuid === participant.puuid });
-                const name = p.name;
+                const isPlayer = p.puuid === participant.puuid;
+                const styles = playerRow({ isPlayer });
+                const accentColor = isPlayer ? MVP : (p.isPremade || "transparent");
+                const hs = computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots);
+                const hsColor = extremeColor(hs, extremes.hsMax, extremes.hsMin);
+                const fbColor = extremeColor(p.first_blood_count, extremes.fbMax, extremes.fbMin);
                 return (
-                    <div className={styles.row} key={p.puuid} style={{ backgroundColor: p.isPremade }}>
-                        <div className={styles.agentScores}>
-                            <img className={styles.agent} src={p.assets.agent.small} />
+                    <div
+                        className={styles.row}
+                        key={p.puuid}
+                        style={{ gridTemplateColumns: GRID, borderLeftColor: accentColor }}
+                    >
+                        <img className={styles.agent} src={p.assets.agent.small} />
 
-                            <div className={styles.scores}>
-                                <div className={styles.name}>{name}</div>
-                                <div className={styles.stats}>
-                                    <div className={styles.kda}>
-                                        <span className={styles.kills}>{p.stats.kills}</span>/
-                                        <span className={styles.deaths}>{p.stats.deaths}</span>/
-                                        <span className={styles.assists}>{p.stats.assists}</span>
-                                    </div>
-                                    <div className={styles.acs}>
-                                        {computeAverageCombatScore(p.stats.score, totalRounds).toFixed(0)} ACS
-                                    </div>
-                                    <div className={styles.hsp}>
-                                        {computeHsPercentage(p.stats.bodyshots, p.stats.headshots, p.stats.legshots)}% HS
-                                    </div>
-                                    <div className={styles.firstBloods}>
-                                        {p.first_blood_count} FB
-                                    </div>
-                                </div>
+                        <div className={styles.identity}>
+                            <div className={styles.nameRow}>
+                                <span className={styles.name}>{p.name}</span>
+                                <span className={styles.tag}>#{p.tag}</span>
+                            </div>
+                            <div className={styles.rankRow}>
+                                <img className={styles.rank} src={getValorantRankImage(p.currenttier)} />
+                                <span className={styles.tier}>{p.currenttier_patched}</span>
                             </div>
                         </div>
-                        <img className={styles.rank} src={getValorantRankImage(p.currenttier)} />
+
+                        <div className={styles.statCell}>
+                            <div className={styles.kda}>
+                                <span className={styles.kills}>{p.stats.kills}</span>
+                                <span className={styles.slash}>/</span>
+                                <span className={styles.deaths}>{p.stats.deaths}</span>
+                                <span className={styles.slash}>/</span>
+                                <span className={styles.assists}>{p.stats.assists}</span>
+                            </div>
+                        </div>
+
+                        <div className={styles.statCell}>
+                            <div className={styles.statValue}>
+                                {computeAverageCombatScore(p.stats.score, totalRounds).toFixed(0)}
+                            </div>
+                        </div>
+
+                        <div className={styles.statCell}>
+                            <div className={styles.statValue} style={{ color: hsColor }}>
+                                {hs}%
+                            </div>
+                        </div>
+
+                        <div className={styles.statCell}>
+                            <div className={styles.statValue} style={{ color: fbColor }}>
+                                {p.first_blood_count}
+                            </div>
+                        </div>
                     </div>
                 );
             })}
         </div>
     );
-
-
-
-
-
-
 };
-
-
-const playerRow = sva({
-    slots: [
-        "row",
-        "agentDiv",
-        "agent",
-        "stats",
-        "agentScores",
-        "name",
-        "scores",
-        "kda",
-        "kills",
-        "deaths",
-        "assists",
-        "acs",
-        "hsp",
-        "firstBloods",
-        "rank"
-    ],
-    base: {
-        row: {
-            display: "flex",
-            flexDirection: "row",
-            gap: "10px",
-            alignItems: "center",
-            justifyContent: "space-between",
-
-        },
-
-        agent: {
-            width: "60px",
-            height: "60px",
-        },
-        agentScores: {
-            display: "flex",
-            flexDirection: "row",
-            gap: "10px",
-            alignItems: "center",
-
-        },
-        scores: {
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            color: "gray",
-        },
-        name: {
-            fontSize: "20px",
-            color: "white",
-            alignSelf: "flex-start",
-            pt: "0px",
-            mb: "-9px",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            maxW: "200px",
-        },
-        stats: {
-            display: "flex",
-            gap: "8px",
-        },
-        kda: { fontSize: "20px" },
-        kills: {
-            color: "green",
-            mr: "3px",
-        },
-        deaths: {
-            color: "red",
-            mx: "3px",
-        },
-        assists: {
-            color: "blue",
-            ml: "3px",
-        },
-        acs: {
-            color: "white",
-            fontSize: "20px",
-        },
-        hsp: {
-            color: "white",
-            fontSize: "20px",
-        },
-        firstBloods: {
-            color: "white",
-            fontSize: "20px",
-        },
-        rank: {
-            width: "50px",
-            height: "50px",
-
-        }
-    },
-
-    variants: {
-        isPlayer: {
-            true: {
-                row: {
-                    outline: "4px solid",
-                    outlineColor: "yellow",
-                },
-            },
-        },
-    },
-});

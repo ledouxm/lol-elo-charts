@@ -1,7 +1,8 @@
 import { ValorantSide, getParticipantTeam, setValorantContext, type DefaultValorantProps } from "./utils";
-import { Box, Flex } from "../../styled-system/jsx";
-import { sva, css } from "../../styled-system/css";
-import { ValorantParticipant, Round } from "./utils";
+import { Round } from "./utils";
+import { WIN, LOSS } from "./valorantTheme";
+import { RoundEndIcon } from "./valorantIcons";
+import { container, track, header, divider, roundBox } from "./ValorantRoundsDetails.styles";
 import { Fragment } from "react";
 
 export const ValorantRoundsDetails = (props: DefaultValorantProps) => {
@@ -10,10 +11,22 @@ export const ValorantRoundsDetails = (props: DefaultValorantProps) => {
     const { match, participant } = props;
     const rounds = match.rounds;
     const participantTeam = getParticipantTeam(participant, match);
+
+    const won = rounds.filter((r) => r.winning_team === participantTeam).length;
+    const lost = rounds.length - won;
+
     return (
-        <Flex flexDirection="row" justifyContent="space-between" flexWrap="wrap" w="1600px" p="5px">
+        <div className={container}>
+            <div className={header.wrap}>
+                <span className={header.title}>Round History</span>
+                <span className={header.score}>
+                    <span style={{ color: WIN }}>{won}</span>
+                    <span className={header.sep}>-</span>
+                    <span style={{ color: LOSS }}>{lost}</span>
+                </span>
+            </div>
             <RoundsHistory rounds={rounds} participantTeam={participantTeam} />
-        </Flex>
+        </div>
     );
 };
 
@@ -25,81 +38,29 @@ const RoundsHistory = ({
     participantTeam: ValorantSide;
 }) => {
     return (
-        <div
-            className={css({
-                display: "flex",
-                flexDirection: "row",
-                gap: "5px",
-            })}
-        >
-            {rounds.map((r) => {
-                const styles = roundBox({playerWon: participantTeam === r.winning_team});
-                let imageSrc;
-                switch (r.end_type) {
-                    case 'Eliminated':
-                        imageSrc = 'https://static-00.iconduck.com/assets.00/headshot-icon-256x251-gic18wlr.png';
-                        break;
-                    case 'Bomb defused':
-                        imageSrc = 'https://cdn-icons-png.flaticon.com/512/28/28478.png';
-                        break;
-                    case 'Bomb detonated':
-                        imageSrc = 'https://cdn-icons-png.flaticon.com/512/173/173473.png';
-                        break;
-                }
-                var index = rounds.indexOf(r);
+        <div className={track}>
+            {rounds.map((r, index) => {
+                const won = participantTeam === r.winning_team;
+                const styles = roundBox({ playerWon: won });
+                const showDivider = index === 11 || (index > 23 && index % 2 === 0);
                 return (
-                  <Fragment key={index}>
-                  <div className={styles.round}>
-                      <h2>{index + 1}</h2>
-                      <img className={styles.icon} src={imageSrc}/>
-                  </div>
-                  {(index === 11 || (index > 23 && index % 2 === 0)) && (
-                      <img style={{ 
-                        filter: "invert(100%) sepia(33%) saturate(3462%) hue-rotate(197deg) brightness(101%) contrast(101%)" 
-                    }}  className={styles.switch} src="https://cdn-icons-png.flaticon.com/256/91/91873.png" alt="Switch" />
-                  )}
-              </Fragment>
+                    <Fragment key={index}>
+                        <div className={styles.round} style={{ borderColor: won ? WIN : LOSS }}>
+                            <span className={styles.number}>{index + 1}</span>
+                            <span className={styles.icon} style={{ color: won ? WIN : LOSS }}>
+                                <RoundEndIcon type={r.end_type} />
+                            </span>
+                        </div>
+                        {showDivider && (
+                            <div className={divider.wrap}>
+                                <div className={divider.line} />
+                                <span className={divider.label}>{index === 11 ? "HT" : "OT"}</span>
+                                <div className={divider.line} />
+                            </div>
+                        )}
+                    </Fragment>
                 );
             })}
         </div>
     );
 };
-
-const roundBox = sva({
-    slots: ["round", "switch", "icon"],
-    base: {
-        round: {
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            width: "60px",
-            height: "60px",
-            backgroundColor: "gray",
-            color: "white",
-            fontWeight: "bold",
-        },
-
-      switch: {
-        width: "50px",
-       },
-      icon: {
-        width: "30px",
-      }
-    },
-
-    variants: {
-        playerWon: {
-            true: {
-                round: {
-                    backgroundColor: "blue",
-                },
-            },
-            false: {
-                round: {
-                    backgroundColor: "red",
-                },
-            },
-            
-        },
-    },
-});
