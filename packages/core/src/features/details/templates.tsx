@@ -33,8 +33,8 @@ const dimensions: Record<Templates, { width: number; height: number }> = {
     MatchDamage: { width: 700, height: 562 },
     MatchDetails: { width: 700, height: 516 },
     MatchRandomInformations: { width: 850, height: 703 },
-    ValorantMatchDetails: { width: 700, height: 722 },
-    ValorantRoundsDetails: { width: 1600, height: 70 },
+    ValorantMatchDetails: { width: 700, height: 864 },
+    ValorantRoundsDetails: { width: 1421, height: 127 },
 };
 
 export type Templates = keyof typeof components;

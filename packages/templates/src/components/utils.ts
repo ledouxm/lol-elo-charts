@@ -63,13 +63,8 @@ export const markPremades = (players: ValorantParticipant[]) => {
         str.split('').forEach(char => {
             hash = char.charCodeAt(0) + ((hash << 5) - hash)
         })
-        let colour = '#'
-        for (let i = 0; i < 3; i++) {
-            let value = (hash >> (i * 8)) & 0xff;
-            value = Math.floor(value * 0.5);
-            colour += value.toString(16).padStart(2, '0');
-        }
-        return colour;
+        const hue = Math.abs(hash) % 360;
+        return `hsl(${hue}, 70%, 60%)`;
     }
     for (const [partyId, premade] of Object.entries(premades)) {
         if (premade.length > 1) {
