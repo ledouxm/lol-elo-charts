@@ -27,9 +27,9 @@ const shapes: Record<string, ReactNode> = {
     ),
 };
 
-export const RoundEndIcon = ({ type }: { type: string }) =>
+export const RoundEndIcon = ({ type, size = 22 }: { type: string; size?: number }) =>
     shapes[type] ? (
-        <svg width="22" height="22" viewBox="0 0 24 24">
+        <svg width={size} height={size} viewBox="0 0 24 24">
             {shapes[type]}
         </svg>
     ) : null;
