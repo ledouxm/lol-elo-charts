@@ -26,6 +26,7 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/core/vite.config.ts ./packages/core/
 COPY packages/templates/vite.config.ts ./packages/templates/
 COPY patches/ ./patches/
+COPY vendor/ ./vendor/
 
 RUN pnpm install --frozen-lockfile
 

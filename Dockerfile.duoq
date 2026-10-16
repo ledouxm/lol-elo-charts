@@ -15,6 +15,7 @@ COPY packages/duoq-stats/package.json ./packages/duoq-stats/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/duoq-stats/vite.config.ts ./packages/duoq-stats/
 COPY patches/ ./patches/
+COPY vendor/ ./vendor/
 
 RUN pnpm install --frozen-lockfile
 
